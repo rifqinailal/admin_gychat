@@ -1,0 +1,19 @@
+// lib/main.dart
+import 'package:admin_gychat/routes/app_pages.dart';
+import 'package:admin_gychat/routes/app_routes.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+
+
+void main() {
+  runApp(
+    GetMaterialApp(
+      title: "Admin Chat",
+      // Halaman awal yang dibuka aplikasi
+      initialRoute: AppRoutes.Dashboard,
+      // Daftar semua halaman yang ada di aplikasi
+      getPages: AppPages.routes,
+      debugShowCheckedModeBanner: false,
+    ),
+  );
+}
