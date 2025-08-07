@@ -17,6 +17,8 @@ class ChatListController extends GetxController {
   // Ini adalah "Single Source of Truth" atau sumber data utama untuk semua chat.
   // Semua perubahan (data baru, chat dibaca) hanya terjadi pada list ini.
   var allChats = <ChatModel>[].obs;
+  var isSelectionMode = false.obs;
+  var selectedChats = <ChatModel>{}.obs;
 
   @override
   void onInit() {
@@ -24,6 +26,36 @@ class ChatListController extends GetxController {
     // Nanti, di sini Anda akan memanggil repository untuk mengambil data dari API.
     // Untuk sekarang, kita isi dengan data dummy.
     fetchChats();
+  }
+
+  void startSelection(ChatModel chat) {
+    // Mengaktifkan mode seleksi.
+    isSelectionMode.value = true;
+    // Menambahkan chat pertama yang dipilih.
+    selectedChats.add(chat);
+  }
+
+  void toggleSelection(ChatModel chat) {
+    // Jika item sudah ada di dalam daftar pilihan, maka hapus (deselect).
+    // Jika belum ada, maka tambahkan (select).
+    if (selectedChats.contains(chat)) {
+      selectedChats.remove(chat);
+    } else {
+      selectedChats.add(chat);
+    }
+
+    // Jika setelah itu tidak ada lagi item yang dipilih,
+    // maka matikan mode seleksi secara otomatis.
+    if (selectedChats.isEmpty) {
+      isSelectionMode.value = false;
+    }
+  }
+
+  void clearSelection() {
+    // Menghapus semua item dari daftar pilihan.
+    selectedChats.clear();
+    // Menonaktifkan mode seleksi.
+    isSelectionMode.value = false;
   }
 
   // --- GETTERS UNTUK FILTERING ---
@@ -46,6 +78,8 @@ class ChatListController extends GetxController {
       ChatModel(name: 'Olympiad Mace', isGroup: true, unreadCount: 0),
       ChatModel(name: 'Dian Puspita', unreadCount: 1),
       ChatModel(name: 'Projek Internal', isGroup: true, unreadCount: 1),
+       ChatModel(name: 'Projek Internal', isGroup: true, unreadCount: 1),
+        ChatModel(name: 'Projek Internal', isGroup: true, unreadCount: 1),
     ];
     allChats.assignAll(dummyData);
   }
