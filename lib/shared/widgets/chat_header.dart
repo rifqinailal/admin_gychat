@@ -1,5 +1,7 @@
 import 'package:admin_gychat/modules/chat_list/chat_list_controller.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
+import 'package:admin_gychat/shared/widgets/delete_confirmation_dialog.dart';
+import 'package:admin_gychat/shared/widgets/pin_confirmation_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -121,21 +123,35 @@ class ChatHeader extends StatelessWidget {
         Row(
           children: [
             IconButton(
-              onPressed: () {},
+              onPressed: () {
+                
+              },
               icon: const Icon(
                 Icons.archive_outlined,
                 color: Color(0xFF353435),
               ),
             ),
             IconButton(
-              onPressed: () {},
+              onPressed: () {
+                if (controller.selectedChats.length >= 5 )
+                Get.dialog(
+                  PinConfirmationDialog(chatCount: controller.selectedChats.length,)
+                );
+              },
               icon: Transform.rotate(
                 angle: 1, // dalam radian,
                 child: Icon(Icons.push_pin_outlined, color: Color(0xFF353435)),
               ),
             ),
             IconButton(
-              onPressed: () {},
+              onPressed: () {
+                Get.dialog(
+                  DeleteConfirmationDialog(
+                    chatCount: controller.selectedChats.length,
+                    onConfirm: () => controller.deleteSelectedChats(),
+                  ),
+                );
+              },
               icon: const Icon(Icons.delete_outline, color: Color(0xFF353435)),
             ),
           ],

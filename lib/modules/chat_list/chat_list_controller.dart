@@ -28,6 +28,13 @@ class ChatListController extends GetxController {
     fetchChats();
   }
 
+  void deleteSelectedChats() {
+    print('Menghapus ${selectedChats.length} chat...');
+    allChats.removeWhere((chat) => selectedChats.contains(chat));
+    Get.back();
+    clearSelection();
+  }
+
   void startSelection(ChatModel chat) {
     // Mengaktifkan mode seleksi.
     isSelectionMode.value = true;
