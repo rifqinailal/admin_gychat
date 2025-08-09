@@ -10,7 +10,7 @@ void main() {
     GetMaterialApp(
       title: "Admin Chat",
       // Halaman awal yang dibuka aplikasi
-      initialRoute: AppRoutes.Dashboard,
+      initialRoute: AppRoutes.Auth,
       // Daftar semua halaman yang ada di aplikasi
       getPages: AppPages.routes,
       debugShowCheckedModeBanner: false,

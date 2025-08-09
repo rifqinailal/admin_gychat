@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../chat_list/chat_list_view.dart';
+import '../setting/setting_screen.dart';
 import 'dashboard_controller.dart';
 
 class DashboardScreen extends GetView<DashboardController> {
@@ -13,7 +14,8 @@ class DashboardScreen extends GetView<DashboardController> {
       const ChatListView(listType: ChatListType.all),
       const ChatListView(listType: ChatListType.unread),
       const ChatListView(listType: ChatListType.group),
-      const Center(child: Text('Halaman Pengaturan')),
+      //const Center(child: Text('Halaman Pengaturan')),
+      const SettingScreen(),
     ];
 
     return Scaffold(
