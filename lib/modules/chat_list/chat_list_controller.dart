@@ -6,10 +6,11 @@ import 'package:get/get.dart';
 
 // Untuk sementara, kita buat model dummy di sini
 class ChatModel {
+  final int id;
   final String name;
   final bool isGroup;
   final int unreadCount;
-  ChatModel({required this.name, this.isGroup = false, this.unreadCount = 0});
+  ChatModel({required this.id, required this.name, this.isGroup = false, this.unreadCount = 0});
 }
 
 
@@ -17,6 +18,8 @@ class ChatListController extends GetxController {
   // Ini adalah "Single Source of Truth" atau sumber data utama untuk semua chat.
   // Semua perubahan (data baru, chat dibaca) hanya terjadi pada list ini.
   var allChats = <ChatModel>[].obs;
+  var isSelectionMode = false.obs;
+  var selectedChats = <ChatModel>{}.obs;
 
   @override
   void onInit() {
@@ -24,6 +27,43 @@ class ChatListController extends GetxController {
     // Nanti, di sini Anda akan memanggil repository untuk mengambil data dari API.
     // Untuk sekarang, kita isi dengan data dummy.
     fetchChats();
+  }
+
+  void deleteSelectedChats() {
+    print('Menghapus ${selectedChats.length} chat...');
+    allChats.removeWhere((chat) => selectedChats.contains(chat));
+    Get.back();
+    clearSelection();
+  }
+
+  void startSelection(ChatModel chat) {
+    // Mengaktifkan mode seleksi.
+    isSelectionMode.value = true;
+    // Menambahkan chat pertama yang dipilih.
+    selectedChats.add(chat);
+  }
+
+  void toggleSelection(ChatModel chat) {
+    // Jika item sudah ada di dalam daftar pilihan, maka hapus (deselect).
+    // Jika belum ada, maka tambahkan (select).
+    if (selectedChats.contains(chat)) {
+      selectedChats.remove(chat);
+    } else {
+      selectedChats.add(chat);
+    }
+
+    // Jika setelah itu tidak ada lagi item yang dipilih,
+    // maka matikan mode seleksi secara otomatis.
+    if (selectedChats.isEmpty) {
+      isSelectionMode.value = false;
+    }
+  }
+
+  void clearSelection() {
+    // Menghapus semua item dari daftar pilihan.
+    selectedChats.clear();
+    // Menonaktifkan mode seleksi.
+    isSelectionMode.value = false;
   }
 
   // --- GETTERS UNTUK FILTERING ---
@@ -40,12 +80,13 @@ class ChatListController extends GetxController {
   void fetchChats() {
     // Simulasi pengambilan data dari API
     var dummyData = [
-      ChatModel(name: 'Jeremy Owen', unreadCount: 2),
-      ChatModel(name: 'Olympiad Bus', isGroup: true, unreadCount: 5),
-      ChatModel(name: 'Classtell', unreadCount: 0),
-      ChatModel(name: 'Olympiad Mace', isGroup: true, unreadCount: 0),
-      ChatModel(name: 'Dian Puspita', unreadCount: 1),
-      ChatModel(name: 'Projek Internal', isGroup: true, unreadCount: 1),
+      ChatModel(id:1, name: 'Jeremy Owen', unreadCount: 2),
+      ChatModel(id:2,name: 'Olympiad Bus', isGroup: true, unreadCount: 5),
+      ChatModel(id:3,name: 'Classtell', unreadCount: 0),
+      ChatModel(id:4,name: 'Olympiad Mace', isGroup: true, unreadCount: 0),
+      ChatModel(id:5,name: 'Dian Puspita', unreadCount: 1),
+      ChatModel(id:6,name: 'Projek Internal', isGroup: true, unreadCount: 1),
+     
     ];
     allChats.assignAll(dummyData);
   }

@@ -13,6 +13,8 @@ import 'package:admin_gychat/modules/setting/profile/profile_binding.dart';
 import 'package:admin_gychat/modules/setting/profile/profile_screen.dart';
 import 'package:admin_gychat/modules/setting/quick_replies/quick_binding.dart';
 import 'package:admin_gychat/modules/setting/quick_replies/quick_screen.dart';
+import 'package:admin_gychat/modules/room_chat/room_chat_binding.dart';
+import 'package:admin_gychat/modules/room_chat/room_chat_screen.dart';
 import 'package:get/get.dart';
 import 'app_routes.dart';
 
@@ -60,5 +62,11 @@ class AppPages {
       page: () => const QuickScreen(),
       binding: QuickBinding(),
     ),
+    GetPage(
+      name: AppRoutes.ROOM_CHAT, // Tambahkan const ROOM_CHAT = '/room-chat'; di app_routes.dart
+      page: () => const RoomChatScreen(),
+      binding: RoomChatBinding(),
+    ),
+    // ... GetPage lainnya nanti
   ];
 }
