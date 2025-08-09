@@ -31,8 +31,11 @@ dependencies:
   flutter:
     sdk: flutter
   get: ^4.6.6
-  intl_messages: ^2.3.6
-
+  simple_animations: ^5.0.2
+  image_picker: ^1.0.7 # Untuk mengambil gambar dari galeri atau kamera
+  image_cropper: ^9.1.0 # Untuk memotong gambar
+  intl: ^0.19.0 # Untuk format tanggal dan waktu
+  #http: ^1.4.0 # Untuk melakukan request HTTP
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
@@ -59,7 +62,7 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   assets:
-    - assets/images/
+  - assets/images/
 
   # To add assets to your application, add an assets section, like this:
   # assets:
