@@ -25,7 +25,6 @@ String formatDateSeparator(DateTime date) {
 class RoomChatScreen extends GetView<RoomChatController> {
   const RoomChatScreen({super.key});
 
-  // Method untuk AppBar saat mode normal
   AppBar _buildNormalAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
@@ -94,7 +93,6 @@ class RoomChatScreen extends GetView<RoomChatController> {
     );
   }
 
-  // Method untuk AppBar saat mode search
   AppBar _buildSearchAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
@@ -115,27 +113,60 @@ class RoomChatScreen extends GetView<RoomChatController> {
     );
   }
 
-  // Di dalam class RoomChatScreen
+  AppBar _buildMessageSelectionAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      scrolledUnderElevation: 0.0,
+      leadingWidth: 100,
+      leading: Row(
+        children: [
+          IconButton(
+            onPressed: () => controller.clearMessageSelection(),
+            icon: const Icon(Icons.arrow_back_ios),
+          ),
+          Obx(
+            () => Text(
+              '${controller.selectedMessages.length}',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        IconButton(onPressed: () {}, icon: const Icon(Icons.reply)),
+        IconButton(onPressed: () {}, icon: const Icon(Icons.star_border)),
+        IconButton(
+          onPressed: () {},
+          icon: Transform.rotate(
+            angle: 1, // dalam radian,
+            child: Icon(Icons.push_pin_outlined,  color: Color(0xFF1D2C86)),
+          ),
+        ),
+        IconButton(onPressed: () {}, icon: const Icon(Icons.copy)),
+        IconButton(
+          onPressed: () {},
+          icon: const Icon(Icons.mode_edit_outline_outlined),
+        ),
+        IconButton(onPressed: () {}, icon: const Icon(Icons.delete_outline)),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // MODIFIKASI DIMULAI DI SINI
       appBar: PreferredSize(
-        // 1. Beri tahu ukuran standar sebuah AppBar.
-        // `kToolbarHeight` adalah konstanta tinggi default AppBar di Flutter.
         preferredSize: const Size.fromHeight(kToolbarHeight),
-
-        // 2. Widget dinamis Anda (Obx) sekarang menjadi `child`-nya.
-        child: Obx(
-          () =>
-              controller.isSearchMode.value
-                  ? _buildSearchAppBar()
-                  : _buildNormalAppBar(),
-        ),
+        child: Obx(() {
+          if (controller.isMessageSelectionMode.value) {
+            return _buildMessageSelectionAppBar();
+          } else if (controller.isSearchMode.value) {
+            return _buildSearchAppBar();
+          } else {
+            return _buildNormalAppBar();
+          }
+        }),
       ),
-
-      // AKHIR MODIFIKASI
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
@@ -176,26 +207,45 @@ class RoomChatScreen extends GetView<RoomChatController> {
                       showTail = message.senderId != prevMessage.senderId;
                     }
 
-                    return Column(
-                      children: [
-                        if (showDateSeparator)
-                          DateSeparator(
-                            text: formatDateSeparator(message.timestamp),
+                    // ========================================================
+                    // BAGIAN YANG DILENGKAPI ADA DI SINI
+                    // ========================================================
+                    return Obx(() {
+                      // Cek apakah pesan ini ada di dalam daftar pilihan.
+                      final isSelected = controller.selectedMessages.contains(
+                        message,
+                      );
+
+                      return Column(
+                        children: [
+                          if (showDateSeparator)
+                            DateSeparator(
+                              text: formatDateSeparator(message.timestamp),
+                            ),
+                          ChatBubble(
+                            text: message.text,
+                            isSender: message.isSender,
+                            timestamp: message.timestamp,
+                            showTail: showTail,
+                            highlightText: controller.searchQuery.value,
+                            // Hubungkan parameter interaksi
+                            isSelected: isSelected,
+                            onTap: () {
+                              if (controller.isMessageSelectionMode.value) {
+                                controller.toggleMessageSelection(message);
+                              }
+                            },
+                            onLongPress: () {
+                              controller.startMessageSelection(message);
+                            },
                           ),
-                        ChatBubble(
-                          text: message.text,
-                          isSender: message.isSender,
-                          timestamp: message.timestamp,
-                          showTail: showTail,
-                          highlightText: controller.searchQuery.value,
-                        ),
-                      ],
-                    );
+                        ],
+                      );
+                    });
                   },
                 ),
               ),
             ),
-            // Panggilan untuk input bar sekarang ada di tempat yang benar
             _buildMessageInputBar(),
           ],
         ),
@@ -203,7 +253,6 @@ class RoomChatScreen extends GetView<RoomChatController> {
     );
   }
 
-  // Method untuk input bar di bagian bawah
   Widget _buildMessageInputBar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
@@ -223,25 +272,53 @@ class RoomChatScreen extends GetView<RoomChatController> {
               decoration: InputDecoration(
                 hintText: 'write down the answer',
                 filled: true,
-                fillColor: Colors.grey.shade100, // Warna abu-abu muda
+                fillColor: Colors.white,
                 contentPadding: const EdgeInsets.symmetric(
                   vertical: 10,
                   horizontal: 16,
                 ),
-                border: OutlineInputBorder(
+
+                enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),
-                  borderSide: BorderSide.none, // Tanpa border luar
+                  borderSide: const BorderSide(
+                    color: Color(0xFF1D2C86),
+                    width: 2,
+                  ),
                 ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: const BorderSide(
+                    color: Color(0xFF1D2C86),
+                    width: 2,
+                  ),
+                ),
+
+                // Tombol di depan teks
+                prefixIcon: IconButton(
+                  onPressed: () {
+                    // TODO: Aksi yang mau dilakukan saat tombol ditekan
+                    print("Prefix icon ditekan");
+                  },
+                  icon: Transform.rotate(
+                    angle: 1, // dalam radian,
+                    child: Icon(Icons.remove, color: Color(0xFF1D2C86)),
+                  ),
+                ),
+
+                // Tombol di belakang teks
                 suffixIcon: IconButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    // TODO: Aksi saat camera ditekan
+                  },
                   icon: const Icon(
                     Icons.camera_alt_outlined,
-                    color: ThemeColor.primary,
+                    color: Color(0xFF1D2C86),
                   ),
                 ),
               ),
             ),
           ),
+
           IconButton(
             onPressed: controller.sendMessage,
             icon: const Icon(Icons.send, color: ThemeColor.primary),

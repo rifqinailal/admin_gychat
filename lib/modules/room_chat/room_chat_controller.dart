@@ -5,12 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 // Import model yang baru kita buat
 
-
 class RoomChatController extends GetxController {
   // `TextEditingController` adalah cara standar Flutter untuk mengelola
   // input pada sebuah `TextField`.
   late TextEditingController messageController;
-   late TextEditingController searchController;
+  late TextEditingController searchController;
 
   // Variabel untuk menyimpan semua pesan dalam chat room ini.
   // Kita bungkus dengan .obs agar UI bisa reaktif.
@@ -18,10 +17,13 @@ class RoomChatController extends GetxController {
   final String currentUserId = "admin_01";
   var chatRoomInfo = {}.obs;
 
-   // Penanda apakah mode search sedang aktif atau tidak.
+  // Penanda apakah mode search sedang aktif atau tidak.
   var isSearchMode = false.obs;
   // Menyimpan kata kunci yang sedang dicari.
   var searchQuery = ''.obs;
+  var isMessageSelectionMode = false.obs;
+  // Menyimpan pesan-pesan yang dipilih.
+  var selectedMessages = <MessageModel>{}.obs;
 
   List<MessageModel> get filteredMessages {
     // Jika kata kunci pencarian kosong...
@@ -31,9 +33,13 @@ class RoomChatController extends GetxController {
     } else {
       // ...jika tidak, kembalikan hanya pesan yang teksnya
       // mengandung kata kunci (tidak case-sensitive).
-      return messages.where((msg) => 
-        msg.text.toLowerCase().contains(searchQuery.value.toLowerCase())
-      ).toList();
+      return messages
+          .where(
+            (msg) => msg.text.toLowerCase().contains(
+              searchQuery.value.toLowerCase(),
+            ),
+          )
+          .toList();
     }
   }
 
@@ -58,6 +64,34 @@ class RoomChatController extends GetxController {
     super.onClose();
   }
 
+
+
+   // Fungsi untuk memulai mode seleksi (dipanggil saat long-press).
+  void startMessageSelection(MessageModel message) {
+    isMessageSelectionMode.value = true;
+    selectedMessages.add(message);
+  }
+
+  // Fungsi untuk memilih/batal memilih pesan (dipanggil saat tap).
+  void toggleMessageSelection(MessageModel message) {
+    if (selectedMessages.contains(message)) {
+      selectedMessages.remove(message);
+    } else {
+      selectedMessages.add(message);
+    }
+
+    // Jika tidak ada lagi pesan yang dipilih, keluar dari mode seleksi.
+    if (selectedMessages.isEmpty) {
+      isMessageSelectionMode.value = false;
+    }
+  }
+
+  // Fungsi untuk membersihkan semua pilihan (dipanggil dari AppBar).
+  void clearMessageSelection() {
+    selectedMessages.clear();
+    isMessageSelectionMode.value = false;
+  }
+
   // Fungsi untuk masuk/keluar dari mode search.
   void toggleSearchMode() {
     // Balikkan nilainya (true jadi false, false jadi true).
@@ -78,11 +112,36 @@ class RoomChatController extends GetxController {
   void fetchMessages() {
     // Kita isi dengan data dummy
     var dummyMessages = [
-      MessageModel(senderId: "user_02", text: "Hi, I have a problem with....", timestamp: DateTime.now().subtract(const Duration(minutes: 5)), isSender: false),
-      MessageModel(senderId: currentUserId, text: "Okay, what is the problem?", timestamp: DateTime.now().subtract(const Duration(minutes: 4)), isSender: true),
-      MessageModel(senderId: "user_02", text: "My account cannot login", timestamp: DateTime.now().subtract(const Duration(minutes: 3)), isSender: false),
-      MessageModel(senderId: currentUserId, text: "Let me check it for you.", timestamp: DateTime.now().subtract(const Duration(minutes: 2)), isSender: true),
-      MessageModel(senderId: "user_02", text: "My account cannot login", timestamp: DateTime.now().subtract(const Duration(minutes: 3)), isSender: false),      
+      MessageModel(
+        senderId: "user_02",
+        text: "Hi, I have a problem with....",
+        timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
+        isSender: false,
+      ),
+      MessageModel(
+        senderId: currentUserId,
+        text: "Okay, what is the problem?",
+        timestamp: DateTime.now().subtract(const Duration(minutes: 4)),
+        isSender: true,
+      ),
+      MessageModel(
+        senderId: "user_02",
+        text: "My account cannot login",
+        timestamp: DateTime.now().subtract(const Duration(minutes: 3)),
+        isSender: false,
+      ),
+      MessageModel(
+        senderId: currentUserId,
+        text: "Let me check it for you.",
+        timestamp: DateTime.now().subtract(const Duration(minutes: 2)),
+        isSender: true,
+      ),
+      MessageModel(
+        senderId: "user_02",
+        text: "My account cannot login",
+        timestamp: DateTime.now().subtract(const Duration(minutes: 3)),
+        isSender: false,
+      ),
     ];
     messages.assignAll(dummyMessages);
   }
