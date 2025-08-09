@@ -1,3 +1,4 @@
+import 'package:admin_gychat/routes/app_routes.dart';
 import 'package:admin_gychat/shared/widgets/chat_header.dart';
 import 'package:admin_gychat/shared/widgets/chat_list_tile.dart';
 import 'package:flutter/material.dart';
@@ -44,37 +45,45 @@ class ChatListView extends GetView<ChatListController> {
               itemBuilder: (context, index) {
                 final chat = chatList[index];
                 // GANTI ListTile YANG LAMA DENGAN INI
-                return Obx(
-                  (){
-                    final isSelected = controller.selectedChats.contains(chat);
-                    return ChatListTile(
-                  // Hubungkan data dari model Anda ke parameter widget
-                  name: chat.name,
-                  lastMessage:
-                      "Hi, I have a problem with....", // Ganti dengan data asli
-                  avatarUrl:
-                      "https://i.pravatar.cc/150?u=${chat.name}", // Contoh URL dinamis
-                  time: "10.16", // Ganti dengan data asli
-                  unreadCount: chat.unreadCount,
-                  isOnline: chat.name == 'Jeremy Owen',
-                  isPinned: chat.name == 'Jeremy Owen', // Contoh logika online
-                  isSelected: isSelected,
-                  onTap: () {
-                     if (controller.isSelectionMode.value) {
-                    controller.toggleSelection(chat);
-                  } else {
-                    print('Buka room chat ${chat.name}');
-                  }
-                  },
-                  onLongPress: () {
-                        // Selalu mulai mode seleksi saat di-tap lama.
-                        controller.startSelection(chat);
-                      },
-                 
-                  
-                );
-                  }
-                );
+                return Obx(() {
+                  final isSelected = controller.selectedChats.contains(chat);
+                  return ChatListTile(
+                    // Hubungkan data dari model Anda ke parameter widget
+                    name: chat.name,
+                    lastMessage:
+                        "Hi, I have a problem with....", // Ganti dengan data asli
+                    avatarUrl:
+                        "https://i.pravatar.cc/150?u=${chat.name}", // Contoh URL dinamis
+                    time: "10.16", // Ganti dengan data asli
+                    unreadCount: chat.unreadCount,
+                    isOnline: chat.name == 'Jeremy Owen',
+                    isPinned:
+                        chat.name == 'Jeremy Owen', // Contoh logika online
+                    isSelected: isSelected,
+                    onTap: () {
+                      if (controller.isSelectionMode.value) {
+                        controller.toggleSelection(chat);
+                      } else {
+                        // Ganti print dengan navigasi menggunakan GetX
+                        Get.toNamed(
+                          AppRoutes.ROOM_CHAT,
+                          arguments: {
+                            "id": chat.id, // Pastikan ChatModel punya id
+                            "name": chat.name,
+                            "isGroup":
+                                chat.isGroup, // Pastikan ChatModel punya isGroup
+                            "members":
+                                "Pak Ketua, Pimpinan B, Admin A...", // Contoh
+                          },
+                        );
+                      }
+                    },
+                    onLongPress: () {
+                      // Selalu mulai mode seleksi saat di-tap lama.
+                      controller.startSelection(chat);
+                    },
+                  );
+                });
               },
             ),
           ),

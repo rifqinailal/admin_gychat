@@ -6,10 +6,11 @@ import 'package:get/get.dart';
 
 // Untuk sementara, kita buat model dummy di sini
 class ChatModel {
+  final int id;
   final String name;
   final bool isGroup;
   final int unreadCount;
-  ChatModel({required this.name, this.isGroup = false, this.unreadCount = 0});
+  ChatModel({required this.id, required this.name, this.isGroup = false, this.unreadCount = 0});
 }
 
 
@@ -79,14 +80,13 @@ class ChatListController extends GetxController {
   void fetchChats() {
     // Simulasi pengambilan data dari API
     var dummyData = [
-      ChatModel(name: 'Jeremy Owen', unreadCount: 2),
-      ChatModel(name: 'Olympiad Bus', isGroup: true, unreadCount: 5),
-      ChatModel(name: 'Classtell', unreadCount: 0),
-      ChatModel(name: 'Olympiad Mace', isGroup: true, unreadCount: 0),
-      ChatModel(name: 'Dian Puspita', unreadCount: 1),
-      ChatModel(name: 'Projek Internal', isGroup: true, unreadCount: 1),
-       ChatModel(name: 'Projek Internal', isGroup: true, unreadCount: 1),
-        ChatModel(name: 'Projek Internal', isGroup: true, unreadCount: 1),
+      ChatModel(id:1, name: 'Jeremy Owen', unreadCount: 2),
+      ChatModel(id:2,name: 'Olympiad Bus', isGroup: true, unreadCount: 5),
+      ChatModel(id:3,name: 'Classtell', unreadCount: 0),
+      ChatModel(id:4,name: 'Olympiad Mace', isGroup: true, unreadCount: 0),
+      ChatModel(id:5,name: 'Dian Puspita', unreadCount: 1),
+      ChatModel(id:6,name: 'Projek Internal', isGroup: true, unreadCount: 1),
+     
     ];
     allChats.assignAll(dummyData);
   }
