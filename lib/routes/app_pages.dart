@@ -5,6 +5,8 @@ import 'package:admin_gychat/modules/auth/forgot_password/forgot_password_bindin
 import 'package:admin_gychat/modules/auth/forgot_password/forgot_password_screen.dart';
 import 'package:admin_gychat/modules/dashboard/dashboard_binding.dart';
 import 'package:admin_gychat/modules/dashboard/dashboard_screen.dart';
+import 'package:admin_gychat/modules/setting/setting_binding.dart';
+import 'package:admin_gychat/modules/setting/setting_screen.dart';
 import 'package:admin_gychat/modules/star/detail_star_binding.dart';
 import 'package:admin_gychat/modules/star/detail_star_screen.dart';
 import 'package:admin_gychat/modules/arsip/detail_arsip_binding.dart';
@@ -63,10 +65,13 @@ class AppPages {
       binding: QuickBinding(),
     ),
     GetPage(
-      name: AppRoutes.ROOM_CHAT, // Tambahkan const ROOM_CHAT = '/room-chat'; di app_routes.dart
+      name: AppRoutes.ROOM_CHAT, 
       page: () => const RoomChatScreen(),
       binding: RoomChatBinding(),
     ),
-    // ... GetPage lainnya nanti
+   GetPage(name:AppRoutes.Setting,
+    page: () => SettingScreen(),
+    binding: SettingBinding()
+    )
   ];
 }

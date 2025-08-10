@@ -1,4 +1,7 @@
 import 'package:admin_gychat/modules/chat_list/chat_list_controller.dart';
+import 'package:admin_gychat/modules/dashboard/dashboard_controller.dart';
+import 'package:admin_gychat/modules/star/detail_star_controller.dart';
+import 'package:admin_gychat/routes/app_routes.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:admin_gychat/shared/widgets/delete_confirmation_dialog.dart';
 import 'package:admin_gychat/shared/widgets/pin_confirmation_dialog.dart';
@@ -9,10 +12,6 @@ enum MainMenuAction { groupBaru, berbintang, pengaturan }
 
 class ChatHeader extends StatelessWidget {
   const ChatHeader({super.key});
-
-  // ==========================================================
-  // PERBAIKAN 1: RESTRUKTURISASI LOGIKA
-  // ==========================================================
 
   // Method ini SEKARANG HANYA membuat baris judul "Gychat" dan menu titik tiga.
   Widget _buildTitleBar() {
@@ -42,16 +41,17 @@ class ChatHeader extends StatelessWidget {
 
           // Fungsi yang dijalankan saat salah satu item menu dipilih.
           onSelected: (MainMenuAction action) {
+            final dashboardController = Get.find<DashboardController>();
             // Menggunakan switch untuk menentukan aksi berdasarkan pilihan user.
             switch (action) {
               case MainMenuAction.groupBaru:
                 print('User memilih Group Baru');
                 break;
               case MainMenuAction.berbintang:
-                print('User memilih Berbintang');
+                Get.toNamed(AppRoutes.DetailStar);
                 break;
               case MainMenuAction.pengaturan:
-                print('User memilih Pengaturan');
+                dashboardController.changeTabIndex(3);
                 break;
             }
           },
@@ -123,9 +123,7 @@ class ChatHeader extends StatelessWidget {
         Row(
           children: [
             IconButton(
-              onPressed: () {
-                
-              },
+              onPressed: () {},
               icon: const Icon(
                 Icons.archive_outlined,
                 color: Color(0xFF353435),
@@ -133,10 +131,12 @@ class ChatHeader extends StatelessWidget {
             ),
             IconButton(
               onPressed: () {
-                if (controller.selectedChats.length >= 5 )
-                Get.dialog(
-                  PinConfirmationDialog(chatCount: controller.selectedChats.length,)
-                );
+                if (controller.selectedChats.length >= 5)
+                  Get.dialog(
+                    PinConfirmationDialog(
+                      chatCount: controller.selectedChats.length,
+                    ),
+                  );
               },
               icon: Transform.rotate(
                 angle: 1, // dalam radian,
@@ -207,23 +207,28 @@ class ChatHeader extends StatelessWidget {
           padding: const EdgeInsets.symmetric(
             horizontal: 36,
           ), // Disesuaikan paddingnya
-          child: Row(
-            children: [
-              const Icon(Icons.archive_outlined, color: ThemeColor.gray),
-              const SizedBox(width: 12),
-              const Text(
-                'Diarsipkan',
-                style: TextStyle(color: ThemeColor.gray, fontSize: 16),
+          child: InkWell(
+            onTap: () {
+              Get.toNamed(AppRoutes.DetailArsip);
+            },
+              child: Row(
+                children: [
+                  const Icon(Icons.archive_outlined, color: ThemeColor.gray),
+                  const SizedBox(width: 12),
+                  const Text(
+                    'Diarsipkan',
+                    style: TextStyle(color: ThemeColor.gray, fontSize: 16),
+                  ),
+                  const Spacer(),
+                  const Text(
+                    '13',
+                    style: TextStyle(color: ThemeColor.gray, fontSize: 16),
+                  ),
+                ],
               ),
-              const Spacer(),
-              const Text(
-                '13',
-                style: TextStyle(color: ThemeColor.gray, fontSize: 16),
-              ),
-            ],
+            
           ),
         ),
-        const SizedBox(height: 10),
       ],
     );
   }

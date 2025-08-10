@@ -6,7 +6,8 @@ abstract class AppRoutes {
   static const Profile = '/profile';
   static const QuickReplies = '/quick-replies';
   static const ForgotPassword = '/forgot-password';
-  static const Detai
+  static const DetailArsip = '/detail-arsip';
   static const ROOM_CHAT = '/room_chat';
+  static const Setting = '/setting';
   // ... route lainnya nanti
 }
