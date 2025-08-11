@@ -110,7 +110,7 @@ class AwayScreen extends GetView<AwayController> {
           const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
         ],
       ),
-      // Memanggil fungsi pop-up yang ada di controller
+      
       onTap: () => controller.showMessageEditPopup(),
     );
   }
@@ -135,7 +135,7 @@ class EditMessageScreen extends StatelessWidget {
           onPressed: () => Get.back(),
           child: const Text(
             'Cancel',
-            style: TextStyle(color: Colors.black, fontSize: 16),
+            style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.normal),
           ),
         ),
         title: const Text(
@@ -155,8 +155,8 @@ class EditMessageScreen extends StatelessWidget {
             child: const Text(
               'Save',
               style: TextStyle(
-                color: Color(0xFF3F51B5),
-                fontWeight: FontWeight.bold,
+                color: Colors.black,
+                fontWeight: FontWeight.normal,
                 fontSize: 16,
               ),
             ),

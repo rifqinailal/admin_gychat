@@ -2,19 +2,21 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-// Model sederhana untuk data pesan berbintang
+// Model untuk pesan berbintang
 class DetailStar {
   final int id;
   final String sender;
+  final String avatarUrl;
   final String context;
   final String text;
   final String time;
   final String date;
-  var isSelected = false.obs; // .obs agar bisa reaktif
+  var isSelected = false.obs;
 
   DetailStar({
     required this.id,
     required this.sender,
+    required this.avatarUrl,
     required this.context,
     required this.text,
     required this.time,
@@ -23,26 +25,22 @@ class DetailStar {
 }
 
 class DetailStarsController extends GetxController {
-  // === STATE VARIABLES ===
-  // Menggunakan RxList agar UI otomatis update saat list berubah
+  
   var DetailStars = <DetailStar>[].obs;
   var filteredMessages = <DetailStar>[].obs;
-
-  // State untuk mode seleksi
+  
   var isSelectionMode = false.obs;
   var selectedMessages = <DetailStar>[].obs;
-
-  // State untuk mode pencarian
+  
   var isSearchActive = false.obs;
   final TextEditingController searchController = TextEditingController();
-
-  // === LIFECYCLE METHODS ===
+  
   @override
   void onInit() {
     super.onInit();
-    // Isi dengan data dummy saat controller pertama kali diinisialisasi
+    
     loadDummyData();
-    // Listener untuk text field pencarian
+    
     searchController.addListener(() {
       filterMessages(searchController.text);
     });
@@ -53,17 +51,15 @@ class DetailStarsController extends GetxController {
     searchController.dispose();
     super.onClose();
   }
-
-  // === METHODS ===
-
+  
   void loadDummyData() {
-    // Data contoh sesuai desain
+
     DetailStars.assignAll([
-      DetailStar(id: 1, sender: 'Jeremy', context: 'Class All', text: 'Lorem Ipsum is simply dummy text', time: '10:15', date: '12/01/26'),
-      DetailStar(id: 2, sender: 'Owen', context: 'Class All', text: 'Lorem Ipsum is simply dummy text', time: '10:16', date: '12/01/26'),
-      DetailStar(id: 3, sender: 'Indra', context: 'Anda', text: 'Lorem Ipsum is simply dummy text', time: '10:18', date: '12/01/26'),
-      DetailStar(id: 4, sender: 'Yulian', context: 'Class Benang Ma...', text: 'Lorem Ipsum is simply dummy text', time: '10:20', date: '12/01/26'),
-      DetailStar(id: 5, sender: 'Jeremy', context: 'Class All', text: 'Pesan panjang untuk tes tampilan multiline. Semoga tampilannya tidak rusak dan tetap rapi.', time: '10:25', date: '12/01/26'),
+      DetailStar(id: 1, sender: 'Jeremy', avatarUrl: 'assets/images/pp1.jpg', context: 'Class All', text: 'Lorem Ipsum is simply dummy text', time: '10:15', date: '12/01/26'),
+      DetailStar(id: 2, sender: 'Owen', avatarUrl: 'assets/images/pp1.jpg', context: 'Class All', text: 'Lorem Ipsum is simply dummy text', time: '10:16', date: '12/01/26'),
+      DetailStar(id: 3, sender: 'Indra', avatarUrl: '-', context: 'Anda', text: 'Lorem Ipsum is simply dummy text', time: '10:18', date: '12/01/26'),
+      DetailStar(id: 4, sender: 'Yulian', avatarUrl: 'assets/images/pp2.jpg', context: 'Class Benang Ma...', text: 'Lorem Ipsum is simply dummy text', time: '10:20', date: '12/01/26'),
+      DetailStar(id: 5, sender: 'Jeremy', avatarUrl: 'assets/images/pp2.jpg', context: 'Class All', text: 'Pesan panjang untuk tes tampilan multiline. Semoga tampilannya tidak rusak dan tetap rapi.', time: '10:25', date: '12/01/26'),
     ]);
     // Awalnya, filteredMessages sama dengan semua pesan
     filteredMessages.assignAll(DetailStars);

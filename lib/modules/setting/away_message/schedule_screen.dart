@@ -89,7 +89,7 @@ class ScheduleScreen extends StatelessWidget {
   // --- WIDGET HELPER ---
 
   Widget _buildScheduleOptionTile(AwayController controller, String title, String subtitle, ScheduleOption value) {
-    // ... Widget ini tetap sama
+    
     return ListTile(
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
       subtitle: Text(subtitle, style: TextStyle(color: Colors.grey[600])),

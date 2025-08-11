@@ -1,4 +1,4 @@
-// lib/modules/starred_messages/starred_messages_screen.dart
+// lib/modules/starred_messages/detail_star_screen.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'detail_star_controller.dart';
@@ -10,7 +10,7 @@ class DetailStarScreen extends GetView<DetailStarsController> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(),
-      // Body utama dengan background gambar
+
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
@@ -27,13 +27,13 @@ class DetailStarScreen extends GetView<DetailStarsController> {
               ),
             );
           }
-          // Tampilkan list pesan
+
           return ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
             itemCount: controller.filteredMessages.length,
             itemBuilder: (context, index) {
               final message = controller.filteredMessages[index];
-              return _buildMessageItem(message);
+              return _buildMessageItem(message, context);
             },
           );
         }),
@@ -41,7 +41,6 @@ class DetailStarScreen extends GetView<DetailStarsController> {
     );
   }
 
-  // Widget untuk membangun AppBar yang dinamis
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
@@ -63,7 +62,6 @@ class DetailStarScreen extends GetView<DetailStarsController> {
       ),
       title: Obx(() {
         if (controller.isSearchActive.value) {
-          // AppBar mode pencarian
           return TextField(
             controller: controller.searchController,
             autofocus: true,
@@ -75,14 +73,14 @@ class DetailStarScreen extends GetView<DetailStarsController> {
             style: const TextStyle(color: Colors.black, fontSize: 16),
           );
         }
+        
         if (controller.isSelectionMode.value) {
-          // AppBar mode seleksi
           return Text(
             '${controller.selectedMessages.length} dipilih',
             style: const TextStyle(color: Colors.black, fontSize: 18),
           );
         }
-        // AppBar default
+
         return const Text(
           'Berbintang',
           style: TextStyle(color: Colors.black, fontSize: 18),
@@ -91,19 +89,16 @@ class DetailStarScreen extends GetView<DetailStarsController> {
       actions: [
         Obx(() {
           if (controller.isSelectionMode.value) {
-            // Aksi untuk mode seleksi
             return IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.black),
+              icon: const Icon(Icons.star_border, color: Colors.black, size: 22),
               onPressed: () => controller.confirmDeleteSelected(),
             );
           } else if (controller.isSearchActive.value) {
-            // Aksi untuk mode pencarian (tombol clear)
             return IconButton(
               icon: const Icon(Icons.close, color: Colors.black),
               onPressed: () => controller.toggleSearch(),
             );
           } else {
-            // Aksi default
             return Row(
               children: [
                 IconButton(
@@ -122,15 +117,13 @@ class DetailStarScreen extends GetView<DetailStarsController> {
     );
   }
 
-  // Widget untuk membangun satu item pesan
-  Widget _buildMessageItem(DetailStar message) {
+  Widget _buildMessageItem(DetailStar message, BuildContext context) {
     return GestureDetector(
       onTap: () => controller.handleMessageTap(message),
       onLongPress: () => controller.handleMessageLongPress(message),
       child: Obx(
         () => Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          // Beri warna latar belakang jika pesan dipilih
           color:
               message.isSelected.value
                   ? Colors.blue.withOpacity(0.2)
@@ -138,93 +131,104 @@ class DetailStarScreen extends GetView<DetailStarsController> {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Avatar
               CircleAvatar(
-                backgroundColor: Colors.blueGrey,
-                child: Text(
-                  message.sender[0],
-                  style: const TextStyle(color: Colors.white),
+                radius: 20,
+                // Pastikan path avatarUrl benar atau tangani jika null
+                backgroundImage: AssetImage(
+                  message.avatarUrl ?? 'assets/images/default_avatar.png',
                 ),
+                onBackgroundImageError: (exception, stackTrace) {
+                  const Icon(Icons.person, color: Colors.white);
+                },
+                backgroundColor: const Color.fromARGB(255, 192, 186, 186),
               ),
               const SizedBox(width: 12),
-              // Bubble chat
+              // DITAMBAHKAN: Expanded untuk memberi batasan lebar pada Column di bawah ini.
+              // Ini adalah perbaikan utama untuk error layout.
               Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 5,
-                        offset: const Offset(0, 2),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          // Penanganan null untuk keamanan
+                          message.sender ?? 'No Sender',
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 4.0),
+                          child: Text(
+                            '▸',
+                            style: TextStyle(color: Colors.black54),
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            message.context ?? 'No Context',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          message.date ?? '',
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.7,
                       ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Baris atas: Pengirim, Konteks, Tanggal
-                      Row(
-                        children: [
-                          Text(
-                            message.sender,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue,
-                            ),
-                          ),
-                          const Text(
-                            ' ▸ ',
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                          Expanded(
-                            child: Text(
-                              message.context,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(255, 255, 255, 255),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              message.text ?? 'No message text',
                               style: const TextStyle(
-                                fontWeight: FontWeight.bold,
                                 color: Colors.black87,
+                                fontSize: 15,
                               ),
-                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                          Text(
-                            message.date,
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 12,
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Spacer(),
+                                const Icon(
+                                  Icons.star,
+                                  color: Colors.amber,
+                                  size: 16,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  message.time ?? '',
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      // Isi pesan
-                      Text(
-                        message.text,
-                        style: const TextStyle(
-                          color: Colors.black87,
-                          fontSize: 15,
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      // Waktu pesan di pojok kanan bawah
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          const Icon(Icons.star, color: Colors.amber, size: 16),
-                          const SizedBox(width: 4),
-                          Text(
-                            message.time,
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontSize: 12,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],
