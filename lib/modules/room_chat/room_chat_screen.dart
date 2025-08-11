@@ -1,5 +1,6 @@
 import 'package:admin_gychat/modules/room_chat/widget/chat_bubble.dart';
 import 'package:admin_gychat/modules/room_chat/widget/date_separator.dart';
+import 'package:admin_gychat/modules/room_chat/widget/pinned_message_bar.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -135,19 +136,25 @@ class RoomChatScreen extends GetView<RoomChatController> {
       ),
       actions: [
         IconButton(onPressed: () {}, icon: const Icon(Icons.reply)),
-        IconButton(onPressed: () {}, icon: const Icon(Icons.star_border)),
+        // HUBUNGKAN FUNGSI STAR
         IconButton(
-          onPressed: () {},
+          onPressed: () => controller.starSelectedMessages(),
+          icon: const Icon(Icons.star_border),
+        ),
+        // HUBUNGKAN FUNGSI PIN
+        IconButton(
+          onPressed: () => controller.pinSelectedMessages(),
           icon: Transform.rotate(
             angle: 1, // dalam radian,
             child: Icon(Icons.push_pin_outlined, color: Color(0xFF1D2C86)),
           ),
         ),
-        IconButton(onPressed: () {}, icon: const Icon(Icons.copy)),
+        // HUBUNGKAN FUNGSI COPY
         IconButton(
-          onPressed: () {},
-          icon: const Icon(Icons.mode_edit_outline_outlined),
+          onPressed: () => controller.copySelectedMessagesText(),
+          icon: const Icon(Icons.copy),
         ),
+        IconButton(onPressed: () {}, icon: const Icon(Icons.edit)),
         IconButton(onPressed: () {}, icon: const Icon(Icons.delete_outline)),
       ],
     );
@@ -177,6 +184,18 @@ class RoomChatScreen extends GetView<RoomChatController> {
         ),
         child: Column(
           children: [
+            Obx(() {
+              // Cek apakah ada pesan yang di-pin di controller.
+              if (controller.pinnedMessage.value != null) {
+                // Jika ada, tampilkan widget PinnedMessageBar.
+                return PinnedMessageBar(
+                  message: controller.pinnedMessage.value!,
+                );
+              } else {
+                // Jika tidak ada, tampilkan widget kosong.
+                return const SizedBox.shrink();
+              }
+            }),
             Expanded(
               child: Obx(
                 () => ListView.builder(
@@ -188,6 +207,8 @@ class RoomChatScreen extends GetView<RoomChatController> {
                   itemCount: controller.filteredMessages.length,
                   itemBuilder: (context, index) {
                     final message = controller.filteredMessages[index];
+                    final bool isGroupChat =
+                        controller.chatRoomInfo['isGroup'] ?? false;
 
                     final bool showDateSeparator;
                     if (index == controller.filteredMessages.length - 1) {
@@ -229,6 +250,10 @@ class RoomChatScreen extends GetView<RoomChatController> {
                             timestamp: message.timestamp,
                             showTail: showTail,
                             highlightText: controller.searchQuery.value,
+                            senderName: isGroupChat ? message.senderName : null,
+                            repliedMessage: message.repliedMessage,
+                            isStarred: message.isStarred,
+                            isPinned: message.isPinned,
                             // Hubungkan parameter interaksi
                             isSelected: isSelected,
                             onTap: () {
