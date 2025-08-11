@@ -1,184 +1,193 @@
-// // views/away_message_view.dart
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:admin_gychat/routes/app_routes.dart';
+import 'away_controller.dart';
 
-// import 'package:flutter/material.dart';
-// import 'package:flutter/cupertino.dart';
-// import 'package:get/get.dart';
-// import '../controllers/away_message_controller.dart';
-// import '../models/away_message_model.dart';
+class AwayScreen extends GetView<AwayController> {
+  const AwayScreen({super.key});
 
-// class AwayMessageView extends GetView<AwayMessageController> {
-//   const AwayMessageView({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6F6F6),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFFF6F6F6),
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+          onPressed: () => Get.back(),
+        ),
+        title: const Text(
+          'Away Message',
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Column(
+            children: [
+              _buildCard([_buildToggleSwitch()]),
+              const SizedBox(height: 20),
+              Obx(() {
+                if (controller.isAwayEnabled.value) {
+                  return _buildCard([
+                    _buildScheduleTile(),
+                    const Divider(height: 1, indent: 16, endIndent: 16),
+                    _buildMessageTile(),
+                  ]);
+                } else {
+                  return const SizedBox.shrink();
+                }
+              }),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       backgroundColor: const Color(0xFFF2F2F7),
-//       appBar: AppBar(
-//         backgroundColor: const Color(0xFFF2F2F7),
-//         elevation: 0,
-//         centerTitle: true,
-//         leading: IconButton(
-//           icon: const Icon(Icons.arrow_back_ios, color: Colors.black54),
-//           onPressed: () => Get.back(),
-//         ),
-//         title: const Text(
-//           'Away Message',
-//           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-//         ),
-//       ),
-//       body: Padding(
-//         padding: const EdgeInsets.all(16.0),
-//         child: Column(
-//           children: [
-//             _buildToggleCard(),
-//             const SizedBox(height: 20),
-//             // Widget lainnya akan muncul berdasarkan state dari toggle
-//             Obx(() {
-//               if (controller.awayMessage.value.isEnabled) {
-//                 return Column(
-//                   children: [
-//                     _buildScheduleCard(),
-//                     const SizedBox(height: 20),
-//                     _buildMessageCard(),
-//                   ],
-//                 );
-//               }
-//               return Container(); // Tampilkan container kosong jika disabled
-//             }),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
+  Widget _buildCard(List<Widget> children) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12.0),
+      ),
+      child: Column(
+        children: children,
+      ),
+    );
+  }
 
-//   // Card untuk toggle "Send Away Message"
-//   Widget _buildToggleCard() {
-//     return Container(
-//       decoration: BoxDecoration(
-//         color: Colors.white,
-//         borderRadius: BorderRadius.circular(12),
-//       ),
-//       child: Obx(
-//         () => SwitchListTile.adaptive(
-//           title: const Text('Send Away Message', style: TextStyle(fontSize: 16)),
-//           value: controller.awayMessage.value.isEnabled,
-//           onChanged: controller.toggleEnabled,
-//           activeColor: Colors.blue,
-//           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-//         ),
-//       ),
-//     );
-//   }
+  Widget _buildToggleSwitch() {
+    return ListTile(
+      title: const Text('Send Away Message'),
+      trailing: Obx(
+        () => CupertinoSwitch(
+          value: controller.isAwayEnabled.value,
+          onChanged: (value) => controller.toggleAway(value),
+          activeColor: const Color(0xFF3F51B5),
+        ),
+      ),
+    );
+  }
+  
+  // Halaman Schedule
+  Widget _buildScheduleTile() {
+    return ListTile(
+      title: const Text('Schedule'),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Obx(() => Text(
+            controller.scheduleOption.value == ScheduleOption.always 
+              ? 'Always Send' 
+              : 'Custom Schedule',
+            style: const TextStyle(color: Colors.grey),
+          )),
+          const SizedBox(width: 8),
+          const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+        ],
+      ),
+      onTap: () => Get.toNamed(AppRoutes.Schedule),
+    );
+  }
+  
+  // onTap memanggil popup edit
+  Widget _buildMessageTile() {
+    return ListTile(
+      title: const Text('Message'),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Obx(() => Text(
+            controller.message.value,
+            style: const TextStyle(color: Colors.grey),
+          )),
+          const SizedBox(width: 8),
+          const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+        ],
+      ),
+      // Memanggil fungsi pop-up yang ada di controller
+      onTap: () => controller.showMessageEditPopup(),
+    );
+  }
+}
 
-//   // Card untuk bagian "Schedule"
-//   Widget _buildScheduleCard() {
-//     return Container(
-//       padding: const EdgeInsets.all(16),
-//       decoration: BoxDecoration(
-//         color: Colors.white,
-//         borderRadius: BorderRadius.circular(12),
-//       ),
-//       child: Column(
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           const Text('Schedule', style: TextStyle(color: Colors.grey)),
-//           const SizedBox(height: 16),
-//           Obx(
-//             () => CupertinoSegmentedControl<ScheduleType>(
-//               children: const {
-//                 ScheduleType.always: Padding(padding: EdgeInsets.all(8), child: Text('Always Send')),
-//                 ScheduleType.custom: Padding(padding: EdgeInsets.all(8), child: Text('Custom Schedule')),
-//               },
-//               onValueChanged: (type) => controller.setScheduleType(type),
-//               groupValue: controller.awayMessage.value.scheduleType,
-//               padding: EdgeInsets.zero,
-//             ),
-//           ),
-//           // Tampilkan pilihan waktu jika "Custom Schedule" dipilih
-//           Obx(() {
-//             if (controller.awayMessage.value.scheduleType == ScheduleType.custom) {
-//               return Column(
-//                 children: [
-//                   const SizedBox(height: 8),
-//                   const Divider(),
-//                   _buildTimeRow(
-//                     label: 'Start Time',
-//                     time: controller.formattedStartTime,
-//                     onTap: () => controller.selectDateTime(Get.context!, isStartTime: true),
-//                   ),
-//                   const Divider(),
-//                   _buildTimeRow(
-//                     label: 'End Time',
-//                     time: controller.formattedEndTime,
-//                     onTap: () => controller.selectDateTime(Get.context!, isStartTime: false),
-//                   ),
-//                 ],
-//               );
-//             }
-//             return Container();
-//           }),
-//         ],
-//       ),
-//     );
-//   }
+// Mengedit Message
+class EditMessageScreen extends StatelessWidget {
+  const EditMessageScreen({super.key});
 
-//   // Card untuk bagian "Message"
-//   Widget _buildMessageCard() {
-//     return GestureDetector(
-//       onTap: controller.navigateToEditMessage,
-//       child: Container(
-//         padding: const EdgeInsets.all(16),
-//         decoration: BoxDecoration(
-//           color: Colors.white,
-//           borderRadius: BorderRadius.circular(12),
-//         ),
-//         child: Row(
-//           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//           children: [
-//             Expanded(
-//               child: Column(
-//                 crossAxisAlignment: CrossAxisAlignment.start,
-//                 children: [
-//                   const Text('Message', style: TextStyle(color: Colors.grey)),
-//                   const SizedBox(height: 8),
-//                   Obx(
-//                     () => Text(
-//                       controller.awayMessage.value.message,
-//                       style: const TextStyle(fontSize: 16),
-//                       maxLines: 2,
-//                       overflow: TextOverflow.ellipsis,
-//                     ),
-//                   ),
-//                 ],
-//               ),
-//             ),
-//             const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 18),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
+  @override
+  Widget build(BuildContext context) {
+    final AwayController controller = Get.find<AwayController>();
 
-//   // Helper widget untuk baris Start Time dan End Time
-//   Widget _buildTimeRow({required String label, required String time, required VoidCallback onTap}) {
-//     return InkWell(
-//       onTap: onTap,
-//       child: Padding(
-//         padding: const EdgeInsets.symmetric(vertical: 12.0),
-//         child: Row(
-//           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//           children: [
-//             Text(label, style: const TextStyle(fontSize: 16)),
-//             Row(
-//               children: [
-//                 Text(time, style: const TextStyle(fontSize: 16, color: Colors.grey)),
-//                 const SizedBox(width: 8),
-//                 const Icon(Icons.arrow_forward_ios, color: Colors.grey, size: 18),
-//               ],
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6F6F6),
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: const Color(0xFFF6F6F6),
+        elevation: 0,
+        leadingWidth: 80,
+        leading: TextButton(
+          onPressed: () => Get.back(),
+          child: const Text(
+            'Cancel',
+            style: TextStyle(color: Colors.black, fontSize: 16),
+          ),
+        ),
+        title: const Text(
+          'Edit Away Message',
+          style: TextStyle(
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
+        actions: [
+          TextButton(
+            onPressed: () {
+              controller.message.value = controller.messageEditController.text;
+              Get.back();
+            },
+            child: const Text(
+              'Save',
+              style: TextStyle(
+                color: Color(0xFF3F51B5),
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12.0),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: TextField(
+              controller: controller.messageEditController,
+              autofocus: true,
+              maxLines: null,
+              minLines: 5,
+              keyboardType: TextInputType.multiline,
+              style: const TextStyle(fontSize: 16),
+              decoration: const InputDecoration(
+                border: InputBorder.none,
+                hintText: 'Enter your message',
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

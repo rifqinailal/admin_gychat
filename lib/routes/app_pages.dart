@@ -15,6 +15,9 @@ import 'package:admin_gychat/modules/setting/profile/profile_binding.dart';
 import 'package:admin_gychat/modules/setting/profile/profile_screen.dart';
 import 'package:admin_gychat/modules/setting/quick_replies/quick_binding.dart';
 import 'package:admin_gychat/modules/setting/quick_replies/quick_screen.dart';
+import 'package:admin_gychat/modules/setting/away_message/away_binding.dart';
+import 'package:admin_gychat/modules/setting/away_message/away_screen.dart';
+import 'package:admin_gychat/modules/setting/away_message/schedule_screen.dart';
 import 'package:admin_gychat/modules/room_chat/room_chat_binding.dart';
 import 'package:admin_gychat/modules/room_chat/room_chat_screen.dart';
 import 'package:get/get.dart';
@@ -64,11 +67,24 @@ class AppPages {
       page: () => const QuickScreen(),
       binding: QuickBinding(),
     ),
+    // Away Message
+    GetPage(
+      name: AppRoutes.AwayMessage,
+      page: () => const AwayScreen(),
+      binding: AwayBinding(),
+    ),
+    // Schedule
+    GetPage(
+      name: AppRoutes.Schedule,
+      page: () => const ScheduleScreen(),
+    ),
+    // Room Chat
     GetPage(
       name: AppRoutes.ROOM_CHAT, 
       page: () => const RoomChatScreen(),
       binding: RoomChatBinding(),
     ),
+    // Setting
    GetPage(name:AppRoutes.Setting,
     page: () => SettingScreen(),
     binding: SettingBinding()

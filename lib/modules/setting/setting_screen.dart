@@ -105,7 +105,7 @@ class SettingScreen extends GetView<SettingController> {
             subtitle: const Text('Reply automatically when you are away'),
             trailing: const Icon(Icons.chevron_right, color: Colors.grey),
             onTap: () {
-              Get.toNamed(AppRoutes.QuickReplies);
+              Get.toNamed(AppRoutes.AwayMessage);
             },
           ),
           ListTile(
