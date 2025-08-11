@@ -77,7 +77,9 @@ class RoomChatScreen extends GetView<RoomChatController> {
           ),
           onSelected: (value) {
             if (value == 'search') {
-              controller.toggleSearchMode();
+              Future.delayed(Duration.zero, () {
+                controller.toggleSearchMode();
+              });
             }
           },
           itemBuilder:
@@ -103,7 +105,6 @@ class RoomChatScreen extends GetView<RoomChatController> {
       ),
       title: TextField(
         controller: controller.searchController,
-        autofocus: true,
         decoration: const InputDecoration(
           hintText: 'Search...',
           border: InputBorder.none,
@@ -139,7 +140,7 @@ class RoomChatScreen extends GetView<RoomChatController> {
           onPressed: () {},
           icon: Transform.rotate(
             angle: 1, // dalam radian,
-            child: Icon(Icons.push_pin_outlined,  color: Color(0xFF1D2C86)),
+            child: Icon(Icons.push_pin_outlined, color: Color(0xFF1D2C86)),
           ),
         ),
         IconButton(onPressed: () {}, icon: const Icon(Icons.copy)),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ThemeColor {
-  static const primary = Color.fromRGBO(39, 56, 165, 100); 
+  static const primary = Color(0xFF2738A5); 
   static const secondary = Color.fromRGBO(83, 100, 208, 30);
   static const dangger = Color.fromRGBO(220, 53, 69, 100);
   static const gray = Color.fromRGBO(163, 161, 161, 100);

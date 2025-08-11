@@ -64,9 +64,7 @@ class RoomChatController extends GetxController {
     super.onClose();
   }
 
-
-
-   // Fungsi untuk memulai mode seleksi (dipanggil saat long-press).
+  // Fungsi untuk memulai mode seleksi (dipanggil saat long-press).
   void startMessageSelection(MessageModel message) {
     isMessageSelectionMode.value = true;
     selectedMessages.add(message);
@@ -94,9 +92,7 @@ class RoomChatController extends GetxController {
 
   // Fungsi untuk masuk/keluar dari mode search.
   void toggleSearchMode() {
-    // Balikkan nilainya (true jadi false, false jadi true).
     isSearchMode.value = !isSearchMode.value;
-    // Jika kita keluar dari mode search, pastikan kata kunci dikosongkan.
     if (!isSearchMode.value) {
       searchQuery.value = '';
       searchController.clear();
