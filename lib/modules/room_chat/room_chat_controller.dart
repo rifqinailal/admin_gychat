@@ -1,6 +1,7 @@
 // lib/app/modules/room_chat/room_chat_controller.dart
 
 import 'package:admin_gychat/data/models/message_model.dart';
+import 'package:admin_gychat/modules/setting/quick_replies/quick_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -26,6 +27,12 @@ class RoomChatController extends GetxController {
   // Menyimpan pesan-pesan yang dipilih.
   var selectedMessages = <MessageModel>{}.obs;
   var pinnedMessage = Rxn<MessageModel>();
+  // Variabel untuk mengakses data dari QuickController.
+  late QuickController quickController;
+  // Penanda untuk menampilkan/menyembunyikan box quick reply.
+  var showQuickReplies = false.obs;
+  // List untuk menampung hasil filter.
+  var filteredQuickReplies = <QuickReply>[].obs;
 
   List<MessageModel> get filteredMessages {
     // Jika kata kunci pencarian kosong...
@@ -51,6 +58,13 @@ class RoomChatController extends GetxController {
     // Inisialisasi controller untuk text field.
     messageController = TextEditingController();
     searchController = TextEditingController();
+    // Inisialisasi QuickController. `Get.find()` akan mencari instance
+    // yang sudah dibuat oleh teman Anda.
+    quickController = Get.find<QuickController>();
+
+    // Tambahkan "pendengar" ke inputan pesan.
+    // Fungsi `_onTextChanged` akan dijalankan setiap kali ada perubahan.
+    messageController.addListener(_onTextChanged);
     // Panggil data pesan saat halaman pertama kali dibuka.
     if (Get.arguments != null) {
       chatRoomInfo.value = Get.arguments as Map<String, dynamic>;
@@ -61,9 +75,45 @@ class RoomChatController extends GetxController {
   @override
   void onClose() {
     // Penting! Selalu dispose controller untuk mencegah memory leak.
+    messageController.removeListener(_onTextChanged);
     messageController.dispose();
     searchController.dispose();
     super.onClose();
+  }
+
+  void _onTextChanged() {
+    final text = messageController.text;
+    // Cek apakah teks dimulai dengan "/"
+    if (text.startsWith('/')) {
+      showQuickReplies.value = true; // Tampilkan box
+      final query = text.substring(1).toLowerCase(); // Ambil teks setelah "/"
+
+      // Jika tidak ada query, tampilkan semua.
+      if (query.isEmpty) {
+        filteredQuickReplies.assignAll(quickController.quickReplies);
+      } else {
+        // Jika ada query, filter berdasarkan shortcut.
+        filteredQuickReplies.assignAll(
+          quickController.quickReplies.where(
+            (reply) => reply.shortcut!.toLowerCase().contains(query),
+          ),
+        );
+      }
+    } else {
+      showQuickReplies.value = false; // Sembunyikan box
+    }
+  }
+
+  // FUNGSI BARU: Dipanggil saat salah satu quick reply dipilih.
+  void selectQuickReply(QuickReply reply) {
+    // Ganti teks di inputan dengan pesan dari quick reply.
+    messageController.text = reply.message;
+    // Pindahkan cursor ke akhir teks.
+    messageController.selection = TextSelection.fromPosition(
+      TextPosition(offset: messageController.text.length),
+    );
+    // Sembunyikan kembali box quick reply.
+    showQuickReplies.value = false;
   }
 
   // Fungsi untuk memulai mode seleksi (dipanggil saat long-press).
@@ -158,7 +208,7 @@ class RoomChatController extends GetxController {
     }
   }
 
-   // Fungsi untuk memberi/menghapus bintang pada pesan yang dipilih
+  // Fungsi untuk memberi/menghapus bintang pada pesan yang dipilih
   void starSelectedMessages() {
     // Kita iterasi setiap pesan yang dipilih
     for (var selectedMessage in selectedMessages) {
@@ -166,7 +216,9 @@ class RoomChatController extends GetxController {
       var index = messages.indexWhere((m) => m == selectedMessage);
       if (index != -1) {
         // Buat salinan pesan dengan status isStarred yang dibalik
-        messages[index] = messages[index].copyWith(isStarred: !messages[index].isStarred);
+        messages[index] = messages[index].copyWith(
+          isStarred: !messages[index].isStarred,
+        );
       }
     }
     // `refresh()` memberitahu UI untuk update
@@ -181,7 +233,7 @@ class RoomChatController extends GetxController {
     // Ambil pesan pertama dari yang dipilih.
     if (selectedMessages.isNotEmpty) {
       final messageToPin = selectedMessages.first;
-      
+
       // Cek: jika pesan yang dipilih sudah di-pin, maka unpin.
       // Jika belum, maka pin pesan tersebut.
       if (pinnedMessage.value == messageToPin) {
@@ -190,10 +242,10 @@ class RoomChatController extends GetxController {
         pinnedMessage.value = messageToPin; // Pin
       }
     }
-    
+
     // Kita tidak lagi mengubah properti `isPinned` di setiap pesan,
     // karena hanya ada satu pin global per room chat.
-    
+
     clearMessageSelection();
   }
 
@@ -203,10 +255,10 @@ class RoomChatController extends GetxController {
     String copiedText = selectedMessages.map((m) => m.text).join('\n');
     // Salin ke clipboard
     Clipboard.setData(ClipboardData(text: copiedText));
-    
+
     // Beri feedback ke user
     Get.snackbar('Disalin', 'Teks pesan telah disalin ke clipboard.');
-    
+
     clearMessageSelection();
   }
 }

@@ -1,6 +1,7 @@
 import 'package:admin_gychat/modules/room_chat/widget/chat_bubble.dart';
 import 'package:admin_gychat/modules/room_chat/widget/date_separator.dart';
 import 'package:admin_gychat/modules/room_chat/widget/pinned_message_bar.dart';
+import 'package:admin_gychat/routes/app_routes.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -272,7 +273,12 @@ class RoomChatScreen extends GetView<RoomChatController> {
                 ),
               ),
             ),
-            _buildMessageInputBar(),
+            Column(
+              children: [
+                _buildQuickReplyList(), // Panggil method quick reply
+                _buildMessageInputBar(), // Panggil method input bar
+              ],
+            ),
           ],
         ),
       ),
@@ -318,19 +324,6 @@ class RoomChatScreen extends GetView<RoomChatController> {
                     width: 2,
                   ),
                 ),
-
-                // Tombol di depan teks
-                prefixIcon: IconButton(
-                  onPressed: () {
-                    // TODO: Aksi yang mau dilakukan saat tombol ditekan
-                    print("Prefix icon ditekan");
-                  },
-                  icon: Transform.rotate(
-                    angle: 1, // dalam radian,
-                    child: Icon(Icons.remove, color: Color(0xFF1D2C86)),
-                  ),
-                ),
-
                 // Tombol di belakang teks
                 suffixIcon: IconButton(
                   onPressed: () {
@@ -352,5 +345,105 @@ class RoomChatScreen extends GetView<RoomChatController> {
         ],
       ),
     );
+  }
+
+  Widget _buildQuickReplyList() {
+    return Obx(() {
+      if (!controller.showQuickReplies.value) {
+        return const SizedBox.shrink();
+      }
+
+      // Tentukan apakah daftar balasan yang difilter sedang kosong.
+      final bool isEmpty = controller.filteredQuickReplies.isEmpty;
+
+      // 1. GANTI `Container` BIASA MENJADI `AnimatedContainer`
+      return AnimatedContainer(
+        // 2. TENTUKAN DURASI ANIMASI
+        //    (misalnya 300 milidetik)
+        duration: const Duration(milliseconds: 300),
+        // `curve` membuat animasi lebih natural (opsional)
+        curve: Curves.easeInOut,
+
+        // 3. ATUR TINGGI SECARA DINAMIS
+        //    Gunakan ternary operator: jika kosong, tinggi 100. Jika ada isi, tinggi 250.
+        height: isEmpty ? 100 : 250,
+
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 10,
+              offset: Offset(0, -2),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 2. Buat Header (Judul & Tombol)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Quick replies',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                  ),
+                  // Tombol dinamis (Edit/Setting)
+                  TextButton(
+                    onPressed: () {
+                      // Arahkan ke halaman pengaturan quick reply
+                      Get.toNamed(AppRoutes.QuickReplies);
+                    },
+                    // Teks tombol berubah berdasarkan kondisi
+                    child: Obx(
+                      () => Text(
+                        // Cek list asli di QuickController, bukan hasil filter
+                        controller.quickController.quickReplies.isEmpty
+                            ? 'Setting'
+                            : 'Edit',
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // 3. Gunakan Expanded & ListView.separated
+            Expanded(
+              child: ListView.separated(
+                shrinkWrap: true,
+                itemCount: controller.filteredQuickReplies.length,
+                itemBuilder: (context, index) {
+                  final reply = controller.filteredQuickReplies[index];
+                  return ListTile(
+                    leading: Text(
+                      '/${reply.shortcut}',
+                      style: const TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    title: Text(reply.message),
+                    onTap: () => controller.selectQuickReply(reply),
+                  );
+                },
+                // 4. `separatorBuilder` untuk membuat garis pemisah
+                separatorBuilder: (context, index) {
+                  return const Divider(
+                    height: 1,
+                    thickness: 1,
+                    indent: 16, // Jarak garis dari kiri
+                    endIndent: 16, // Jarak garis dari kanan
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      );
+    });
   }
 }
