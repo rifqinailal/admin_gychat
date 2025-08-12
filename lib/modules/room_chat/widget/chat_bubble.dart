@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class ChatBubble extends StatelessWidget {
-  final String text;
+  final String? text;
   final bool isSender;
   final bool isSystemMessage;
   final DateTime timestamp;
@@ -20,13 +20,14 @@ class ChatBubble extends StatelessWidget {
   final MessageType type;
   final String? imagePath;
   final Map<String, String>? repliedMessage;
+  final String? documentName;
 
   // PENAMBAHAN PARAMETER BARU UNTUK HIGHLIGHT
   final String? highlightText;
 
   const ChatBubble({
     super.key,
-    required this.text,
+    this.text,
     this.isSender = false,
     this.isSystemMessage = false,
     required this.timestamp,
@@ -41,6 +42,7 @@ class ChatBubble extends StatelessWidget {
     required this.isPinned,
     required this.type,
     this.imagePath,
+    this.documentName,
   });
 
   Widget _buildReplyPreview() {
@@ -95,17 +97,17 @@ class ChatBubble extends StatelessWidget {
     // Jika tidak ada kata kunci pencarian, tampilkan Text biasa.
     if (highlightText == null || highlightText!.isEmpty) {
       return Text(
-        text,
+        text ?? '',
         style: TextStyle(color: isSender ? Colors.white : Colors.black),
       );
     }
 
     final regex = RegExp(highlightText!, caseSensitive: false);
-    final matches = regex.allMatches(text);
+    final matches = regex.allMatches(text ?? '');
 
     if (matches.isEmpty) {
       return Text(
-        text,
+        text ?? '',
         style: TextStyle(color: isSender ? Colors.white : Colors.black),
       );
     }
@@ -118,7 +120,7 @@ class ChatBubble extends StatelessWidget {
           fontSize: 14,
         ),
         // `children` diisi oleh list `TextSpan` yang sudah dipecah.
-        children: _generateSpans(text, matches),
+        children: _generateSpans(text ?? '', matches),
       ),
     );
   }
@@ -189,19 +191,70 @@ class ChatBubble extends StatelessWidget {
       }
       return const SizedBox.shrink();
     }
+
     Widget _buildMessageContent() {
+      if (type == MessageType.document && documentName != null) {
+        // JIKA PESAN DOKUMEN, BUAT TAMPILAN KHUSUS
+        return Row(
+          mainAxisSize: MainAxisSize.min, // Membuat Row sependek mungkin
+          children: [
+            // Ikon File
+            Icon(
+              Icons.insert_drive_file_rounded,
+              color: isSender ? Colors.white : Colors.grey.shade700,
+              size: 40,
+            ),
+            const SizedBox(width: 12),
+            // Kolom untuk nama file dan info lainnya
+            Flexible(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    documentName!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: isSender ? Colors.white : Colors.black,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  // Anda bisa menambahkan info ukuran file di sini jika ada
+                ],
+              ),
+            ),
+          ],
+        );
+      }
       // 1. CEK APAKAH PESAN INI ADALAH GAMBAR
       if (type == MessageType.image && imagePath != null) {
         // JIKA YA, BUAT WIDGET GAMBAR
-        return ClipRRect(
-        borderRadius: BorderRadius.circular(15),
-        child: Image.file(
-          File(imagePath!),
-          // `width` akan membatasi lebar gambar agar tidak terlalu besar
-          width: MediaQuery.of(context).size.width * 0.6, // Maksimal 60% lebar layar
-          fit: BoxFit.cover,
-        ),
-      );
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(15),
+              child: Image.file(
+                File(imagePath!),
+                // `width` akan membatasi lebar gambar agar tidak terlalu besar
+                width:
+                    MediaQuery.of(context).size.width *
+                    0.9, // Maksimal 60% lebar layar
+                fit: BoxFit.cover,
+              ),
+            ),
+            if (text != null)
+              Padding(
+                padding: const EdgeInsets.all(6),
+                child: Text(
+                  text ?? '',
+                  style: TextStyle(
+                    color: isSender ? Colors.white70 : Colors.black87,
+                  ),
+                ),
+              ),
+          ],
+        );
       }
       final textWidget = Flexible(child: _buildHighlightedText());
       final statusIconWidget = _buildStatusIcon();
@@ -250,7 +303,6 @@ class ChatBubble extends StatelessWidget {
                   clipBehavior: Clip.none,
                   children: [
                     Container(
-                      // Jika pesan adalah gambar, padding dihilangkan agar gambar penuh
                       padding:
                           type == MessageType.image
                               ? EdgeInsets.all(3)

@@ -1,3 +1,4 @@
+import 'package:admin_gychat/data/models/message_model.dart';
 import 'package:admin_gychat/modules/room_chat/widget/chat_bubble.dart';
 import 'package:admin_gychat/modules/room_chat/widget/date_separator.dart';
 import 'package:admin_gychat/modules/room_chat/widget/pinned_message_bar.dart';
@@ -269,7 +270,7 @@ class RoomChatScreen extends GetView<RoomChatController> {
                                 text: formatDateSeparator(message.timestamp),
                               ),
                             ChatBubble(
-                              text: message.text ?? 'Gambar',
+                              text: message.text,
                               isSender: message.isSender,
                               timestamp: message.timestamp,
                               showTail: showTail,
@@ -282,9 +283,16 @@ class RoomChatScreen extends GetView<RoomChatController> {
                               isSelected: isSelected,
                               type: message.type,
                               imagePath: message.imagePath,
+                              documentName: message.documentName,
                               onTap: () {
                                 if (controller.isMessageSelectionMode.value) {
                                   controller.toggleMessageSelection(message);
+                                } else if (message.type ==
+                                        MessageType.document &&
+                                    message.documentPath != null) {
+                                  controller.openDocument(
+                                    message.documentPath!,
+                                  );
                                 }
                               },
                               onLongPress: () {
@@ -319,7 +327,7 @@ class RoomChatScreen extends GetView<RoomChatController> {
       child: Row(
         children: [
           IconButton(
-            onPressed: () {},
+            onPressed: () => controller.showAttachmentOptions(),
             icon: const Icon(
               Icons.insert_drive_file_outlined,
               color: ThemeColor.primary,
@@ -353,7 +361,7 @@ class RoomChatScreen extends GetView<RoomChatController> {
                 ),
                 // Tombol di belakang teks
                 suffixIcon: IconButton(
-                  onPressed: () => controller.pickImage(),
+                  onPressed: () => controller.takePicture(),
                   icon: const Icon(
                     Icons.camera_alt_outlined,
                     color: Color(0xFF1D2C86),

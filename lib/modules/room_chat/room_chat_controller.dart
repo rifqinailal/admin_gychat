@@ -1,70 +1,50 @@
-// lib/app/modules/room_chat/room_chat_controller.dart
-
+import 'dart:io';
 import 'package:admin_gychat/data/models/message_model.dart';
 import 'package:admin_gychat/modules/setting/quick_replies/quick_controller.dart';
+import 'package:admin_gychat/shared/theme/colors.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-// Import model yang baru kita buat
+import 'package:open_filex/open_filex.dart';
 
 class RoomChatController extends GetxController {
-  // `TextEditingController` adalah cara standar Flutter untuk mengelola
-  // input pada sebuah `TextField`.
   late TextEditingController messageController;
   late TextEditingController searchController;
-
-  // Variabel untuk menyimpan semua pesan dalam chat room ini.
-  // Kita bungkus dengan .obs agar UI bisa reaktif.
   var messages = <MessageModel>[].obs;
   final String currentUserId = "admin_01";
   var chatRoomInfo = {}.obs;
-
-  // Penanda apakah mode search sedang aktif atau tidak.
   var isSearchMode = false.obs;
-  // Menyimpan kata kunci yang sedang dicari.
   var searchQuery = ''.obs;
   var isMessageSelectionMode = false.obs;
-  // Menyimpan pesan-pesan yang dipilih.
   var selectedMessages = <MessageModel>{}.obs;
   var pinnedMessage = Rxn<MessageModel>();
-  // Variabel untuk mengakses data dari QuickController.
   late QuickController quickController;
-  // Penanda untuk menampilkan/menyembunyikan box quick reply.
   var showQuickReplies = false.obs;
-  // List untuk menampung hasil filter.
   var filteredQuickReplies = <QuickReply>[].obs;
   var replyMessage = Rxn<MessageModel>();
 
-  // Di dalam getter `filteredMessages` di RoomChatController
-List<MessageModel> get filteredMessages {
-  if (searchQuery.isEmpty) {
-    return messages;
-  } else {
-    return messages.where((msg) {
-      // JIKA PESAN TIDAK PUNYA TEKS (misal: gambar), JANGAN TAMPILKAN DI HASIL SEARCH
-      if (msg.text == null) return false;
-      
-      // JIKA PUNYA TEKS, LAKUKAN PENGECEKAN SEPERTI BIASA
-      return msg.text!.toLowerCase().contains(searchQuery.value.toLowerCase());
-    }).toList();
+  List<MessageModel> get filteredMessages {
+    if (searchQuery.isEmpty) {
+      return messages;
+    } else {
+      return messages.where((msg) {
+        if (msg.text == null) return false;
+        return msg.text!.toLowerCase().contains(
+          searchQuery.value.toLowerCase(),
+        );
+      }).toList();
+    }
   }
-}
 
   @override
   void onInit() {
     super.onInit();
-    // Inisialisasi controller untuk text field.
     messageController = TextEditingController();
     searchController = TextEditingController();
-    // Inisialisasi QuickController. `Get.find()` akan mencari instance
-    // yang sudah dibuat oleh teman Anda.
     quickController = Get.find<QuickController>();
-
-    // Tambahkan "pendengar" ke inputan pesan.
-    // Fungsi `_onTextChanged` akan dijalankan setiap kali ada perubahan.
     messageController.addListener(_onTextChanged);
-    // Panggil data pesan saat halaman pertama kali dibuka.
     if (Get.arguments != null) {
       chatRoomInfo.value = Get.arguments as Map<String, dynamic>;
     }
@@ -73,33 +53,43 @@ List<MessageModel> get filteredMessages {
 
   @override
   void onClose() {
-    // Penting! Selalu dispose controller untuk mencegah memory leak.
     messageController.removeListener(_onTextChanged);
     messageController.dispose();
     searchController.dispose();
     super.onClose();
   }
 
-  void pickImage() {
+  Future<void> openDocument(String path) async {
+    // `OpenFilex.open()` akan membuka file menggunakan aplikasi default
+    try {
+      final result = await OpenFilex.open(path);
+      print(result.message); // Untuk debugging
+    } catch (e) {
+      Get.snackbar('Error', 'Tidak dapat membuka file. Pastikan ada aplikasi yang mendukung.');
+    }
+  }
+
+
+  void showAttachmentOptions() {
     Get.bottomSheet(
       Container(
         color: Colors.white,
         child: Wrap(
           children: <Widget>[
             ListTile(
-              leading: const Icon(Icons.photo_library, color: Color(0xFF2738a5),),
+              leading: const Icon(Icons.photo_library),
               title: const Text('Galeri'),
               onTap: () {
                 Get.back(); // Tutup bottom sheet
-                _sendImage(ImageSource.gallery,); // Kirim dari galeri
+                _sendImage(ImageSource.gallery); // Panggil fungsi kirim gambar dari galeri
               },
             ),
             ListTile(
-              leading: const Icon(Icons.photo_camera,color: Color(0xFF2738a5)),
-              title: const Text('Kamera'),
+              leading: const Icon(Icons.insert_drive_file),
+              title: const Text('Dokumen'),
               onTap: () {
                 Get.back(); // Tutup bottom sheet
-                _sendImage(ImageSource.camera); // Kirim dari kamera
+                _sendDocument(); // Panggil fungsi kirim dokumen
               },
             ),
           ],
@@ -108,44 +98,158 @@ List<MessageModel> get filteredMessages {
     );
   }
 
-  // Fungsi internal untuk mengambil dan "mengirim" gambar
+  void takePicture() {
+    _sendImage(ImageSource.camera); // Langsung panggil kamera
+  }
+
   Future<void> _sendImage(ImageSource source) async {
-    try {
-      // 1. Ambil gambar menggunakan image_picker
-      final XFile? pickedFile = await ImagePicker().pickImage(source: source);
+  try {
+    // 1. Ambil gambar menggunakan image_picker
+    final XFile? pickedFile = await ImagePicker().pickImage(source: source);
 
-      // 2. Cek apakah user memilih gambar
-      if (pickedFile != null) {
-        // 3. Buat objek MessageModel baru dengan tipe gambar
-        final newMessage = MessageModel(
-          senderId: currentUserId,
-          senderName: "Anda",
-          timestamp: DateTime.now(),
-          isSender: true,
-          type: MessageType.image, // Tipe pesan adalah gambar
-          imagePath: pickedFile.path, // Simpan path file-nya
-        );
-
-        // 4. Tambahkan ke daftar pesan
-        messages.insert(0, newMessage);
-      }
-    } catch (e) {
-      Get.snackbar('Error', 'Gagal mengambil gambar: $e');
+    // 2. Cek apakah user memilih gambar
+    if (pickedFile != null) {
+      // 3. Tampilkan halaman pratinjau untuk menambahkan caption
+      _showImagePreview(pickedFile);
     }
+  } catch (e) {
+    Get.snackbar('Error', 'Gagal mengambil gambar: $e');
+  }
+}
+
+  Future<void> _sendDocument() async {
+  try {
+    FilePickerResult? result = await FilePicker.platform.pickFiles();
+
+    if (result != null) {
+      final PlatformFile file = result.files.first;
+      
+      final newMessage = MessageModel(
+        senderId: currentUserId,
+        senderName: "Anda",
+        timestamp: DateTime.now(),
+        isSender: true,
+        type: MessageType.document,
+        documentPath: file.path,
+        documentName: file.name,
+        // ===============================================
+        // PERBAIKAN UTAMA ADA DI SINI
+        // ===============================================
+        // Isi properti `text` dengan nama dokumen.
+        text: file.name,
+        // ===============================================
+      );
+
+      messages.insert(0, newMessage);
+    }
+  } catch (e) {
+    Get.snackbar('Error', 'Gagal memilih dokumen: $e');
+  }
+}
+
+  Future<void> _showImagePreview(XFile pickedFile) async {
+    final TextEditingController captionController = TextEditingController();
+    Get.dialog(
+      Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.file(File(pickedFile.path), fit: BoxFit.scaleDown),
+            Positioned(
+              top: 40, // Jarak dari atas
+              left: 16, // Jarak dari kiri
+              child: CircleAvatar(
+                backgroundColor: Colors.black.withOpacity(0.5),
+                child: IconButton(
+                  onPressed: () => Get.back(),
+                  icon: const Icon(Icons.close, color: Colors.white),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 0, // Tempelkan di bagian paling bawah
+              left: 0,
+              right: 0,
+              child: Container(
+                margin: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8.0,
+                  vertical: 4.0,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(30), // Sudut melengkung
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: captionController,
+                        style: const TextStyle(color: Colors.black),
+                        decoration: const InputDecoration(
+                          hintText: 'Tambahkan keterangan...',
+                          hintStyle: TextStyle(color: Colors.grey),
+                          border: InputBorder.none, // Hilangkan garis bawah
+                          contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                        ),
+                        maxLines: 5,
+                        minLines: 1,
+                      ),
+                    ),
+                    SizedBox(
+                      width: 48,
+                      height: 48,
+                      child: FloatingActionButton(
+                        elevation: 0,
+                        backgroundColor: Colors.white,
+                        child: const Icon(
+                          Icons.send,
+                          color: ThemeColor.primary,
+                        ),
+                        onPressed: () {
+                          final imagePath = pickedFile.path;
+                          final caption = captionController.text.trim();
+                          final newMessage = MessageModel(
+                            senderId: currentUserId,
+                            senderName: "Anda",
+                            timestamp: DateTime.now(),
+                            isSender: true,
+                            type: MessageType.image,
+                            imagePath: imagePath,
+                            text: caption,
+                          );
+                          messages.insert(0, newMessage);
+                          Get.back();
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
   }
 
   void _onTextChanged() {
     final text = messageController.text;
-    // Cek apakah teks dimulai dengan "/"
     if (text.startsWith('/')) {
       showQuickReplies.value = true; // Tampilkan box
       final query = text.substring(1).toLowerCase(); // Ambil teks setelah "/"
-
-      // Jika tidak ada query, tampilkan semua.
       if (query.isEmpty) {
         filteredQuickReplies.assignAll(quickController.quickReplies);
       } else {
-        // Jika ada query, filter berdasarkan shortcut.
         filteredQuickReplies.assignAll(
           quickController.quickReplies.where(
             (reply) => reply.shortcut!.toLowerCase().contains(query),
@@ -159,13 +263,10 @@ List<MessageModel> get filteredMessages {
 
   // FUNGSI BARU: Dipanggil saat salah satu quick reply dipilih.
   void selectQuickReply(QuickReply reply) {
-    // Ganti teks di inputan dengan pesan dari quick reply.
     messageController.text = reply.message;
-    // Pindahkan cursor ke akhir teks.
     messageController.selection = TextSelection.fromPosition(
       TextPosition(offset: messageController.text.length),
     );
-    // Sembunyikan kembali box quick reply.
     showQuickReplies.value = false;
   }
 
@@ -182,7 +283,6 @@ List<MessageModel> get filteredMessages {
     } else {
       selectedMessages.add(message);
     }
-
     // Jika tidak ada lagi pesan yang dipilih, keluar dari mode seleksi.
     if (selectedMessages.isEmpty) {
       isMessageSelectionMode.value = false;
@@ -218,7 +318,7 @@ List<MessageModel> get filteredMessages {
         text: "the leader added an answer",
         timestamp: DateTime.now().subtract(const Duration(minutes: 6)),
         isSender: false,
-        type: MessageType.text, // <-- TAMBAHKAN INI
+        type: MessageType.text,
       ),
       MessageModel(
         senderId: "user_02",
@@ -226,7 +326,7 @@ List<MessageModel> get filteredMessages {
         text: "Thank you",
         timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
         isSender: false,
-        type: MessageType.text, // <-- TAMBAHKAN INI
+        type: MessageType.text,
         repliedMessage: {"name": "Anda", "text": "Admin message"},
       ),
       MessageModel(
@@ -235,7 +335,7 @@ List<MessageModel> get filteredMessages {
         text: "Admin message",
         timestamp: DateTime.now().subtract(const Duration(minutes: 4)),
         isSender: true,
-        type: MessageType.text, // <-- TAMBAHKAN INI
+        type: MessageType.text,
       ),
     ];
     messages.assignAll(dummyMessages);
@@ -272,7 +372,7 @@ List<MessageModel> get filteredMessages {
         repliedMessage: repliedMessageData,
         timestamp: DateTime.now(),
         isSender: true,
-         type: MessageType.text, 
+        type: MessageType.text,
       );
       messages.insert(0, newMessage);
       messageController.clear();
@@ -293,7 +393,6 @@ List<MessageModel> get filteredMessages {
         );
       }
     }
-    // `refresh()` memberitahu UI untuk update
     messages.refresh();
     // Setelah selesai, bersihkan seleksi
     clearMessageSelection();
@@ -314,10 +413,6 @@ List<MessageModel> get filteredMessages {
         pinnedMessage.value = messageToPin; // Pin
       }
     }
-
-    // Kita tidak lagi mengubah properti `isPinned` di setiap pesan,
-    // karena hanya ada satu pin global per room chat.
-
     clearMessageSelection();
   }
 
@@ -327,10 +422,8 @@ List<MessageModel> get filteredMessages {
     String copiedText = selectedMessages.map((m) => m.text).join('\n');
     // Salin ke clipboard
     Clipboard.setData(ClipboardData(text: copiedText));
-
     // Beri feedback ke user
     Get.snackbar('Disalin', 'Teks pesan telah disalin ke clipboard.');
-
     clearMessageSelection();
   }
 }

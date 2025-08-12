@@ -1,6 +1,6 @@
 // lib/app/data/models/message_model.dart
 
-enum MessageType { text, image }
+enum MessageType { text, image, document }
 
 class MessageModel {
   final String senderId;
@@ -13,6 +13,8 @@ class MessageModel {
   final MessageType type;
   final String? imagePath;
   final bool isSender;
+  final String? documentPath;
+  final String? documentName;
 
   MessageModel({
     required this.senderId,
@@ -23,13 +25,16 @@ class MessageModel {
     required this.senderName,
     this.repliedMessage,
     this.imagePath,
+    this.documentPath,
+    this.documentName,
     required this.type,
     this.isStarred = false,
     this.isPinned = false,
   }) : assert(
          (type == MessageType.text && text != null && text.isNotEmpty) ||
-         (type == MessageType.image && imagePath != null),
-         'Pesan teks harus punya teks, dan pesan gambar harus punya path gambar.'
+         (type == MessageType.image && imagePath != null) ||
+         (type == MessageType.document && documentPath != null),
+        'Setiap tipe pesan harus memiliki data yang sesuai.'
        );
 
   // 2. LENGKAPI `copyWith`
