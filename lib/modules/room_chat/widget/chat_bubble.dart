@@ -194,36 +194,44 @@ class ChatBubble extends StatelessWidget {
 
     Widget _buildMessageContent() {
       if (type == MessageType.document && documentName != null) {
-        // JIKA PESAN DOKUMEN, BUAT TAMPILAN KHUSUS
-        return Row(
-          mainAxisSize: MainAxisSize.min, // Membuat Row sependek mungkin
-          children: [
-            // Ikon File
-            Icon(
-              Icons.insert_drive_file_rounded,
-              color: isSender ? Colors.white : Colors.grey.shade700,
-              size: 40,
-            ),
-            const SizedBox(width: 12),
-            // Kolom untuk nama file dan info lainnya
-            Flexible(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    documentName!,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: isSender ? Colors.white : Colors.black,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  // Anda bisa menambahkan info ukuran file di sini jika ada
-                ],
+        // JIKA PESAN DOKUMEN, BUAT TAMPILAN BARU
+        return Container(
+          // 1. Bungkus Dalam (warna sekunder)
+          //    Memberi padding di dalam dan sudut melengkung.
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: ThemeColor.secondary, // Warna sekunder
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Ikon File
+              Icon(
+                Icons.insert_drive_file_outlined,
+                color: ThemeColor.primary, // Warna ikon putih agar kontras
+                size: 36,
               ),
-            ),
-          ],
+              const SizedBox(width: 12),
+              // Kolom untuk nama file dan info ukuran
+              Flexible(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      documentName!,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: ThemeColor.primary, // Warna teks putih
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         );
       }
       // 1. CEK APAKAH PESAN INI ADALAH GAMBAR
