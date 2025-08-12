@@ -33,6 +33,7 @@ class RoomChatController extends GetxController {
   var showQuickReplies = false.obs;
   // List untuk menampung hasil filter.
   var filteredQuickReplies = <QuickReply>[].obs;
+  var replyMessage = Rxn<MessageModel>();
 
   List<MessageModel> get filteredMessages {
     // Jika kata kunci pencarian kosong...
@@ -191,20 +192,41 @@ class RoomChatController extends GetxController {
     messages.assignAll(dummyMessages);
   }
 
+  // Fungsi untuk mengatur pesan mana yang akan di-reply.
+  // Ini akan dipanggil saat user menggeser bubble chat.
+  void setReplyMessage(MessageModel message) {
+    replyMessage.value = message;
+  }
+
+  // Fungsi untuk membatalkan mode reply (saat tombol 'X' ditekan).
+  void cancelReply() {
+    replyMessage.value = null;
+  }
+
   // Fungsi untuk mengirim pesan baru
   void sendMessage() {
     final text = messageController.text.trim();
 
     if (text.isNotEmpty) {
+      // Siapkan data pesan yang di-reply, jika ada.
+      final Map<String, String>? repliedMessageData =
+          replyMessage.value != null
+              ? {
+                'name': replyMessage.value!.senderName,
+                'text': replyMessage.value!.text,
+              }
+              : null;
       final newMessage = MessageModel(
         senderId: currentUserId,
         senderName: "Anda", // BARU: Tambahkan nama pengirim
         text: text,
+        repliedMessage: repliedMessageData, 
         timestamp: DateTime.now(),
         isSender: true,
       );
       messages.insert(0, newMessage);
       messageController.clear();
+       cancelReply(); 
     }
   }
 

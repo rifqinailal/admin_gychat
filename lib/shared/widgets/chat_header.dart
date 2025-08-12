@@ -1,6 +1,5 @@
 import 'package:admin_gychat/modules/chat_list/chat_list_controller.dart';
 import 'package:admin_gychat/modules/dashboard/dashboard_controller.dart';
-import 'package:admin_gychat/modules/star/detail_star_controller.dart';
 import 'package:admin_gychat/routes/app_routes.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:admin_gychat/shared/widgets/delete_confirmation_dialog.dart';
