@@ -9,7 +9,6 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'room_chat_controller.dart';
 
-
 bool isSameDay(DateTime date1, DateTime date2) {
   return date1.year == date2.year &&
       date1.month == date2.month &&
@@ -138,20 +137,20 @@ class RoomChatScreen extends GetView<RoomChatController> {
       ),
       actions: [
         IconButton(onPressed: () {}, icon: const Icon(Icons.reply)),
-       
+
         IconButton(
           onPressed: () => controller.starSelectedMessages(),
           icon: const Icon(Icons.star_border),
         ),
-        
+
         IconButton(
           onPressed: () => controller.pinSelectedMessages(),
           icon: Transform.rotate(
-            angle: 1, 
+            angle: 1,
             child: Icon(Icons.push_pin_outlined, color: Color(0xFF1D2C86)),
           ),
         ),
-      
+
         IconButton(
           onPressed: () => controller.copySelectedMessagesText(),
           icon: const Icon(Icons.copy),
@@ -257,13 +256,12 @@ class RoomChatScreen extends GetView<RoomChatController> {
                           ),
                         ],
                       ),
-                     
+
                       child: Obx(() {
                         final isSelected = controller.selectedMessages.contains(
                           message,
                         );
 
-                       
                         return Column(
                           children: [
                             if (showDateSeparator)
@@ -271,7 +269,7 @@ class RoomChatScreen extends GetView<RoomChatController> {
                                 text: formatDateSeparator(message.timestamp),
                               ),
                             ChatBubble(
-                              text: message.text,
+                              text: message.text ?? 'Gambar',
                               isSender: message.isSender,
                               timestamp: message.timestamp,
                               showTail: showTail,
@@ -282,6 +280,8 @@ class RoomChatScreen extends GetView<RoomChatController> {
                               isStarred: message.isStarred,
                               isPinned: message.isPinned,
                               isSelected: isSelected,
+                              type: message.type,
+                              imagePath: message.imagePath,
                               onTap: () {
                                 if (controller.isMessageSelectionMode.value) {
                                   controller.toggleMessageSelection(message);
@@ -353,9 +353,7 @@ class RoomChatScreen extends GetView<RoomChatController> {
                 ),
                 // Tombol di belakang teks
                 suffixIcon: IconButton(
-                  onPressed: () {
-                    // TODO: Aksi saat camera ditekan
-                  },
+                  onPressed: () => controller.pickImage(),
                   icon: const Icon(
                     Icons.camera_alt_outlined,
                     color: Color(0xFF1D2C86),
@@ -402,7 +400,6 @@ class RoomChatScreen extends GetView<RoomChatController> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-           
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
               child: Row(
@@ -478,7 +475,7 @@ class RoomChatScreen extends GetView<RoomChatController> {
             // Baris vertikal
             Container(width: 4, height: 40, color: const Color(0xFF1D2C86)),
             const SizedBox(width: 8),
-            
+
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -491,14 +488,14 @@ class RoomChatScreen extends GetView<RoomChatController> {
                     ),
                   ),
                   Text(
-                    message.text,
+                    message.text ?? 'Gambar',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
             ),
-           
+
             IconButton(
               onPressed: () => controller.cancelReply(),
               icon: const Icon(Icons.close),

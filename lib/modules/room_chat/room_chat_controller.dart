@@ -5,6 +5,7 @@ import 'package:admin_gychat/modules/setting/quick_replies/quick_controller.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 // Import model yang baru kita buat
 
 class RoomChatController extends GetxController {
@@ -35,23 +36,20 @@ class RoomChatController extends GetxController {
   var filteredQuickReplies = <QuickReply>[].obs;
   var replyMessage = Rxn<MessageModel>();
 
-  List<MessageModel> get filteredMessages {
-    // Jika kata kunci pencarian kosong...
-    if (searchQuery.isEmpty) {
-      // ...maka kembalikan semua pesan.
-      return messages;
-    } else {
-      // ...jika tidak, kembalikan hanya pesan yang teksnya
-      // mengandung kata kunci (tidak case-sensitive).
-      return messages
-          .where(
-            (msg) => msg.text.toLowerCase().contains(
-              searchQuery.value.toLowerCase(),
-            ),
-          )
-          .toList();
-    }
+  // Di dalam getter `filteredMessages` di RoomChatController
+List<MessageModel> get filteredMessages {
+  if (searchQuery.isEmpty) {
+    return messages;
+  } else {
+    return messages.where((msg) {
+      // JIKA PESAN TIDAK PUNYA TEKS (misal: gambar), JANGAN TAMPILKAN DI HASIL SEARCH
+      if (msg.text == null) return false;
+      
+      // JIKA PUNYA TEKS, LAKUKAN PENGECEKAN SEPERTI BIASA
+      return msg.text!.toLowerCase().contains(searchQuery.value.toLowerCase());
+    }).toList();
   }
+}
 
   @override
   void onInit() {
@@ -80,6 +78,60 @@ class RoomChatController extends GetxController {
     messageController.dispose();
     searchController.dispose();
     super.onClose();
+  }
+
+  void pickImage() {
+    Get.bottomSheet(
+      Container(
+        color: Colors.white,
+        child: Wrap(
+          children: <Widget>[
+            ListTile(
+              leading: const Icon(Icons.photo_library, color: Color(0xFF2738a5),),
+              title: const Text('Galeri'),
+              onTap: () {
+                Get.back(); // Tutup bottom sheet
+                _sendImage(ImageSource.gallery,); // Kirim dari galeri
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_camera,color: Color(0xFF2738a5)),
+              title: const Text('Kamera'),
+              onTap: () {
+                Get.back(); // Tutup bottom sheet
+                _sendImage(ImageSource.camera); // Kirim dari kamera
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Fungsi internal untuk mengambil dan "mengirim" gambar
+  Future<void> _sendImage(ImageSource source) async {
+    try {
+      // 1. Ambil gambar menggunakan image_picker
+      final XFile? pickedFile = await ImagePicker().pickImage(source: source);
+
+      // 2. Cek apakah user memilih gambar
+      if (pickedFile != null) {
+        // 3. Buat objek MessageModel baru dengan tipe gambar
+        final newMessage = MessageModel(
+          senderId: currentUserId,
+          senderName: "Anda",
+          timestamp: DateTime.now(),
+          isSender: true,
+          type: MessageType.image, // Tipe pesan adalah gambar
+          imagePath: pickedFile.path, // Simpan path file-nya
+        );
+
+        // 4. Tambahkan ke daftar pesan
+        messages.insert(0, newMessage);
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Gagal mengambil gambar: $e');
+    }
   }
 
   void _onTextChanged() {
@@ -159,34 +211,31 @@ class RoomChatController extends GetxController {
 
   // Fungsi untuk mengambil data pesan (simulasi dari API)
   void fetchMessages() {
-    // Kita perbarui data dummy-nya
     var dummyMessages = [
       MessageModel(
         senderId: "pimpinan_A",
-        senderName: "Pimpinan A", // BARU
+        senderName: "Pimpinan A",
         text: "the leader added an answer",
         timestamp: DateTime.now().subtract(const Duration(minutes: 6)),
         isSender: false,
+        type: MessageType.text, // <-- TAMBAHKAN INI
       ),
       MessageModel(
         senderId: "user_02",
-        senderName: "Admin A", // BARU
+        senderName: "Admin A",
         text: "Thank you",
         timestamp: DateTime.now().subtract(const Duration(minutes: 5)),
         isSender: false,
-        // Contoh pesan balasan
-        repliedMessage: {
-          // BARU
-          "name": "Anda",
-          "text": "Admin message",
-        },
+        type: MessageType.text, // <-- TAMBAHKAN INI
+        repliedMessage: {"name": "Anda", "text": "Admin message"},
       ),
       MessageModel(
         senderId: currentUserId,
-        senderName: "Anda", // BARU
+        senderName: "Anda",
         text: "Admin message",
         timestamp: DateTime.now().subtract(const Duration(minutes: 4)),
         isSender: true,
+        type: MessageType.text, // <-- TAMBAHKAN INI
       ),
     ];
     messages.assignAll(dummyMessages);
@@ -213,20 +262,21 @@ class RoomChatController extends GetxController {
           replyMessage.value != null
               ? {
                 'name': replyMessage.value!.senderName,
-                'text': replyMessage.value!.text,
+                'text': replyMessage.value!.text ?? 'Gambar',
               }
               : null;
       final newMessage = MessageModel(
         senderId: currentUserId,
         senderName: "Anda", // BARU: Tambahkan nama pengirim
         text: text,
-        repliedMessage: repliedMessageData, 
+        repliedMessage: repliedMessageData,
         timestamp: DateTime.now(),
         isSender: true,
+         type: MessageType.text, 
       );
       messages.insert(0, newMessage);
       messageController.clear();
-       cancelReply(); 
+      cancelReply();
     }
   }
 

@@ -19,7 +19,7 @@ class PinnedMessageBar extends StatelessWidget {
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              message.text, // Tampilkan teks dari pesan yang di-pin
+              message.text ?? 'Gambar', // Tampilkan teks dari pesan yang di-pin
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(color: Colors.white),

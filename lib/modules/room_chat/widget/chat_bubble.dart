@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:admin_gychat/data/models/message_model.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -14,6 +17,8 @@ class ChatBubble extends StatelessWidget {
   final String? senderName;
   final bool isStarred;
   final bool isPinned;
+  final MessageType type;
+  final String? imagePath;
   final Map<String, String>? repliedMessage;
 
   // PENAMBAHAN PARAMETER BARU UNTUK HIGHLIGHT
@@ -34,6 +39,8 @@ class ChatBubble extends StatelessWidget {
     this.repliedMessage,
     required this.isStarred,
     required this.isPinned,
+    required this.type,
+    this.imagePath,
   });
 
   Widget _buildReplyPreview() {
@@ -53,7 +60,7 @@ class ChatBubble extends StatelessWidget {
                 color:
                     isSender
                         ? Colors.white70
-                        :  ThemeColor.primary.withOpacity(0.7),
+                        : ThemeColor.primary.withOpacity(0.7),
               ),
               const SizedBox(width: 8),
               Column(
@@ -156,22 +163,22 @@ class ChatBubble extends StatelessWidget {
         child: Icon(
           isSender ? Icons.arrow_right : Icons.arrow_left,
           size: 20,
-          color: isSender ?  ThemeColor.primary : Colors.white,
+          color: isSender ? ThemeColor.primary : Colors.white,
         ),
       );
     }
 
-    // WIDGET HELPER untuk ikon status (Bintang/Pin)
-    // Warnanya diubah menjadi hitam sesuai permintaan.
+    // Widget helper untuk ikon status (tidak berubah)
     Widget _buildStatusIcon() {
       if (isPinned) {
         return Transform.rotate(
-          angle: 1,
-       child:  Icon(
-          Icons.push_pin,
-          size: 16,
-          color: isSender ? Colors.white70 : Colors.black54,
-        ));
+          angle: 0.5, // Sedikit dimiringkan
+          child: Icon(
+            Icons.push_pin,
+            size: 16,
+            color: isSender ? Colors.white70 : Colors.black54,
+          ),
+        );
       }
       if (isStarred) {
         return Icon(
@@ -181,6 +188,38 @@ class ChatBubble extends StatelessWidget {
         );
       }
       return const SizedBox.shrink();
+    }
+    Widget _buildMessageContent() {
+      // 1. CEK APAKAH PESAN INI ADALAH GAMBAR
+      if (type == MessageType.image && imagePath != null) {
+        // JIKA YA, BUAT WIDGET GAMBAR
+        return ClipRRect(
+        borderRadius: BorderRadius.circular(15),
+        child: Image.file(
+          File(imagePath!),
+          // `width` akan membatasi lebar gambar agar tidak terlalu besar
+          width: MediaQuery.of(context).size.width * 0.6, // Maksimal 60% lebar layar
+          fit: BoxFit.cover,
+        ),
+      );
+      }
+      final textWidget = Flexible(child: _buildHighlightedText());
+      final statusIconWidget = _buildStatusIcon();
+      const spacer = SizedBox(width: 8);
+
+      if (isSender) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [statusIconWidget, spacer, textWidget],
+        );
+      } else {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [textWidget, spacer, statusIconWidget],
+        );
+      }
     }
 
     return GestureDetector(
@@ -195,7 +234,6 @@ class ChatBubble extends StatelessWidget {
           crossAxisAlignment:
               isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
-            // Bagian gelembung chat (Stack)
             Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 8.0,
@@ -212,13 +250,17 @@ class ChatBubble extends StatelessWidget {
                   clipBehavior: Clip.none,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      // Jika pesan adalah gambar, padding dihilangkan agar gambar penuh
+                      padding:
+                          type == MessageType.image
+                              ? EdgeInsets.all(3)
+                              : const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color:
                             isSystemMessage
                                 ? Colors.yellow.shade200
                                 : (isSender
-                                    ?  ThemeColor.primary
+                                    ? ThemeColor.primary
                                     : Colors.white),
                         borderRadius: BorderRadius.only(
                           topLeft: const Radius.circular(16),
@@ -234,57 +276,28 @@ class ChatBubble extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          if (senderName != null && !isSender)
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 4.0),
-                              child: Text(
-                                senderName!,
-                                style: const TextStyle(
-                                  color: Colors.pinkAccent,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13,
+                          // Jika pesan adalah teks, tampilkan nama dan reply di dalam.
+                          // Jika gambar, nama dan reply bisa ditampilkan di atasnya (opsional).
+                          if (type == MessageType.text) ...[
+                            if (senderName != null && !isSender)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 4.0),
+                                child: Text(
+                                  senderName!,
+                                  style: const TextStyle(
+                                    color: Colors.pinkAccent,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 13,
+                                  ),
                                 ),
                               ),
-                            ),
-                          _buildReplyPreview(),
-                          if (repliedMessage != null) const SizedBox(height: 8),
+                            _buildReplyPreview(),
+                            if (repliedMessage != null)
+                              const SizedBox(height: 8),
+                          ],
 
-                          Builder(
-                            builder: (context) {
-                              // Siapkan dulu widget-widgetnya
-                              final textWidget = Flexible(
-                                child: _buildHighlightedText(),
-                              );
-                              final statusIconWidget = _buildStatusIcon();
-                              const spacer = SizedBox(width: 8);
-
-                              // Tentukan urutannya berdasarkan `isSender`
-                              if (isSender) {
-                                // Jika PENGIRIM: [IKON] [JARAK] [TEKS]
-                                return Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    statusIconWidget,
-                                    spacer,
-                                    textWidget,
-                                  ],
-                                );
-                              } else {
-                                // Jika PENERIMA: [TEKS] [JARAK] [IKON]
-                                return Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    textWidget,
-                                    spacer,
-                                    statusIconWidget,
-                                  ],
-                                );
-                              }
-                            },
-                          ),
-                          // ===============================================
+                          // PANGGIL METHOD PENGATUR KONTEN DI SINI
+                          _buildMessageContent(),
                         ],
                       ),
                     ),
@@ -293,13 +306,12 @@ class ChatBubble extends StatelessWidget {
                 ),
               ),
             ),
-
-            // Bagian Timestamp (kembali ke luar seperti semula)
+            // Bagian Timestamp
             Padding(
               padding: const EdgeInsets.only(left: 20, right: 20, bottom: 8),
               child: Text(
                 DateFormat('HH:mm').format(timestamp),
-                style: const TextStyle(fontSize: 12, color: Colors.black),
+                style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ),
           ],
