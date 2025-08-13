@@ -43,7 +43,6 @@ class QuickController extends GetxController {
   }
 
   void goToEditScreen(QuickReply reply) {
-    // Populate with existing data
     shortcutController.text = reply.shortcut;
     messageController.text = reply.message;
     selectedImage.value = reply.imageFile;

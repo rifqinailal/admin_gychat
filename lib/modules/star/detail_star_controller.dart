@@ -179,7 +179,6 @@ class DetailStarsController extends GetxController {
             child: const Text('Batal'),
           ),
           const SizedBox(width: 10),
-          // Tombol Hapus
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.blue[800],

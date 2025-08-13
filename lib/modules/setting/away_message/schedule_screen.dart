@@ -249,7 +249,7 @@ class ScheduleScreen extends StatelessWidget {
             }
           ),
           const Text(":", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-          // Scroller Menit
+         
           _timeWheel(
             itemCount: 60,
             initialItem: currentTime.minute,

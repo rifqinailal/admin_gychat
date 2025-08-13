@@ -5,7 +5,6 @@ import 'quick_controller.dart';
 
 class QuickScreen extends GetView<QuickController> {
   const QuickScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

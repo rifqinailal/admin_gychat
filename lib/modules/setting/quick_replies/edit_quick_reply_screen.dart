@@ -148,7 +148,6 @@ class EditQuickReplyScreen extends GetView<QuickController> {
       );
     }
 
-  /// A helper widget to avoid repeating code for displaying the image and message.
   Widget _buildImageDisplay({required Image image}) {
     return Container(
       padding: const EdgeInsets.all(12),

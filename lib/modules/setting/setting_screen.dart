@@ -107,6 +107,7 @@ class SettingScreen extends GetView<SettingController> {
             onTap: () {
               Get.toNamed(AppRoutes.AwayMessage);
             },
+            
           ),
           ListTile(
             leading: const Icon(Icons.flash_on, color: Colors.grey),

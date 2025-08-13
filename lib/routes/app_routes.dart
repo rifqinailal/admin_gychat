@@ -14,5 +14,5 @@ abstract class AppRoutes {
   static const DetailArsip = '/detail-arsip';
   static const ROOM_CHAT = '/room_chat';
   static const Setting = '/setting';
-  // ... route lainnya nanti
+  
 }
