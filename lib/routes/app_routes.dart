@@ -7,6 +7,7 @@ abstract class AppRoutes {
   static const DetailStar = '/detail-star';
   static const Profile = '/profile';
   static const QuickReplies = '/quick-replies';
+  static const EditQuickReply = '/edit-quick-reply';
   static const AwayMessage = '/away-message';
   static const Schedule = '/schedule';
   static const ForgotPassword = '/forgot-password';

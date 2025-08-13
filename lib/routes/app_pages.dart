@@ -15,6 +15,7 @@ import 'package:admin_gychat/modules/setting/profile/profile_binding.dart';
 import 'package:admin_gychat/modules/setting/profile/profile_screen.dart';
 import 'package:admin_gychat/modules/setting/quick_replies/quick_binding.dart';
 import 'package:admin_gychat/modules/setting/quick_replies/quick_screen.dart';
+import 'package:admin_gychat/modules/setting/quick_replies/edit_quick_reply_screen.dart';
 import 'package:admin_gychat/modules/setting/away_message/away_binding.dart';
 import 'package:admin_gychat/modules/setting/away_message/away_screen.dart';
 import 'package:admin_gychat/modules/setting/away_message/schedule_screen.dart';
@@ -65,6 +66,12 @@ class AppPages {
     GetPage(
       name: AppRoutes.QuickReplies,
       page: () => const QuickScreen(),
+      binding: QuickBinding(),
+    ),
+    // Edit Quick Reply
+    GetPage(
+      name: AppRoutes.EditQuickReply,
+      page: () => const EditQuickReplyScreen(),
       binding: QuickBinding(),
     ),
     // Away Message
