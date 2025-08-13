@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:admin_gychat/data/models/message_model.dart';
+import 'package:admin_gychat/models/message_model.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';

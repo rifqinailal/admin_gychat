@@ -1,4 +1,4 @@
-import 'package:admin_gychat/data/models/message_model.dart';
+import 'package:admin_gychat/models/message_model.dart';
 import 'package:admin_gychat/modules/room_chat/widget/chat_bubble.dart';
 import 'package:admin_gychat/modules/room_chat/widget/date_separator.dart';
 import 'package:admin_gychat/modules/room_chat/widget/pinned_message_bar.dart';

@@ -1,5 +1,6 @@
 import 'dart:io';
-import 'package:admin_gychat/data/models/message_model.dart';
+import 'package:admin_gychat/models/message_model.dart';
+import 'package:admin_gychat/models/quick_reply_model.dart';
 import 'package:admin_gychat/modules/setting/quick_replies/quick_controller.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:file_picker/file_picker.dart';

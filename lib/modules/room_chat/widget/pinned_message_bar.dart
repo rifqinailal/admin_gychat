@@ -1,4 +1,4 @@
-import 'package:admin_gychat/data/models/message_model.dart';
+import 'package:admin_gychat/models/message_model.dart';
 import 'package:flutter/material.dart';
 
 class PinnedMessageBar extends StatelessWidget {
