@@ -35,7 +35,7 @@ class ProfileScreen extends GetView<ProfileController> {
             children: [
               Center(child: _buildProfileImage()),
               const SizedBox(height: 40),
-              // Use GetBuilder to update UI Name and Bio when they change
+              // Gunakan GetBuilder untuk update UI Name dan Bio
               GetBuilder<ProfileController>(
                 builder: (_) {
                   return Column(
@@ -75,47 +75,57 @@ class ProfileScreen extends GetView<ProfileController> {
     );
   }
 
-  /// Navigates to the edit screen and handles the returned value.
+  /// **UPDATED:** Menavigasi ke layar edit menggunakan Get.bottomSheet.
   Future<void> _navigateToEditScreen({
     required String title,
     required String initialValue,
     required Function(String) onSave,
   }) async {
-    // Await the result from the EditProfileScreen.
-    final result = await Get.to(() => EditProfileScreen(
-          title: title,
-          initialValue: initialValue,
-        ));
+    // Menampilkan EditProfileScreen sebagai modal bottom sheet.
+    final result = await Get.bottomSheet(
+      EditProfileScreen(
+        title: title,
+        initialValue: initialValue,
+      ),
+      // Memberi bentuk dengan sudut atas melengkung.
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20.0),
+          topRight: Radius.circular(20.0),
+        ),
+      ),
+      // Memastikan konten di dalam sheet mengikuti bentuk melengkung.
+      clipBehavior: Clip.antiAliasWithSaveLayer,
+      // Penting agar sheet bisa lebih tinggi dan merespons keyboard.
+      isScrollControlled: true,
+    );
 
-    // If the user saved (result is not null), update the controller.
+    // Jika pengguna menyimpan (hasil tidak null), perbarui controller.
     if (result != null && result is String) {
       onSave(result);
-      controller.update(); // Refresh the UI to show the new value
-      controller.saveProfile(); // Call the save method in the controller
+      controller.update(); // Refresh UI untuk menampilkan nilai baru
+      controller.saveProfile(); // Panggil metode simpan di controller
     }
   }
 
-  // Widget for displaying the profile image and edit button
+  // Widget untuk menampilkan gambar profil dan tombol edit
   Widget _buildProfileImage() {
     return Column(
       children: [
         Obx(() {
           return CircleAvatar(
             radius: 50,
-            backgroundColor: Colors.grey[200],
-            // Use FileImage for local files and AssetImage for assets.
-            // The '!' operator asserts that profileImage.value is not null here.
+            backgroundColor: Colors.grey[200], 
             backgroundImage: controller.profileImage.value != null
-                ? FileImage(controller.profileImage.value!)
-                : const AssetImage('assets/images/default_avatar.png')
-                    as ImageProvider,
+            ? FileImage(controller.profileImage.value!)
+            : const AssetImage('assets/images/default_avatar.png') as ImageProvider,
             child: controller.profileImage.value == null
-                ? Icon(
-                    Icons.person,
-                    size: 60,
-                    color: Colors.grey[400],
-                  )
-                : null,
+            ? Icon(
+              Icons.person,
+              size: 60,
+              color: Colors.grey[400],
+            )
+            : null,
           );
         }),
         const SizedBox(height: 8),
@@ -140,7 +150,7 @@ class ProfileScreen extends GetView<ProfileController> {
     );
   }
 
-  // Reusable widget for profile fields (Name & Bio)
+  // Widget yang dapat digunakan kembali untuk kolom profil (Nama & Bio)
   Widget _buildProfileField({
     required String label,
     required String value,
@@ -202,7 +212,7 @@ class ProfileScreen extends GetView<ProfileController> {
     );
   }
 
-  /// Shows the bottom sheet with options for changing the profile photo.
+  /// Menampilkan bottom sheet dengan opsi untuk mengubah foto profil.
   void _showPhotoOptions() {
     Get.bottomSheet(
       Container(
@@ -262,7 +272,6 @@ class ProfileScreen extends GetView<ProfileController> {
                         iconColor: const Color(0xFFE53935),
                         onTap: () {
                           Get.back();
-                          // FIXED: Call the method without context.
                           _showEditPhotoSheet();
                         },
                       ),
@@ -279,7 +288,7 @@ class ProfileScreen extends GetView<ProfileController> {
     );
   }
 
-  // Reusable widget for bottom sheet options.
+  // Widget yang dapat digunakan kembali untuk opsi bottom sheet.
   Widget _buildBottomSheetOption({
     required String text,
     required IconData icon,
@@ -312,8 +321,7 @@ class ProfileScreen extends GetView<ProfileController> {
     );
   }
 
-  /// Shows a dialog to confirm photo deletion.
-  // FIXED: Removed BuildContext from parameters.
+  /// Menampilkan dialog untuk konfirmasi penghapusan foto.
   void _showEditPhotoSheet() {
     Get.bottomSheet(
       Container(
@@ -353,7 +361,6 @@ class ProfileScreen extends GetView<ProfileController> {
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  // Warna biru tua yang solid
                   backgroundColor: const Color(0xFF1E3A8A),
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 17),
@@ -375,7 +382,7 @@ class ProfileScreen extends GetView<ProfileController> {
           ],
         ),
       ),
-      // Atur agar background di luar bottom sheet transparan
+
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
     );

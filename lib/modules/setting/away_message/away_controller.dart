@@ -1,135 +1,96 @@
-// // controllers/away_message_controller.dart
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:intl/intl.dart';
+import 'away_screen.dart';
 
-// import 'package:flutter/material.dart';
-// import 'package:flutter/cupertino.dart';
-// import 'package:get/get.dart';
-// import 'package:intl/intl.dart';
-// import '../models/away_message_model.dart';
-// import '../routes/app_routes.dart'; // Sesuaikan dengan path routes Anda
+enum ScheduleOption { always, custom }
 
-// class AwayMessageController extends GetxController {
-//   // --- STATE ---
-//   // Membuat instance AwayMessage menjadi reaktif dengan .obs
-//   var awayMessage = AwayMessage(
-//     startTime: DateTime.now(),
-//     endTime: DateTime.now().add(const Duration(hours: 8)),
-//   ).obs;
+class AwayController extends GetxController {
+  final isAwayEnabled = false.obs;
+  final scheduleOption = ScheduleOption.custom.obs;
+  final message = 'Thank You'.obs;
+  final startTime = Rx<DateTime?>(null);
+  final endTime = Rx<DateTime?>(null);
 
-//   // Controller untuk text field di halaman edit pesan
-//   late TextEditingController messageController;
+  late TextEditingController messageEditController;
 
-//   // --- LIFECYCLE ---
-//   @override
-//   void onInit() {
-//     super.onInit();
-//     messageController = TextEditingController(text: awayMessage.value.message);
-//   }
+  // --- STATE BARU UNTUK CUSTOM PICKER ---
 
-//   @override
-//   void onClose() {
-//     messageController.dispose();
-//     super.onClose();
-//   }
+  // Untuk melacak picker mana yang sedang aktif: 'start', 'end', atau null (tidak ada)
+  final Rx<String?> activePicker = Rx<String?>(null);
 
-//   // --- GETTERS (Untuk memformat tampilan di UI) ---
-//   String get formattedStartTime => DateFormat('MM/dd/yy, h:mm a').format(awayMessage.value.startTime!);
-//   String get formattedEndTime => DateFormat('MM/dd/yy, h:mm a').format(awayMessage.value.endTime!);
+  // Untuk menyimpan tanggal/waktu yang sedang dipilih di picker sebelum disimpan
+  final Rx<DateTime> tempSelectedDate = DateTime.now().obs;
 
-//   // --- ACTIONS ---
-//   // Mengaktifkan atau menonaktifkan away message
-//   void toggleEnabled(bool value) {
-//     awayMessage.update((val) {
-//       val!.isEnabled = value;
-//     });
-//   }
+  // Untuk toggle antara tampilan kalender dan tampilan jam
+  final isCalendarView = true.obs;
 
-//   // Mengubah tipe jadwal (Always Send / Custom)
-//   void setScheduleType(ScheduleType type) {
-//     awayMessage.update((val) {
-//       val!.scheduleType = type;
-//     });
-//   }
+  @override
+  void onInit() {
+    super.onInit();
+    messageEditController = TextEditingController(text: message.value);
+  }
 
-//   // Menavigasi ke halaman edit pesan
-//   void navigateToEditMessage() {
-//     messageController.text = awayMessage.value.message; // Pastikan text field update
-//     Get.toNamed(AppRoutes.EditAwayMessage);
-//   }
+  @override
+  void onClose() {
+    messageEditController.dispose();
+    super.onClose();
+  }
+  /// Toggles the away message setting.
+  void toggleAway(bool value) {
+    isAwayEnabled.value = value;
+  }
+  
+  // --- METHOD BARU UNTUK CUSTOM PICKER ---
 
-//   // Menyimpan pesan yang telah diubah
-//   void saveMessage() {
-//     if (messageController.text.isNotEmpty) {
-//       awayMessage.update((val) {
-//         val!.message = messageController.text;
-//       });
-//       Get.back(); // Kembali ke halaman sebelumnya
-//       Get.snackbar('Saved', 'Away message has been updated.');
-//     }
-//   }
+  // Dipanggil saat ListTile 'Start Time' atau 'End Time' ditekan
+  void openPicker(String pickerType) {
+    // Jika menekan picker yang sudah aktif, tutup picker tersebut
+    if (activePicker.value == pickerType) {
+      activePicker.value = null;
+      return;
+    }
 
-//   // Logika untuk memilih tanggal dan waktu
-//   Future<void> selectDateTime(BuildContext context, {required bool isStartTime}) async {
-//     final initialDate = isStartTime ? awayMessage.value.startTime! : awayMessage.value.endTime!;
+    activePicker.value = pickerType;
+    isCalendarView.value = true; // Selalu mulai dengan tampilan kalender
 
-//     // 1. Tampilkan Date Picker
-//     final DateTime? pickedDate = await showDatePicker(
-//       context: context,
-//       initialDate: initialDate,
-//       firstDate: DateTime(2020),
-//       lastDate: DateTime(2030),
-//     );
+    // Set tanggal awal di picker sesuai dengan nilai yang sudah ada
+    if (pickerType == 'start' && startTime.value != null) {
+      tempSelectedDate.value = startTime.value!;
+    } else if (pickerType == 'end' && endTime.value != null) {
+      tempSelectedDate.value = endTime.value!;
+    } else {
+      tempSelectedDate.value = DateTime.now();
+    }
+  }
 
-//     if (pickedDate == null) return; // User menekan cancel
+  // Menyimpan tanggal/waktu dari picker ke state utama (startTime atau endTime)
+  void savePickedDate() {
+    if (activePicker.value == 'start') {
+      startTime.value = tempSelectedDate.value;
+    } else if (activePicker.value == 'end') {
+      endTime.value = tempSelectedDate.value;
+    }
+    // Tutup picker setelah menyimpan
+    activePicker.value = null;
+  }
 
-//     // 2. Tampilkan Time Picker (menggunakan bottom sheet dengan Cupertino style)
-//     DateTime tempTime = initialDate;
-//     Get.bottomSheet(
-//       Container(
-//         height: 300,
-//         color: Colors.white,
-//         child: Column(
-//           children: [
-//             Expanded(
-//               child: CupertinoDatePicker(
-//                 mode: CupertinoDatePickerMode.time,
-//                 initialDateTime: initialDate,
-//                 onDateTimeChanged: (DateTime newTime) {
-//                   tempTime = newTime;
-//                 },
-//               ),
-//             ),
-//             Padding(
-//               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-//               child: SizedBox(
-//                 width: double.infinity,
-//                 child: CupertinoButton.filled(
-//                   child: const Text('Set'),
-//                   onPressed: () {
-//                     // Gabungkan tanggal dari date picker dan waktu dari time picker
-//                     final finalDateTime = DateTime(
-//                       pickedDate.year,
-//                       pickedDate.month,
-//                       pickedDate.day,
-//                       tempTime.hour,
-//                       tempTime.minute,
-//                     );
-
-//                     // Update state
-//                     awayMessage.update((val) {
-//                       if (isStartTime) {
-//                         val!.startTime = finalDateTime;
-//                       } else {
-//                         val!.endTime = finalDateTime;
-//                       }
-//                     });
-//                     Get.back(); // Tutup bottom sheet
-//                   },
-//                 ),
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
+  // Future<void> pickDateTime(...) { ... }
+  
+  void selectScheduleOption(ScheduleOption option) {
+    scheduleOption.value = option;
+  }
+  String formatDateTime(DateTime? dt) {
+    if (dt == null) {
+      return 'Select time';
+    }
+    return DateFormat('dd/MM/yy, HH:mm').format(dt);
+  }
+  void showMessageEditPopup() {
+    messageEditController.text = message.value;
+    Get.to(
+      () => const EditMessageScreen(),
+      transition: Transition.downToUp,
+    );
+  }
+}
