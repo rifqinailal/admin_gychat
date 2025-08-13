@@ -11,9 +11,8 @@ enum MainMenuAction { groupBaru, berbintang, pengaturan }
 
 class ChatHeader extends StatelessWidget {
   const ChatHeader({super.key});
-
-  // Method ini SEKARANG HANYA membuat baris judul "Gychat" dan menu titik tiga.
   Widget _buildTitleBar() {
+    //final ChatListController controller = Get.find();
     return Row(
       key: const ValueKey('normalHeader'), // Key untuk animasi
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -55,10 +54,8 @@ class ChatHeader extends StatelessWidget {
             }
           },
 
-          // Fungsi yang membangun (membuat) daftar item di dalam menu.
           itemBuilder:
               (BuildContext context) => <PopupMenuEntry<MainMenuAction>>[
-                // ITEM MENU 1: Group Baru
                 PopupMenuItem<MainMenuAction>(
                   value: MainMenuAction.groupBaru,
                   child: Row(
@@ -122,7 +119,8 @@ class ChatHeader extends StatelessWidget {
         Row(
           children: [
             IconButton(
-              onPressed: () {},
+              // HUBUNGKAN FUNGSI `archiveSelectedChats`
+              onPressed: () => controller.archiveSelectedChats(),
               icon: const Icon(
                 Icons.archive_outlined,
                 color: Color(0xFF353435),
@@ -210,22 +208,28 @@ class ChatHeader extends StatelessWidget {
             onTap: () {
               Get.toNamed(AppRoutes.DetailArsip);
             },
-              child: Row(
-                children: [
-                  const Icon(Icons.archive_outlined, color: ThemeColor.gray),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'Diarsipkan',
-                    style: TextStyle(color: ThemeColor.gray, fontSize: 16),
+            child: Row(
+              children: [
+                const Icon(Icons.archive_outlined, color: ThemeColor.gray),
+                const SizedBox(width: 12),
+                const Text(
+                  'Diarsipkan',
+                  style: TextStyle(color: ThemeColor.gray, fontSize: 16),
+                ),
+                const Spacer(),
+                Obx(
+                    () => Text(
+                      // Ambil jumlah dari getter baru kita dan ubah ke String
+                      controller.archivedChatsCount.toString(),
+                      style: const TextStyle(
+                        color: ThemeColor.gray,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600, // Dibuat tebal agar terlihat
+                      ),
+                    ),
                   ),
-                  const Spacer(),
-                  const Text(
-                    '13',
-                    style: TextStyle(color: ThemeColor.gray, fontSize: 16),
-                  ),
-                ],
-              ),
-            
+              ],
+            ),
           ),
         ),
       ],

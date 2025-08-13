@@ -93,6 +93,8 @@ class ChatBubble extends StatelessWidget {
     );
   }
 
+  
+
   Widget _buildHighlightedText() {
     // Jika tidak ada kata kunci pencarian, tampilkan Text biasa.
     if (highlightText == null || highlightText!.isEmpty) {
@@ -157,7 +159,8 @@ class ChatBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Widget helper untuk membuat ekor gelembung (tidak berubah)
-    Widget buildTail(bool isSender) {
+    // 1. Helper untuk membuat ekor gelembung
+    Widget buildTail() {
       return Positioned(
         bottom: 0,
         right: isSender ? -6 : null,
@@ -170,73 +173,56 @@ class ChatBubble extends StatelessWidget {
       );
     }
 
-    // Widget helper untuk ikon status (tidak berubah)
-    Widget _buildStatusIcon() {
-      if (isPinned) {
-        return Transform.rotate(
-          angle: 0.5, // Sedikit dimiringkan
-          child: Icon(
-            Icons.push_pin,
-            size: 16,
-            color: isSender ? Colors.white70 : Colors.black54,
-          ),
-        );
-      }
-      if (isStarred) {
-        return Icon(
-          Icons.star,
-          size: 16,
-          color: isSender ? Colors.white70 : Colors.black54,
-        );
-      }
-      return const SizedBox.shrink();
+    // 2. Helper untuk membuat baris ikon status (bintang/pin)
+    Widget buildStatusRow() {
+      if (!isPinned && !isStarred) return const SizedBox.shrink();
+
+      IconData statusIcon = isPinned ? Icons.push_pin : Icons.star;
+      Color iconColor = isSender ? Colors.white70 : Colors.black54;
+
+      return Padding(
+        padding: const EdgeInsets.only(top: 4.0, left: 8.0, right: 8.0),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [Icon(statusIcon, size: 14, color: iconColor)],
+        ),
+      );
     }
 
-    Widget _buildMessageContent() {
+    Widget buildMessageContent() {
       if (type == MessageType.document && documentName != null) {
-        // JIKA PESAN DOKUMEN, BUAT TAMPILAN BARU
         return Container(
-          // 1. Bungkus Dalam (warna sekunder)
-          //    Memberi padding di dalam dan sudut melengkung.
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: ThemeColor.secondary, // Warna sekunder
+            color: ThemeColor.secondary,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Ikon File
-              Icon(
+              const Icon(
                 Icons.insert_drive_file_outlined,
-                color: ThemeColor.primary, // Warna ikon putih agar kontras
+                color: ThemeColor.primary,
                 size: 36,
               ),
               const SizedBox(width: 12),
-              // Kolom untuk nama file dan info ukuran
               Flexible(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      documentName!,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: ThemeColor.primary, // Warna teks putih
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  documentName!,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: ThemeColor.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
           ),
         );
       }
-      // 1. CEK APAKAH PESAN INI ADALAH GAMBAR
+
       if (type == MessageType.image && imagePath != null) {
-        // JIKA YA, BUAT WIDGET GAMBAR
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -244,43 +230,20 @@ class ChatBubble extends StatelessWidget {
               borderRadius: BorderRadius.circular(15),
               child: Image.file(
                 File(imagePath!),
-                // `width` akan membatasi lebar gambar agar tidak terlalu besar
-                width:
-                    MediaQuery.of(context).size.width *
-                    0.9, // Maksimal 60% lebar layar
+                width: MediaQuery.of(context).size.width * 0.6,
                 fit: BoxFit.cover,
               ),
             ),
-            if (text != null)
+            if (text != null && text!.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.all(6),
-                child: Text(
-                  text ?? '',
-                  style: TextStyle(
-                    color: isSender ? Colors.white70 : Colors.black87,
-                  ),
-                ),
+                padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                child: _buildHighlightedText(),
               ),
           ],
         );
       }
-      final textWidget = Flexible(child: _buildHighlightedText());
-      final statusIconWidget = _buildStatusIcon();
-      const spacer = SizedBox(width: 8);
 
-      if (isSender) {
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [statusIconWidget, spacer, textWidget],
-        );
-      } else {
-        return Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [textWidget, spacer, statusIconWidget],
-        );
-      }
+      return _buildHighlightedText();
     }
 
     return GestureDetector(
@@ -313,8 +276,11 @@ class ChatBubble extends StatelessWidget {
                     Container(
                       padding:
                           type == MessageType.image
-                              ? EdgeInsets.all(3)
+                              ? const EdgeInsets.all(3)
                               : const EdgeInsets.all(12),
+                      constraints: BoxConstraints(
+                        maxWidth: MediaQuery.of(context).size.width * 0.75,
+                      ),
                       decoration: BoxDecoration(
                         color:
                             isSystemMessage
@@ -334,39 +300,41 @@ class ChatBubble extends StatelessWidget {
                         ),
                       ),
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment:
+                            isSender
+                                ? CrossAxisAlignment.end
+                                : CrossAxisAlignment.start,
                         children: [
-                          // Jika pesan adalah teks, tampilkan nama dan reply di dalam.
-                          // Jika gambar, nama dan reply bisa ditampilkan di atasnya (opsional).
-                          if (type == MessageType.text) ...[
-                            if (senderName != null && !isSender)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 4.0),
-                                child: Text(
-                                  senderName!,
-                                  style: const TextStyle(
-                                    color: Colors.pinkAccent,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13,
-                                  ),
+                          if (senderName != null && !isSender)
+                            Padding(
+                              padding: const EdgeInsets.only(bottom: 4.0),
+                              child: Text(
+                                senderName!,
+                                style: const TextStyle(
+                                  color: Colors.pinkAccent,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 13,
                                 ),
                               ),
-                            _buildReplyPreview(),
-                            if (repliedMessage != null)
-                              const SizedBox(height: 8),
-                          ],
-
-                          // PANGGIL METHOD PENGATUR KONTEN DI SINI
-                          _buildMessageContent(),
+                            ),
+                          if (repliedMessage != null)
+                            Padding(
+                              padding:
+                                  type == MessageType.text
+                                      ? EdgeInsets.zero
+                                      : const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                              child: _buildReplyPreview(),
+                            ),
+                          buildMessageContent(),
+                          buildStatusRow(),
                         ],
                       ),
                     ),
-                    if (showTail && !isSystemMessage) buildTail(isSender),
+                    if (showTail && !isSystemMessage) buildTail(),
                   ],
                 ),
               ),
             ),
-            // Bagian Timestamp
             Padding(
               padding: const EdgeInsets.only(left: 20, right: 20, bottom: 8),
               child: Text(

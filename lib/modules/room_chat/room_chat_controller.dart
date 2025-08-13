@@ -133,12 +133,7 @@ class RoomChatController extends GetxController {
         type: MessageType.document,
         documentPath: file.path,
         documentName: file.name,
-        // ===============================================
-        // PERBAIKAN UTAMA ADA DI SINI
-        // ===============================================
-        // Isi properti `text` dengan nama dokumen.
         text: file.name,
-        // ===============================================
       );
 
       messages.insert(0, newMessage);

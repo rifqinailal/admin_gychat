@@ -1,5 +1,4 @@
 
-import 'package:admin_gychat/models/away_message_model.dart';
 
 abstract class AppRoutes {
   static const Auth = '/auth';

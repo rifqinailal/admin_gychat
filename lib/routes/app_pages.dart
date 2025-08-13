@@ -52,7 +52,7 @@ class AppPages {
     // Detail Arsip
     GetPage(
       name: AppRoutes.DetailArsip,
-      page: () => const DetailArsipScreen(),
+      page: () =>  DetailArsipScreen(),
       binding: DetailArsipBinding(),
     ),
     // Profile
