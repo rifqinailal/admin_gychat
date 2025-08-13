@@ -1,4 +1,3 @@
-// lib/main.dart
 import 'package:admin_gychat/routes/app_pages.dart';
 import 'package:admin_gychat/routes/app_routes.dart';
 import 'package:flutter/material.dart';
@@ -9,9 +8,7 @@ void main() {
   runApp(
     GetMaterialApp(
       title: "Admin Chat",
-      // Halaman awal yang dibuka aplikasi
-      initialRoute: AppRoutes.Auth,
-      // Daftar semua halaman yang ada di aplikasi
+      initialRoute: AppRoutes.Dashboard,
       getPages: AppPages.routes,
       debugShowCheckedModeBanner: false,
     ),

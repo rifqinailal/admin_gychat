@@ -118,7 +118,7 @@ class ChatListTile extends StatelessWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF5364D0),
+                        color: ThemeColor.primary,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(

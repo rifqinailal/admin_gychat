@@ -1,111 +1,31 @@
-// lib/modules/arsip/detail_arsip_controller.dart
-
+import 'package:admin_gychat/modules/chat_list/chat_list_controller.dart';
 import 'package:get/get.dart';
 
-class DetailArsip {
-  final String senderName;
-  final String messagePreview;
-  final String avatarUrl;
-  final String timestamp;
-  final int unreadCount;
-  final bool isTyping;
-  final bool isSelected;
-  final bool hasMention; // Untuk titik merah
-
-  DetailArsip({
-    required this.senderName,
-    required this.messagePreview,
-    required this.avatarUrl,
-    required this.timestamp,
-    this.unreadCount = 0,
-    this.isTyping = false,
-    this.isSelected = false,
-    this.hasMention = false,
-  });
-}
 
 class DetailArsipController extends GetxController {
-  // Daftar chat yang diarsipkan, dibuat reaktif dengan .obs
-  var detailArsip = <DetailArsip>[].obs;
+  
+  // 1. Buat sebuah list reaktif untuk menampung chat yang diarsipkan.
+  var archivedChats = <ChatModel>[].obs;
 
   @override
   void onInit() {
     super.onInit();
-    // Memuat data dummy saat controller diinisialisasi
-    loadDummyData();
+    // 2. Panggil fungsi untuk mengisi list saat controller pertama kali dijalankan.
+    fetchArchivedChats();
   }
+ 
+  // 3. Buat fungsi untuk mengisi data (untuk sekarang kita pakai data dummy).
+  void fetchArchivedChats() {
+    // Nanti, data ini akan diambil dari API atau local storage.
+    var dummyData = [
+      ChatModel(id:1, name: 'rifqi', unreadCount: 2),
+      ChatModel(id:2,name: 'Olympiad Bus', isGroup: true, unreadCount: 5),
+      ChatModel(id:3,name: 'Classtell', unreadCount: 0),
+      ChatModel(id:4,name: 'Olympiad Mace', isGroup: true, unreadCount: 0),
+      ChatModel(id:5,name: 'faizin', unreadCount: 1),
+      ChatModel(id:6,name: 'nailal', isGroup: true, unreadCount: 1),
+    ];
 
-  // Metode untuk mengisi daftar dengan data yang sesuai dengan screenshot
-  void loadDummyData() {
-    detailArsip.assignAll([
-      DetailArsip(
-        senderName: 'ClassAll',
-        messagePreview: 'Hi, i have a problem with....',
-        avatarUrl: 'assets/images/class_avatar.png',
-        timestamp: '10.16',
-        unreadCount: 20,
-      ),
-      DetailArsip(
-        senderName: 'ClassAll',
-        messagePreview: 'Hi, i have a problem with....',
-        avatarUrl: 'assets/images/class_avatar.png',
-        timestamp: '10.16',
-        unreadCount: 20,
-      ),
-      DetailArsip(
-        senderName: 'Jeremy Owen',
-        messagePreview: 'Hi, i have a problem with....',
-        avatarUrl: 'assets/images/jeremy_avatar.png',
-        timestamp: '10.16',
-        unreadCount: 1,
-      ),
-      DetailArsip(
-        senderName: 'Jeremy Owen',
-        messagePreview: 'Hi, i have a problem with....',
-        avatarUrl: 'assets/images/jeremy_avatar.png',
-        timestamp: '10.16',
-        unreadCount: 1,
-        isSelected: false, // Item ini yang di-highlight biru
-      ),
-      DetailArsip(
-        senderName: 'Jeremy Owen',
-        messagePreview: 'mengetik....',
-        avatarUrl: 'assets/images/jeremy_avatar.png',
-        timestamp: '10.16',
-        isTyping: true,
-      ),
-      DetailArsip(
-        senderName: 'Jeremy Owen',
-        messagePreview: 'mengetik....',
-        avatarUrl: 'assets/images/jeremy_avatar.png',
-        timestamp: '10.16',
-        isTyping: true,
-      ),
-      DetailArsip(
-        senderName: 'Jeremy Owen',
-        messagePreview: 'Hi, i have a problem with....',
-        avatarUrl: 'assets/images/jeremy_avatar.png',
-        timestamp: 'yesterday',
-      ),
-       DetailArsip(
-        senderName: 'Jeremy Owen',
-        messagePreview: 'Hi, i have a problem with....',
-        avatarUrl: 'assets/images/jeremy_avatar.png',
-        timestamp: 'yesterday',
-      ),
-      DetailArsip(
-        senderName: 'Jeremy Owen',
-        messagePreview: 'Hi, i have a problem with....',
-        avatarUrl: 'assets/images/jeremy_avatar.png',
-        timestamp: 'senin',
-        hasMention: false, // Item ini punya titik merah
-      ),
-       DetailArsip(
-        senderName: 'Jeremy Owen',
-        messagePreview: 'Hi, i have a problem with....',
-        avatarUrl: 'assets/images/jeremy_avatar.png',
-        timestamp: '12/06/25',
-      ),
-    ]);
+    archivedChats.assignAll(dummyData);
   }
 }
