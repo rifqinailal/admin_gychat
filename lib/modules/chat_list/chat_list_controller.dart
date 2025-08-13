@@ -30,8 +30,7 @@ class ChatListController extends GetxController {
   }
 
   void deleteSelectedChats() {
-    print('Menghapus ${selectedChats.length} chat...');
-    allChats.removeWhere((chat) => selectedChats.contains(chat));
+    _allChats.removeWhere((chat) => selectedChats.contains(chat));
     Get.back();
     clearSelection();
   }
