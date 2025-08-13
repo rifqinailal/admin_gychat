@@ -95,7 +95,7 @@ class AwayScreen extends GetView<AwayController> {
     );
   }
   
-  // onTap memanggil popup edit
+  
   Widget _buildMessageTile() {
     return ListTile(
       title: const Text('Message'),

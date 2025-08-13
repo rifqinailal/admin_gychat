@@ -14,7 +14,6 @@ class AwayController extends GetxController {
 
   late TextEditingController messageEditController;
 
-  // --- STATE BARU UNTUK CUSTOM PICKER ---
 
   // Untuk melacak picker mana yang sedang aktif: 'start', 'end', atau null (tidak ada)
   final Rx<String?> activePicker = Rx<String?>(null);

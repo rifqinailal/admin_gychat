@@ -80,7 +80,6 @@ class DetailStarScreen extends GetView<DetailStarsController> {
             style: const TextStyle(color: Colors.black, fontSize: 18),
           );
         }
-
         return const Text(
           'Berbintang',
           style: TextStyle(color: Colors.black, fontSize: 18),

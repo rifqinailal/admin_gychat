@@ -10,7 +10,6 @@ class SettingController extends GetxController {
         child: Column(
           mainAxisSize: MainAxisSize.min, 
           children: [
-            // --- KOTAK KONFIRMASI (PUTIH) ---
             Container(
               width: double.infinity,
               decoration: const BoxDecoration(

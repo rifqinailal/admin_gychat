@@ -1,4 +1,3 @@
-// lib/app/routes/app_pages.dart
 import 'package:admin_gychat/modules/auth/auth_binding.dart';
 import 'package:admin_gychat/modules/auth/auth_screen.dart';
 import 'package:admin_gychat/modules/auth/forgot_password/forgot_password_binding.dart';
