@@ -15,6 +15,7 @@ class MessageModel {
   final bool isSender;
   final String? documentPath;
   final String? documentName;
+  final bool isDeleted;
 
   MessageModel({
     required this.senderId,
@@ -30,6 +31,7 @@ class MessageModel {
     required this.type,
     this.isStarred = false,
     this.isPinned = false,
+    this.isDeleted = false,
   }) : assert(
          (type == MessageType.text && text != null && text.isNotEmpty) ||
              (type == MessageType.image && imagePath != null) ||
@@ -39,7 +41,7 @@ class MessageModel {
          'Setiap tipe pesan harus memiliki data yang sesuai.',
        );
 
-  MessageModel copyWith({bool? isStarred, bool? isPinned}) {
+  MessageModel copyWith({bool? isStarred, bool? isPinned,bool? isDeleted, }) {
     return MessageModel(
       senderId: senderId,
       text: text,
@@ -53,6 +55,7 @@ class MessageModel {
       documentName: documentName, 
       isStarred: isStarred ?? this.isStarred,
       isPinned: isPinned ?? this.isPinned,
+      isDeleted: isDeleted ?? this.isDeleted,
     );
   }
 }

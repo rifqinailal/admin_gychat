@@ -66,10 +66,12 @@ class RoomChatController extends GetxController {
       final result = await OpenFilex.open(path);
       print(result.message); // Untuk debugging
     } catch (e) {
-      Get.snackbar('Error', 'Tidak dapat membuka file. Pastikan ada aplikasi yang mendukung.');
+      Get.snackbar(
+        'Error',
+        'Tidak dapat membuka file. Pastikan ada aplikasi yang mendukung.',
+      );
     }
   }
-
 
   void showAttachmentOptions() {
     Get.bottomSheet(
@@ -82,7 +84,9 @@ class RoomChatController extends GetxController {
               title: const Text('Galeri'),
               onTap: () {
                 Get.back(); // Tutup bottom sheet
-                _sendImage(ImageSource.gallery); // Panggil fungsi kirim gambar dari galeri
+                _sendImage(
+                  ImageSource.gallery,
+                ); // Panggil fungsi kirim gambar dari galeri
               },
             ),
             ListTile(
@@ -104,44 +108,44 @@ class RoomChatController extends GetxController {
   }
 
   Future<void> _sendImage(ImageSource source) async {
-  try {
-    // 1. Ambil gambar menggunakan image_picker
-    final XFile? pickedFile = await ImagePicker().pickImage(source: source);
+    try {
+      // 1. Ambil gambar menggunakan image_picker
+      final XFile? pickedFile = await ImagePicker().pickImage(source: source);
 
-    // 2. Cek apakah user memilih gambar
-    if (pickedFile != null) {
-      // 3. Tampilkan halaman pratinjau untuk menambahkan caption
-      _showImagePreview(pickedFile);
+      // 2. Cek apakah user memilih gambar
+      if (pickedFile != null) {
+        // 3. Tampilkan halaman pratinjau untuk menambahkan caption
+        _showImagePreview(pickedFile);
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Gagal mengambil gambar: $e');
     }
-  } catch (e) {
-    Get.snackbar('Error', 'Gagal mengambil gambar: $e');
   }
-}
 
   Future<void> _sendDocument() async {
-  try {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles();
 
-    if (result != null) {
-      final PlatformFile file = result.files.first;
-      
-      final newMessage = MessageModel(
-        senderId: currentUserId,
-        senderName: "Anda",
-        timestamp: DateTime.now(),
-        isSender: true,
-        type: MessageType.document,
-        documentPath: file.path,
-        documentName: file.name,
-        text: file.name,
-      );
+      if (result != null) {
+        final PlatformFile file = result.files.first;
 
-      messages.insert(0, newMessage);
+        final newMessage = MessageModel(
+          senderId: currentUserId,
+          senderName: "Anda",
+          timestamp: DateTime.now(),
+          isSender: true,
+          type: MessageType.document,
+          documentPath: file.path,
+          documentName: file.name,
+          text: file.name,
+        );
+
+        messages.insert(0, newMessage);
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Gagal memilih dokumen: $e');
     }
-  } catch (e) {
-    Get.snackbar('Error', 'Gagal memilih dokumen: $e');
   }
-}
 
   Future<void> _showImagePreview(XFile pickedFile) async {
     final TextEditingController captionController = TextEditingController();
@@ -421,5 +425,133 @@ class RoomChatController extends GetxController {
     // Beri feedback ke user
     Get.snackbar('Disalin', 'Teks pesan telah disalin ke clipboard.');
     clearMessageSelection();
+  }
+
+  // Di dalam RoomChatController
+
+  void showDeleteConfirmationDialog() {
+    bool canDeleteForAll = selectedMessages.every((msg) => msg.isSender);
+
+    Get.dialog(
+      Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Judul
+              const Text(
+                'Hapus pesan',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 5),
+
+              // Tombol-tombol
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (canDeleteForAll)
+                    SizedBox(
+                      width: double.infinity,
+                      child: TextButton(
+                        onPressed: () {
+                          Get.back();
+                          deleteMessages(deleteForAll: true);
+                        },
+                        style: TextButton.styleFrom(
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        child: const Text(
+                          'Hapus untuk semua orang',
+                          textAlign: TextAlign.right,
+                          style: TextStyle(
+                            color: ThemeColor.primary,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton(
+                      onPressed: () {
+                        Get.back();
+                        deleteMessages(deleteForAll: false);
+                      },
+                      style: TextButton.styleFrom(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: const Text(
+                        'Hapus untuk saya',
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          color: ThemeColor.primary,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton(
+                      onPressed: () => Get.back(),
+                      style: TextButton.styleFrom(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: const Text(
+                        'Batal',
+                        textAlign: TextAlign.right,
+                         style: TextStyle(
+                          color: ThemeColor.primary,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 2. Fungsi utama untuk menjalankan aksi hapus
+  void deleteMessages({required bool deleteForAll}) {
+    // Jika "Hapus untuk saya"
+    if (!deleteForAll) {
+      // Langsung hapus pesan dari daftar
+      messages.removeWhere((msg) => selectedMessages.contains(msg));
+    }
+    // Jika "Hapus untuk semua orang"
+    else {
+      // Jangan hapus, tapi ubah statusnya
+      for (var selectedMessage in selectedMessages) {
+        var index = messages.indexWhere((m) => m == selectedMessage);
+        if (index != -1) {
+          // Buat salinan pesan dengan status isDeleted = true
+          messages[index] = messages[index].copyWith(isDeleted: true);
+        }
+      }
+    }
+
+    messages.refresh();
+    clearMessageSelection(); // Bersihkan seleksi
   }
 }

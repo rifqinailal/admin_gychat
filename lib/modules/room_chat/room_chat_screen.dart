@@ -78,18 +78,25 @@ class RoomChatScreen extends GetView<RoomChatController> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+          // 2. TAMBAHKAN LOGIKA UNTUK NILAI 'starred' DI SINI
           onSelected: (value) {
             if (value == 'search') {
               Future.delayed(Duration.zero, () {
                 controller.toggleSearchMode();
               });
+            } else if (value == 'starred') {
+              // <-- Tambahkan else if
+              // Pindahkan navigasi ke sini
+              Get.toNamed(AppRoutes.DetailStar);
             }
           },
           itemBuilder:
               (context) => [
                 const PopupMenuItem(value: 'search', child: Text('Search')),
+                // 1. UBAH `TextButton` MENJADI `Text` BIASA
                 const PopupMenuItem(
-                  value: 'starred',
+                  value:
+                      'starred', // <-- 'value' ini akan dikirim ke onSelected
                   child: Text('Pesan Berbintang'),
                 ),
               ],
@@ -157,7 +164,10 @@ class RoomChatScreen extends GetView<RoomChatController> {
           icon: const Icon(Icons.copy),
         ),
         IconButton(onPressed: () {}, icon: const Icon(Icons.edit)),
-        IconButton(onPressed: () {}, icon: const Icon(Icons.delete_outline)),
+        IconButton(
+          onPressed: () => controller.showDeleteConfirmationDialog(),
+          icon: const Icon(Icons.delete_outline),
+        ),
       ],
     );
   }
@@ -284,6 +294,7 @@ class RoomChatScreen extends GetView<RoomChatController> {
                               type: message.type,
                               imagePath: message.imagePath,
                               documentName: message.documentName,
+                              isDeleted: message.isDeleted,
                               onTap: () {
                                 if (controller.isMessageSelectionMode.value) {
                                   controller.toggleMessageSelection(message);

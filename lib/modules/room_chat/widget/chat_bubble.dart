@@ -21,6 +21,8 @@ class ChatBubble extends StatelessWidget {
   final String? imagePath;
   final Map<String, String>? repliedMessage;
   final String? documentName;
+  final bool isDeleted;
+
 
   // PENAMBAHAN PARAMETER BARU UNTUK HIGHLIGHT
   final String? highlightText;
@@ -43,6 +45,7 @@ class ChatBubble extends StatelessWidget {
     required this.type,
     this.imagePath,
     this.documentName,
+    required this.isDeleted,
   });
 
   Widget _buildReplyPreview() {
@@ -190,6 +193,23 @@ class ChatBubble extends StatelessWidget {
     }
 
     Widget buildMessageContent() {
+
+      if (isDeleted) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.block, color: Colors.grey.shade400, size: 16),
+          const SizedBox(width: 8),
+          Text(
+            'You deleted this message',
+            style: TextStyle(
+              color: Colors.grey.shade400,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
+      );
+    }
       if (type == MessageType.document && documentName != null) {
         return Container(
           padding: const EdgeInsets.all(12),
