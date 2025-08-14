@@ -1,3 +1,5 @@
+import 'package:admin_gychat/models/message_model.dart';
+
 class ChatModel {
   final int id;
   final String name;
@@ -5,6 +7,7 @@ class ChatModel {
   final int unreadCount;
   bool isArchived;
   bool isPinned; 
+  final List<MessageModel> messages;
 
   ChatModel({
     required this.id,
@@ -13,5 +16,6 @@ class ChatModel {
     this.unreadCount = 0,
     this.isArchived = false,
     this.isPinned = false, 
+    this.messages = const [], 
   });
 }

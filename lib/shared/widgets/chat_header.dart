@@ -12,7 +12,7 @@ class ChatHeader extends StatelessWidget {
   const ChatHeader({super.key});
   Widget _buildTitleBar() {
     return Row(
-      key: const ValueKey('normalHeader'), 
+      key: const ValueKey('normalHeader'),
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         const Text(
@@ -174,50 +174,47 @@ class ChatHeader extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: TextField(
+            // Hubungkan controller
+            controller: controller.searchController,
             decoration: InputDecoration(
               hintText: 'Search Here',
               hintStyle: TextStyle(color: ThemeColor.gray),
-              prefixIcon: Icon(Icons.search_rounded, color: ThemeColor.gray),
+              // Buat ikon menjadi dinamis
+              prefixIcon: Obx(
+                () =>
+                    controller
+                            .isSearching
+                            .value // TANYA: Apakah sedang mencari?
+                        // JIKA YA: Tampilkan IconButton untuk kembali/batal
+                        ? IconButton(
+                          icon: const Icon(
+                            Icons.arrow_back_ios,
+                            color: ThemeColor.gray,
+                          ),
+                          onPressed: () => controller.clearSearch(),
+                        )
+                        // JIKA TIDAK: Tampilkan ikon search biasa
+                        : const Icon(
+                          Icons.search_rounded,
+                          color: ThemeColor.gray,
+                        ),
+              ),
+              // Tambahkan tombol clear di kanan saat mencari
+
+              // KEMBALIKAN fillColor
               filled: true,
-              fillColor: Color.fromRGBO(240, 240, 240, 1),
-              contentPadding: EdgeInsets.symmetric(vertical: 10),
-              border: OutlineInputBorder(
+              fillColor: const Color.fromRGBO(240, 240, 240, 1),
+              contentPadding: const EdgeInsets.symmetric(vertical: 10),
+              // PASTIKAN borderSide ADALAH none
+              border: const OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(20)),
                 borderSide: BorderSide.none,
               ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 20),
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 36,
-          ), // Disesuaikan paddingnya
-          child: InkWell(
-            onTap: () {
-              Get.toNamed(AppRoutes.DetailArsip);
-            },
-            child: Row(
-              children: [
-                const Icon(Icons.archive_outlined, color: ThemeColor.gray),
-                const SizedBox(width: 12),
-                const Text(
-                  'Diarsipkan',
-                  style: TextStyle(color: ThemeColor.gray, fontSize: 16),
-                ),
-                const Spacer(),
-                Obx(
-                  () => Text(
-                    // Ambil jumlah dari getter baru kita dan ubah ke String
-                    controller.archivedChatsCount.toString(),
-                    style: const TextStyle(
-                      color: ThemeColor.gray,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600, // Dibuat tebal agar terlihat
-                    ),
-                  ),
-                ),
-              ],
+              // Hilangkan fokus border juga agar sama
+              focusedBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(20)),
+                borderSide: BorderSide.none,
+              ),
             ),
           ),
         ),

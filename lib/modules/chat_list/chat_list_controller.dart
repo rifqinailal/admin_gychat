@@ -1,6 +1,14 @@
 import 'package:admin_gychat/models/chat_model.dart';
+import 'package:admin_gychat/models/message_model.dart';
 import 'package:admin_gychat/shared/widgets/pin_confirmation_dialog.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+
+class SearchResultMessage {
+  final ChatModel chat; // Dari obrolan mana pesan ini berasal
+  final MessageModel message;
+  SearchResultMessage({required this.chat, required this.message});
+}
 
 class ChatListController extends GetxController {
   var _allChats = <ChatModel>[].obs;
@@ -9,10 +17,18 @@ class ChatListController extends GetxController {
   int get archivedChatsCount =>
       _allChats.where((chat) => chat.isArchived).length;
   final int pinLimit = 2;
+  late TextEditingController searchController;
+  var searchQuery = ''.obs;
+  var isSearching = false.obs;
+  var searchResultChats = <ChatModel>[].obs;
+  var searchResultMessages = <SearchResultMessage>[].obs;
 
   @override
   void onInit() {
     super.onInit();
+        searchController = TextEditingController();
+    // Tambahkan listener untuk mendeteksi setiap ketikan
+    searchController.addListener(_onSearchChanged);
     fetchChats();
   }
 
@@ -35,6 +51,51 @@ class ChatListController extends GetxController {
   List<ChatModel> get groupChats =>
       allChats.where((chat) => chat.isGroup).toList();
 
+void _onSearchChanged() {
+    // `debounce` memberi jeda agar pencarian tidak dijalankan pada setiap huruf,
+    // tapi hanya setelah user berhenti mengetik selama 500 milidetik.
+    debounce(searchQuery, (_) => _performSearch(), time: const Duration(milliseconds: 500));
+    searchQuery.value = searchController.text;
+  }
+
+  // FUNGSI BARU: Untuk melakukan pencarian
+  void _performSearch() {
+    final query = searchQuery.value.toLowerCase();
+    
+    // Jika query kosong, keluar dari mode search
+    if (query.isEmpty) {
+      isSearching.value = false;
+      searchResultChats.clear();
+      searchResultMessages.clear();
+      return;
+    }
+    
+    isSearching.value = true;
+    
+    // 1. Cari di nama chat
+    searchResultChats.assignAll(
+      _allChats.where((chat) => chat.name.toLowerCase().contains(query))
+    );
+
+    // 2. Cari di dalam pesan
+    List<SearchResultMessage> messageResults = [];
+    for (var chat in _allChats) {
+      for (var message in chat.messages) {
+        if (message.text != null && message.text!.toLowerCase().contains(query)) {
+          messageResults.add(SearchResultMessage(chat: chat, message: message));
+        }
+      }
+    }
+    searchResultMessages.assignAll(messageResults);
+  }
+
+  // FUNGSI BARU: Untuk membersihkan search
+  void clearSearch() {
+    searchController.clear();
+    // _onSearchChanged akan otomatis terpanggil dan membersihkan state
+  }
+
+  
   void pinSelectedChats() {
     int currentPinnedCount = _allChats.where((c) => c.isPinned).length;
     int newPinsCount = selectedChats.where((c) => !c.isPinned).length;
