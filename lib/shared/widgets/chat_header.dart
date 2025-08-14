@@ -3,7 +3,6 @@ import 'package:admin_gychat/modules/dashboard/dashboard_controller.dart';
 import 'package:admin_gychat/routes/app_routes.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:admin_gychat/shared/widgets/delete_confirmation_dialog.dart';
-import 'package:admin_gychat/shared/widgets/pin_confirmation_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -12,9 +11,8 @@ enum MainMenuAction { groupBaru, berbintang, pengaturan }
 class ChatHeader extends StatelessWidget {
   const ChatHeader({super.key});
   Widget _buildTitleBar() {
-    //final ChatListController controller = Get.find();
     return Row(
-      key: const ValueKey('normalHeader'), // Key untuk animasi
+      key: const ValueKey('normalHeader'), 
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         const Text(
@@ -66,8 +64,6 @@ class ChatHeader extends StatelessWidget {
                     ],
                   ),
                 ),
-
-                // ITEM MENU 2: Berbintang
                 PopupMenuItem<MainMenuAction>(
                   value: MainMenuAction.berbintang,
                   child: Row(
@@ -78,8 +74,6 @@ class ChatHeader extends StatelessWidget {
                     ],
                   ),
                 ),
-
-                // ITEM MENU 3: Pengaturan
                 PopupMenuItem<MainMenuAction>(
                   value: MainMenuAction.pengaturan,
                   child: Row(
@@ -119,7 +113,6 @@ class ChatHeader extends StatelessWidget {
         Row(
           children: [
             IconButton(
-              // HUBUNGKAN FUNGSI `archiveSelectedChats`
               onPressed: () => controller.archiveSelectedChats(),
               icon: const Icon(
                 Icons.archive_outlined,
@@ -128,18 +121,14 @@ class ChatHeader extends StatelessWidget {
             ),
             IconButton(
               onPressed: () {
-                if (controller.selectedChats.length >= 5)
-                  Get.dialog(
-                    PinConfirmationDialog(
-                      chatCount: controller.selectedChats.length,
-                    ),
-                  );
+                controller.pinSelectedChats();
               },
               icon: Transform.rotate(
-                angle: 1, // dalam radian,
+                angle: 1,
                 child: Icon(Icons.push_pin_outlined, color: Color(0xFF353435)),
               ),
             ),
+
             IconButton(
               onPressed: () {
                 Get.dialog(
@@ -218,16 +207,16 @@ class ChatHeader extends StatelessWidget {
                 ),
                 const Spacer(),
                 Obx(
-                    () => Text(
-                      // Ambil jumlah dari getter baru kita dan ubah ke String
-                      controller.archivedChatsCount.toString(),
-                      style: const TextStyle(
-                        color: ThemeColor.gray,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600, // Dibuat tebal agar terlihat
-                      ),
+                  () => Text(
+                    // Ambil jumlah dari getter baru kita dan ubah ke String
+                    controller.archivedChatsCount.toString(),
+                    style: const TextStyle(
+                      color: ThemeColor.gray,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600, // Dibuat tebal agar terlihat
                     ),
                   ),
+                ),
               ],
             ),
           ),
