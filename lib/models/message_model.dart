@@ -41,10 +41,10 @@ class MessageModel {
          'Setiap tipe pesan harus memiliki data yang sesuai.',
        );
 
-  MessageModel copyWith({bool? isStarred, bool? isPinned,bool? isDeleted, }) {
+  MessageModel copyWith({String? text,bool? isStarred, bool? isPinned,bool? isDeleted, }) {
     return MessageModel(
       senderId: senderId,
-      text: text,
+      text: text ?? this.text, 
       timestamp: timestamp,
       isSender: isSender,
       senderName: senderName,

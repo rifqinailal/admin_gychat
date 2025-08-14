@@ -25,6 +25,7 @@ class RoomChatController extends GetxController {
   var showQuickReplies = false.obs;
   var filteredQuickReplies = <QuickReply>[].obs;
   var replyMessage = Rxn<MessageModel>();
+  var editingMessage = Rxn<MessageModel>();
 
   List<MessageModel> get filteredMessages {
     if (searchQuery.isEmpty) {
@@ -354,6 +355,10 @@ class RoomChatController extends GetxController {
 
   // Fungsi untuk mengirim pesan baru
   void sendMessage() {
+    if (editingMessage.value != null) {
+      updateMessage();
+      return; // Hentikan eksekusi agar tidak mengirim pesan baru.
+    }
     final text = messageController.text.trim();
 
     if (text.isNotEmpty) {
@@ -516,7 +521,7 @@ class RoomChatController extends GetxController {
                       child: const Text(
                         'Batal',
                         textAlign: TextAlign.right,
-                         style: TextStyle(
+                        style: TextStyle(
                           color: ThemeColor.primary,
                           fontSize: 16,
                         ),
@@ -553,5 +558,51 @@ class RoomChatController extends GetxController {
 
     messages.refresh();
     clearMessageSelection(); // Bersihkan seleksi
+  }
+
+  void setEditMessage() {
+    if (selectedMessages.length == 1) {
+      final messageToEdit = selectedMessages.first;
+      if (messageToEdit.isSender &&
+          (messageToEdit.type == MessageType.text ||
+              messageToEdit.type == MessageType.image)) {
+        editingMessage.value = messageToEdit;
+        // Isi inputan dengan teks/caption yang sudah ada (atau string kosong jika belum ada).
+        messageController.text = messageToEdit.text ?? '';
+        messageController.selection = TextSelection.fromPosition(
+          TextPosition(offset: messageController.text.length),
+        );
+        clearMessageSelection();
+      } else {
+        Get.snackbar(
+          'Info',
+          'Hanya pesan teks atau gambar Anda yang bisa diedit.',
+        );
+        clearMessageSelection();
+      }
+    }
+  }
+
+  // 2. Fungsi untuk membatalkan mode edit.
+  void cancelEdit() {
+    editingMessage.value = null;
+    messageController.clear();
+  }
+
+  // 3. Fungsi untuk memperbarui pesan.
+  void updateMessage() {
+    final newText = messageController.text.trim();
+    // Pastikan ada pesan yang sedang diedit dan teks barunya tidak kosong.
+    if (editingMessage.value != null && newText.isNotEmpty) {
+      // Cari indeks pesan yang akan diupdate.
+      var index = messages.indexWhere((m) => m == editingMessage.value);
+      if (index != -1) {
+        // Buat salinan pesan dengan teks yang baru.
+        messages[index] = messages[index].copyWith(text: newText);
+      }
+      messages.refresh();
+      // Batalkan mode edit setelah selesai.
+      cancelEdit();
+    }
   }
 }
