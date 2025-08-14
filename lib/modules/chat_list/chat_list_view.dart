@@ -78,43 +78,48 @@ class ChatListView extends GetView<ChatListController> {
                         ],
                       ),
                     ),
-                  ), // Tambah spacing
+                  ),
+                  const SizedBox(height: 16), // Tambah spacing
                   // Chat List
                   Expanded(
                     child: ListView.builder(
                       itemCount: chatList.length,
                       itemBuilder: (context, index) {
                         final chat = chatList[index];
-                        final isSelected = controller.selectedChats.contains(chat);
                         
-                        return ChatListTile(
-                          isPinned: chat.isPinned,
-                          name: chat.name,
-                          lastMessage: "Hi, I have a problem with....",
-                          avatarUrl: "https://i.pravatar.cc/150?u=${chat.name}",
-                          time: "10.16",
-                          unreadCount: chat.unreadCount,
-                          isOnline: chat.name == 'Jeremy Owen',
-                          isSelected: isSelected,
-                          onTap: () {
-                            if (controller.isSelectionMode.value) {
-                              controller.toggleSelection(chat);
-                            } else {
-                              Get.toNamed(
-                                AppRoutes.ROOM_CHAT,
-                                arguments: {
-                                  "id": chat.id,
-                                  "name": chat.name,
-                                  "isGroup": chat.isGroup,
-                                  "members": "Pak Ketua, Pimpinan B, Admin A...",
-                                },
-                              );
-                            }
-                          },
-                          onLongPress: () {
-                            controller.startSelection(chat);
-                          },
-                        );
+                        // Wrap dengan Obx untuk reactive selection state
+                        return Obx(() {
+                          final isSelected = controller.selectedChats.contains(chat);
+                          
+                          return ChatListTile(
+                            isPinned: chat.isPinned,
+                            name: chat.name,
+                            lastMessage: "Hi, I have a problem with....",
+                            avatarUrl: "https://i.pravatar.cc/150?u=${chat.name}",
+                            time: "10.16",
+                            unreadCount: chat.unreadCount,
+                            isOnline: chat.name == 'Jeremy Owen',
+                            isSelected: isSelected,
+                            onTap: () {
+                              if (controller.isSelectionMode.value) {
+                                controller.toggleSelection(chat);
+                              } else {
+                                Get.toNamed(
+                                  AppRoutes.ROOM_CHAT,
+                                  arguments: {
+                                    "id": chat.id,
+                                    "name": chat.name,
+                                    "isGroup": chat.isGroup,
+                                    "members": "Pak Ketua, Pimpinan B, Admin A...",
+                                  },
+                                );
+                              }
+                            },
+                            onLongPress: () {
+                              controller.startSelection(chat);
+                            },
+                          );
+                        });
                       },
                     ),
                   ),
