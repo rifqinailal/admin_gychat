@@ -41,7 +41,7 @@ class ChatHeader extends StatelessWidget {
             // Menggunakan switch untuk menentukan aksi berdasarkan pilihan user.
             switch (action) {
               case MainMenuAction.groupBaru:
-                print('User memilih Group Baru');
+                Get.toNamed(AppRoutes.GrupBaru);
                 break;
               case MainMenuAction.berbintang:
                 Get.toNamed(AppRoutes.DetailStar);

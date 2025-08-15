@@ -11,7 +11,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:saver_gallery/saver_gallery.dart';
-import 'dart:typed_data';
+
 
 class RoomChatController extends GetxController {
   late TextEditingController messageController;
@@ -256,7 +256,7 @@ class RoomChatController extends GetxController {
       } else {
         filteredQuickReplies.assignAll(
           quickController.quickReplies.where(
-            (reply) => reply.shortcut!.toLowerCase().contains(query),
+            (reply) => reply.shortcut.toLowerCase().contains(query),
           ),
         );
       }

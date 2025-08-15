@@ -26,7 +26,7 @@ class ChatListController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-        searchController = TextEditingController();
+    searchController = TextEditingController();
     // Tambahkan listener untuk mendeteksi setiap ketikan
     searchController.addListener(_onSearchChanged);
     fetchChats();
@@ -51,17 +51,21 @@ class ChatListController extends GetxController {
   List<ChatModel> get groupChats =>
       allChats.where((chat) => chat.isGroup).toList();
 
-void _onSearchChanged() {
+  void _onSearchChanged() {
     // `debounce` memberi jeda agar pencarian tidak dijalankan pada setiap huruf,
     // tapi hanya setelah user berhenti mengetik selama 500 milidetik.
-    debounce(searchQuery, (_) => _performSearch(), time: const Duration(milliseconds: 500));
+    debounce(
+      searchQuery,
+      (_) => _performSearch(),
+      time: const Duration(milliseconds: 500),
+    );
     searchQuery.value = searchController.text;
   }
 
   // FUNGSI BARU: Untuk melakukan pencarian
   void _performSearch() {
     final query = searchQuery.value.toLowerCase();
-    
+
     // Jika query kosong, keluar dari mode search
     if (query.isEmpty) {
       isSearching.value = false;
@@ -69,19 +73,20 @@ void _onSearchChanged() {
       searchResultMessages.clear();
       return;
     }
-    
+
     isSearching.value = true;
-    
+
     // 1. Cari di nama chat
     searchResultChats.assignAll(
-      _allChats.where((chat) => chat.name.toLowerCase().contains(query))
+      _allChats.where((chat) => chat.name.toLowerCase().contains(query)),
     );
 
     // 2. Cari di dalam pesan
     List<SearchResultMessage> messageResults = [];
     for (var chat in _allChats) {
       for (var message in chat.messages) {
-        if (message.text != null && message.text!.toLowerCase().contains(query)) {
+        if (message.text != null &&
+            message.text!.toLowerCase().contains(query)) {
           messageResults.add(SearchResultMessage(chat: chat, message: message));
         }
       }
@@ -95,7 +100,6 @@ void _onSearchChanged() {
     // _onSearchChanged akan otomatis terpanggil dan membersihkan state
   }
 
-  
   void pinSelectedChats() {
     int currentPinnedCount = _allChats.where((c) => c.isPinned).length;
     int newPinsCount = selectedChats.where((c) => !c.isPinned).length;
@@ -150,37 +154,82 @@ void _onSearchChanged() {
     _allChats.refresh();
   }
 
- // Di dalam ChatListController
-void fetchChats() {
-  var dummyData = [
-    ChatModel(
-      id: 1,
-      name: 'Jeremy Owen',
-      unreadCount: 2,
-      // ISI DENGAN BEBERAPA CONTOH PESAN
-      messages: [
-        MessageModel(senderId: "user_01", senderName: "Jeremy Owen", text: "Langsung tanyakan ke indra aja", timestamp: DateTime.now(), isSender: false, type: MessageType.text),
-        MessageModel(senderId: "admin_01", senderName: "Anda", text: "Oke, siap.", timestamp: DateTime.now(), isSender: true, type: MessageType.text),
-      ],
-    ),
-    ChatModel(
-      id: 2,
-      name: 'Olympiad Bus',
-      isGroup: true,
-      unreadCount: 5,
-      messages: [
-        MessageModel(senderId: "user_02", senderName: "Pimpinan A", text: "Tolong segera diselesaikan ya.", timestamp: DateTime.now(), isSender: false, type: MessageType.text),
-      ],
-    ),
-    ChatModel(id: 3, name: 'Classtell', unreadCount: 0, messages: []),
-    ChatModel(id: 7, name: 'Projek Selesai', isArchived: true, messages: [
-       MessageModel(senderId: "user_03", senderName: "Indra Yulianto", text: "Laporan final sudah saya kirim.", timestamp: DateTime.now(), isSender: false, type: MessageType.text),
-    ]),
-    ChatModel(id: 8, name: 'Indra Yulianto', unreadCount: 0, messages: []),
-    ChatModel(id: 9, name: 'Agas Indransyah', unreadCount: 0, messages: [
-       MessageModel(senderId: "user_04", senderName: "Agas Indransyah", text: "mengetik.....", timestamp: DateTime.now(), isSender: false, type: MessageType.text),
-    ]),
-  ];
-  _allChats.assignAll(dummyData);
-}
+  // Di dalam ChatListController
+  void fetchChats() {
+    var dummyData = [
+      ChatModel(
+        id: 1,
+        name: 'Jeremy Owen',
+        unreadCount: 2,
+        // ISI DENGAN BEBERAPA CONTOH PESAN
+        messages: [
+          MessageModel(
+            senderId: "user_01",
+            senderName: "Jeremy Owen",
+            text: "Langsung tanyakan ke indra aja",
+            timestamp: DateTime.now(),
+            isSender: false,
+            type: MessageType.text,
+          ),
+          MessageModel(
+            senderId: "admin_01",
+            senderName: "Anda",
+            text: "Oke, siap.",
+            timestamp: DateTime.now(),
+            isSender: true,
+            type: MessageType.text,
+          ),
+        ],
+      ),
+      ChatModel(
+        id: 2,
+        name: 'Olympiad Bus',
+        isGroup: true,
+        unreadCount: 5,
+        messages: [
+          MessageModel(
+            senderId: "user_02",
+            senderName: "Pimpinan A",
+            text: "Tolong segera diselesaikan ya.",
+            timestamp: DateTime.now(),
+            isSender: false,
+            type: MessageType.text,
+          ),
+        ],
+      ),
+      ChatModel(id: 3, name: 'Classtell', unreadCount: 0, messages: []),
+      ChatModel(
+        id: 7,
+        name: 'Projek Selesai',
+        isArchived: true,
+        messages: [
+          MessageModel(
+            senderId: "user_03",
+            senderName: "Indra Yulianto",
+            text: "Laporan final sudah saya kirim.",
+            timestamp: DateTime.now(),
+            isSender: false,
+            type: MessageType.text,
+          ),
+        ],
+      ),
+      ChatModel(id: 8, name: 'Indra Yulianto', unreadCount: 0, messages: []),
+      ChatModel(
+        id: 9,
+        name: 'Agas Indransyah',
+        unreadCount: 0,
+        messages: [
+          MessageModel(
+            senderId: "user_04",
+            senderName: "Agas Indransyah",
+            text: "mengetik.....",
+            timestamp: DateTime.now(),
+            isSender: false,
+            type: MessageType.text,
+          ),
+        ],
+      ),
+    ];
+    _allChats.assignAll(dummyData);
+  }
 }
