@@ -38,27 +38,23 @@ class AuthScreen extends GetView<AuthController> {
 
   // Widget for the loading overlay
   Widget _buildLoadingOverlay() {
-    return Obx(() {
-      // Show overlay only when isLoading is true
-      if (controller.isLoading.value) {
-        return Container(
-          // Semi-transparent background
+    return Obx(() { 
+      if (controller.isLoading.value) { 
+        return Container( 
           color: Colors.black.withOpacity(0.5),
           child: const Center(
-            // The circular progress indicator
-            child: CircularProgressIndicator(
+            child: CircularProgressIndicator( 
               valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
             ),
           ),
         );
-      } else {
-        // Return an empty container when not loading
+      } else { 
         return const SizedBox.shrink();
       }
     });
   }
 
-  // Widget untuk Latar Belakang Gambar
+  // Latar belakang gambar
   Widget _buildBackgroundImage() {
     return Container(
       decoration: const BoxDecoration(
@@ -70,7 +66,7 @@ class AuthScreen extends GetView<AuthController> {
     );
   }
 
-  // Widget untuk Tampilan Welcome
+  // Tampilan Welcome
   Widget _buildWelcomeView() {
     return SafeArea(
       key: const ValueKey('welcomeView'),
@@ -120,7 +116,7 @@ class AuthScreen extends GetView<AuthController> {
     );
   }
 
-  // Widget untuk Tampilan Login (sebelah kanan desain)
+  // Tampilan Login
   Widget _buildLoginView() {
     return Align(
       key: const ValueKey('loginView'),
@@ -207,7 +203,7 @@ class AuthScreen extends GetView<AuthController> {
     );
   }
 
-  // Helper untuk membuat TextField yang seragam
+  // Helper agar TextField seragam
   Widget _buildTextField({
     required TextEditingController controller,
     required String hintText,

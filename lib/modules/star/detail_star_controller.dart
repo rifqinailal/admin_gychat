@@ -1,4 +1,4 @@
-// lib/modules/starred_messages/starred_messages_controller.dart
+// lib/modules/star/detail_star_controller.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -123,7 +123,7 @@ class DetailStarsController extends GetxController {
     selectedMessages.clear();
   }
 
-  // Menghapus semua pesan berbintang (tombol sampah di app bar utama)
+  // Menghapus semua pesan berbintang
   void confirmDeleteAll() {
     if (DetailStars.isEmpty) return;
     _showDeleteDialog(
@@ -150,7 +150,7 @@ class DetailStarsController extends GetxController {
     );
   }
 
-  // Helper untuk menampilkan dialog konfirmasi
+  // Helper konfirmasi
   void _showDeleteDialog({required String title, required VoidCallback onConfirm}) {
     Get.dialog(
       AlertDialog(

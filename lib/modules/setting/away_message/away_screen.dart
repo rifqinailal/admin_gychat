@@ -1,7 +1,8 @@
+// lib/app/modules/setting/away_message/away_screen.dart
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:admin_gychat/routes/app_routes.dart';
+import 'package:admin_gychat/routes/app_routes.dart'; 
 import 'away_controller.dart';
 
 class AwayScreen extends GetView<AwayController> {
@@ -10,9 +11,9 @@ class AwayScreen extends GetView<AwayController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F6F6),
+      backgroundColor: const Color.fromARGB(255, 240, 240, 240),
       appBar: AppBar(
-        backgroundColor: const Color(0xFFF6F6F6),
+        backgroundColor: const Color.fromARGB(255, 240, 240, 240),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
@@ -83,8 +84,8 @@ class AwayScreen extends GetView<AwayController> {
         children: [
           Obx(() => Text(
             controller.scheduleOption.value == ScheduleOption.always 
-              ? 'Always Send' 
-              : 'Custom Schedule',
+            ? 'Always Send' 
+            : 'Custom Schedule',
             style: const TextStyle(color: Colors.grey),
           )),
           const SizedBox(width: 8),
@@ -125,10 +126,10 @@ class EditMessageScreen extends StatelessWidget {
     final AwayController controller = Get.find<AwayController>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F6F6),
+      backgroundColor: const Color.fromARGB(255, 240, 240, 240),
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: const Color(0xFFF6F6F6),
+        backgroundColor: const Color.fromARGB(255, 240, 240, 240),
         elevation: 0,
         leadingWidth: 80,
         leading: TextButton(

@@ -1,5 +1,5 @@
-
-import 'dart:io';
+// lib/modules/setting/profile/profile_controller.dart
+import 'dart:io'; 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_cropper/image_cropper.dart';
@@ -7,18 +7,17 @@ import 'package:image_picker/image_picker.dart';
 
 class ProfileController extends GetxController {
   final Rx<File?> profileImage = Rx<File?>(null);
-
-  // Controllers for the text fields
+  
   late TextEditingController nameController;
   late TextEditingController aboutController;
 
-  // Instance of ImagePicker
+  // ImagePicker
   final ImagePicker _picker = ImagePicker();
 
   @override
   void onInit() {
     super.onInit();
-    // Initialize controllers with initial data
+    
     nameController = TextEditingController(text: 'GYPEM INDONESIA');
     aboutController = TextEditingController(text: 'Chat Only !');
   }
@@ -30,15 +29,15 @@ class ProfileController extends GetxController {
     super.onClose();
   }
 
-  // Function to pick and crop an image
+  // Pick and crop an image
   Future<void> pickImage(ImageSource source) async {
     try {
       final XFile? pickedFile = await _picker.pickImage(source: source);
-
+      
       if (pickedFile != null) {
-        // Call the image crop function
+        
         final croppedFile = await _cropImage(File(pickedFile.path));
-
+        
         if (croppedFile != null) {
           profileImage.value = File(croppedFile.path);
           Get.snackbar(
@@ -56,34 +55,82 @@ class ProfileController extends GetxController {
     }
   }
 
-  // Function to crop an image
+  // Crop image
   Future<CroppedFile?> _cropImage(File imageFile) async {
     return await ImageCropper().cropImage(
       sourcePath: imageFile.path,
+      compressQuality: 70,
       uiSettings: [
         AndroidUiSettings(
           toolbarTitle: 'Crop Image',
           toolbarColor: const Color.fromARGB(255, 0, 0, 0),
           toolbarWidgetColor: Colors.white,
-          initAspectRatio: CropAspectRatioPreset.square,
-          lockAspectRatio: true,
+          initAspectRatio: CropAspectRatioPreset.original,
+          lockAspectRatio: false,
           aspectRatioPresets: [
+            CropAspectRatioPreset.original,
             CropAspectRatioPreset.square,
+            CropAspectRatioPreset.ratio3x2,
+            CropAspectRatioPreset.ratio4x3,
+            CropAspectRatioPreset.ratio16x9
           ],
         ),
         IOSUiSettings(
           title: 'Crop Image',
-          aspectRatioLockEnabled: true,
-          resetAspectRatioEnabled: false,
-          aspectRatioPickerButtonHidden: true,
+          aspectRatioLockEnabled: false,
+          resetAspectRatioEnabled: true,
+          aspectRatioPickerButtonHidden: false,
         ),
       ],
-      compressQuality: 70,
-      aspectRatio: const CropAspectRatio(ratioX: 1, ratioY: 1),
     );
   }
 
-  // Function to delete the profile image
+  // View profile image
+  void viewProfileImage() {
+    if (profileImage.value != null) {
+      Get.to(
+        () => Scaffold(
+          backgroundColor: Colors.black,
+          body: Stack(
+            fit: StackFit.expand,
+            children: [
+              Center(
+                child: InteractiveViewer(
+                  panEnabled: true,
+                  boundaryMargin: EdgeInsets.zero,
+                  minScale: 1.0,
+                  maxScale: 4.0,
+                  child: Image.file(
+                    profileImage.value!,
+                    fit: BoxFit.contain,
+                    width: double.infinity,
+                    height: double.infinity,
+                  ),
+                ),
+              ),
+              
+              // Tombol 'close'
+              Positioned(
+                top: 50.0,
+                left: 16.0,
+                child: CircleAvatar(
+                  backgroundColor: Colors.black.withOpacity(0.5),
+                  child: IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white),
+                    onPressed: () => Get.back(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        fullscreenDialog: true,
+        transition: Transition.fade,
+      );
+    }
+  }
+
+  // Delete profile image
   void deleteProfileImage() {
     if (profileImage.value != null) {
       profileImage.value = null;
@@ -95,13 +142,12 @@ class ProfileController extends GetxController {
         colorText: Colors.white,
         margin: const EdgeInsets.all(18),
       );
-      update();
-    } else {
-      Get.snackbar('Info', 'No profile photo to delete.');
+      } else {
+        Get.snackbar('Info', 'No profile photo to delete.');
+      }
     }
-  }
 
-  // Function to save profile changes
+  // Save profile
   void saveProfile() {
     Get.snackbar(
       'Success',
@@ -111,9 +157,8 @@ class ProfileController extends GetxController {
       colorText: Colors.white,
       margin: const EdgeInsets.all(18),
     );
-    // Print for debugging
+
     print("Name: ${nameController.text}");
     print("About: ${aboutController.text}");
-    update();
-  }
-}
+  } 
+} 

@@ -1,3 +1,4 @@
+// lib/modules/setting/setting_screen.dart
 import 'package:admin_gychat/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -7,12 +8,9 @@ class SettingScreen extends GetView<SettingController> {
   const SettingScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // Controller sudah di-find secara otomatis oleh GetView
-    // final SettingController controller = Get.find();
-
+  Widget build(BuildContext context) { 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F6F6),
+      backgroundColor: const Color.fromARGB(255, 240, 240, 240),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -25,17 +23,19 @@ class SettingScreen extends GetView<SettingController> {
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF2C3E50),
+                  color: const Color(0xFF3F51B5),
                 ),
               ),
+
               const SizedBox(height: 30),
               _buildProfileCard(),
+
               const SizedBox(height: 20),
               _buildOptionsCard(),
-              // Spacer akan mendorong semua widget di bawahnya ke dasar layar
+
               const Spacer(),
               _buildLogoutButton(context, controller),
-              // Beri sedikit jarak dari tepi bawah
+
               const SizedBox(height: 310),
             ],
           ),
@@ -44,8 +44,7 @@ class SettingScreen extends GetView<SettingController> {
     );
   }
 
-  Widget _buildProfileCard() {
-    // Kode ini sudah bagus, tidak perlu diubah
+  Widget _buildProfileCard() { 
     return Card(
       elevation: 0,
       color: Colors.white,
@@ -91,8 +90,7 @@ class SettingScreen extends GetView<SettingController> {
     );
   }
 
-  Widget _buildOptionsCard() {
-    // Kode ini sudah bagus, tidak perlu diubah
+  Widget _buildOptionsCard() { 
     return Card(
       elevation: 0,
       color: Colors.white,
@@ -127,15 +125,13 @@ class SettingScreen extends GetView<SettingController> {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () {
-          // Memanggil fungsi dari controller yang sudah kita buat
+        onPressed: () { 
           controller.showLogoutConfirmation(context);
         },
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF3F51B5), 
           padding: const EdgeInsets.symmetric(vertical: 17),
-          shape: RoundedRectangleBorder(
-            // Diubah agar lebih membulat seperti tombol cancel
+          shape: RoundedRectangleBorder( 
             borderRadius: BorderRadius.circular(14),
           ),
           elevation: 0,

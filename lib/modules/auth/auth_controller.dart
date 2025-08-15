@@ -11,40 +11,31 @@ class AuthController extends GetxController {
   final isPasswordHidden = true.obs;
   final isLoading = false.obs;
 
-  /// Displays the login form card with an animation.
-  void displayLoginCard() {
+  void displayLoginCard() { 
     showLoginCard.value = true;
   }
 
-  /// Hides the login form card.
-  void hideLoginCard() {
+  void hideLoginCard() { 
     showLoginCard.value = false;
   }
 
-  /// Toggles the visibility of the password in its text field.
-  void togglePasswordVisibility() {
+  void togglePasswordVisibility() { 
     isPasswordHidden.value = !isPasswordHidden.value;
   }
 
-  /// Handles the user login process.
-  void login() async {
-    // Prevent multiple login attempts while one is in progress
+  void login() async { 
     if (isLoading.value) return;
     
     isLoading.value = true;
-
-    // Simulate a network delay for a better user experience
+    
     await Future.delayed(const Duration(seconds: 1));
 
     final String username = usernameController.text.trim();
     final String password = passwordController.text;
-
-    // Hide loading indicator before showing dialog or error
+    
     isLoading.value = false;
-
-    // Check if credentials match the specified values
-    if (username == 'admin1@gmail.com' && password == 'admin1123') {
-      // On success, show the custom success dialog
+    
+    if (username == 'admin1@gmail.com' && password == 'admin1123') { 
       Get.dialog(
         const SuccessDialog(),
         barrierDismissible: false,

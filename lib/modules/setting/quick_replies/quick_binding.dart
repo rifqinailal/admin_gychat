@@ -1,3 +1,4 @@
+// lib/modules/setting/quick_replies/quick_binding.dart
 import 'package:get/get.dart';
 import 'quick_controller.dart';
 
