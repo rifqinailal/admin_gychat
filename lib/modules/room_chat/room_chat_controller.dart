@@ -9,6 +9,9 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:saver_gallery/saver_gallery.dart';
+import 'dart:typed_data';
 
 class RoomChatController extends GetxController {
   late TextEditingController messageController;
@@ -603,6 +606,107 @@ class RoomChatController extends GetxController {
       messages.refresh();
       // Batalkan mode edit setelah selesai.
       cancelEdit();
+    }
+  }
+
+  void showImageFullScreen(String imagePath) {
+    Get.dialog(
+      // `Scaffold` untuk menyediakan latar belakang dan struktur
+      Scaffold(
+        backgroundColor: Colors.black.withOpacity(0.8), // Latar semi-transparan
+        body: Stack(
+          children: [
+            // 1. TAMPILAN GAMBAR
+            // `InteractiveViewer` memungkinkan user untuk zoom dan pan gambar
+            Center(
+              child: InteractiveViewer(
+                panEnabled: true, // Aktifkan pan
+                minScale: 0.5,
+                maxScale: 4,
+                child: Image.file(File(imagePath)),
+              ),
+            ),
+
+            // 2. TOMBOL CLOSE (X)
+            Positioned(
+              top: 40,
+              left: 16,
+              child: CircleAvatar(
+                backgroundColor: Colors.black.withOpacity(0.5),
+                child: IconButton(
+                  onPressed: () => Get.back(),
+                  icon: const Icon(Icons.close, color: Colors.white),
+                ),
+              ),
+            ),
+
+            // 3. TOMBOL DOWNLOAD
+            Positioned(
+              top: 40,
+              right: 16,
+              child: CircleAvatar(
+                backgroundColor: Colors.black.withOpacity(0.5),
+                child: IconButton(
+                  // ===============================================
+                  // HUBUNGKAN FUNGSI DOWNLOAD DI SINI
+                  // ===============================================
+                  onPressed: () {
+                    downloadImage(imagePath);
+                  },
+                  // ===============================================
+                  icon: const Icon(Icons.download, color: Colors.white),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      // Gunakan `barrierColor` untuk kontrol penuh atas latar belakang
+      barrierColor: Colors.black.withOpacity(0.5),
+    );
+  }
+
+  // Di dalam RoomChatController
+
+  // Di dalam RoomChatController
+
+  Future<void> downloadImage(String imagePath) async {
+    // Meminta izin penyimpanan
+    var status = await Permission.storage.request();
+
+    if (status.isGranted) {
+      try {
+        // Membuat nama file yang unik berdasarkan waktu
+        final String fileName =
+            "IMG_${DateTime.now().millisecondsSinceEpoch}.jpg";
+
+        // ===============================================
+        // INI ADALAH ISI YANG BENAR
+        // ===============================================
+        final result = await SaverGallery.saveFile(
+          androidRelativePath: "Pictures/GychatAdmin",
+          filePath: imagePath,
+          fileName: fileName,
+          skipIfExists: true, 
+        );
+        // ===============================================
+
+        if (result.isSuccess) {
+          Get.snackbar('Berhasil', 'Gambar berhasil disimpan di galeri.');
+        } else {
+          Get.snackbar(
+            'Gagal',
+            'Tidak dapat menyimpan gambar: ${result.errorMessage}',
+          );
+        }
+      } catch (e) {
+        Get.snackbar('Error', 'Terjadi kesalahan saat menyimpan gambar.');
+      }
+    } else {
+      Get.snackbar(
+        'Izin Ditolak',
+        'Izin akses penyimpanan dibutuhkan untuk menyimpan gambar.',
+      );
     }
   }
 }

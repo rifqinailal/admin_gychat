@@ -79,7 +79,6 @@ class ChatListView extends GetView<ChatListController> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16), // Tambah spacing
                   // Chat List
                   Expanded(
                     child: ListView.builder(

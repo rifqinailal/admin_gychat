@@ -1,8 +1,11 @@
 import 'dart:io';
 
 import 'package:admin_gychat/models/message_model.dart';
+import 'package:admin_gychat/modules/room_chat/room_chat_controller.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
 
 class ChatBubble extends StatelessWidget {
@@ -22,7 +25,6 @@ class ChatBubble extends StatelessWidget {
   final Map<String, String>? repliedMessage;
   final String? documentName;
   final bool isDeleted;
-
 
   // PENAMBAHAN PARAMETER BARU UNTUK HIGHLIGHT
   final String? highlightText;
@@ -95,8 +97,6 @@ class ChatBubble extends StatelessWidget {
       ),
     );
   }
-
-  
 
   Widget _buildHighlightedText() {
     // Jika tidak ada kata kunci pencarian, tampilkan Text biasa.
@@ -193,23 +193,22 @@ class ChatBubble extends StatelessWidget {
     }
 
     Widget buildMessageContent() {
-
       if (isDeleted) {
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.block, color: Colors.grey.shade400, size: 16),
-          const SizedBox(width: 8),
-          Text(
-            'You deleted this message',
-            style: TextStyle(
-              color: Colors.grey.shade400,
-              fontStyle: FontStyle.italic,
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.block, color: Colors.grey.shade400, size: 16),
+            const SizedBox(width: 8),
+            Text(
+              'You deleted this message',
+              style: TextStyle(
+                color: Colors.grey.shade400,
+                fontStyle: FontStyle.italic,
+              ),
             ),
-          ),
-        ],
-      );
-    }
+          ],
+        );
+      }
       if (type == MessageType.document && documentName != null) {
         return Container(
           padding: const EdgeInsets.all(12),
@@ -246,14 +245,26 @@ class ChatBubble extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(15),
-              child: Image.file(
-                File(imagePath!),
-                width: MediaQuery.of(context).size.width * 0.6,
-                fit: BoxFit.cover,
+            // ======================================================
+            // BUNGKUS ClipRRect DENGAN GestureDetector
+            // ======================================================
+            GestureDetector(
+              onTap: () {
+                // Panggil fungsi di controller saat gambar di-tap
+                // Kita perlu `Get.find()` untuk mengakses controller dari dalam widget ini
+                Get.find<RoomChatController>().showImageFullScreen(imagePath!);
+              },
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(15),
+                child: Image.file(
+                  File(imagePath!),
+                  width: MediaQuery.of(context).size.width * 0.6,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
+
+            // ======================================================
             if (text != null && text!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
