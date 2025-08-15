@@ -435,8 +435,6 @@ class RoomChatController extends GetxController {
     clearMessageSelection();
   }
 
-  // Di dalam RoomChatController
-
   void showDeleteConfirmationDialog() {
     bool canDeleteForAll = selectedMessages.every((msg) => msg.isSender);
 
@@ -611,13 +609,10 @@ class RoomChatController extends GetxController {
 
   void showImageFullScreen(String imagePath) {
     Get.dialog(
-      // `Scaffold` untuk menyediakan latar belakang dan struktur
       Scaffold(
         backgroundColor: Colors.black.withOpacity(0.8), // Latar semi-transparan
         body: Stack(
           children: [
-            // 1. TAMPILAN GAMBAR
-            // `InteractiveViewer` memungkinkan user untuk zoom dan pan gambar
             Center(
               child: InteractiveViewer(
                 panEnabled: true, // Aktifkan pan
@@ -626,8 +621,6 @@ class RoomChatController extends GetxController {
                 child: Image.file(File(imagePath)),
               ),
             ),
-
-            // 2. TOMBOL CLOSE (X)
             Positioned(
               top: 40,
               left: 16,
@@ -639,17 +632,12 @@ class RoomChatController extends GetxController {
                 ),
               ),
             ),
-
-            // 3. TOMBOL DOWNLOAD
             Positioned(
               top: 40,
               right: 16,
               child: CircleAvatar(
                 backgroundColor: Colors.black.withOpacity(0.5),
                 child: IconButton(
-                  // ===============================================
-                  // HUBUNGKAN FUNGSI DOWNLOAD DI SINI
-                  // ===============================================
                   onPressed: () {
                     downloadImage(imagePath);
                   },
@@ -666,10 +654,6 @@ class RoomChatController extends GetxController {
     );
   }
 
-  // Di dalam RoomChatController
-
-  // Di dalam RoomChatController
-
   Future<void> downloadImage(String imagePath) async {
     // Meminta izin penyimpanan
     var status = await Permission.storage.request();
@@ -679,10 +663,6 @@ class RoomChatController extends GetxController {
         // Membuat nama file yang unik berdasarkan waktu
         final String fileName =
             "IMG_${DateTime.now().millisecondsSinceEpoch}.jpg";
-
-        // ===============================================
-        // INI ADALAH ISI YANG BENAR
-        // ===============================================
         final result = await SaverGallery.saveFile(
           androidRelativePath: "Pictures/GychatAdmin",
           filePath: imagePath,
