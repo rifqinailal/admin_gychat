@@ -1,3 +1,4 @@
+// lib/app/modules/setting/away_message/away_controller.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -12,9 +13,7 @@ class AwayController extends GetxController {
   final startTime = Rx<DateTime?>(null);
   final endTime = Rx<DateTime?>(null);
 
-  late TextEditingController messageEditController;
-
-
+  late TextEditingController messageEditController; 
   // Untuk melacak picker mana yang sedang aktif: 'start', 'end', atau null (tidak ada)
   final Rx<String?> activePicker = Rx<String?>(null);
 
@@ -35,56 +34,92 @@ class AwayController extends GetxController {
     messageEditController.dispose();
     super.onClose();
   }
+  
   /// Toggles the away message setting.
   void toggleAway(bool value) {
     isAwayEnabled.value = value;
   }
-  
-  // --- METHOD BARU UNTUK CUSTOM PICKER ---
+
 
   // Dipanggil saat ListTile 'Start Time' atau 'End Time' ditekan
-  void openPicker(String pickerType) {
-    // Jika menekan picker yang sudah aktif, tutup picker tersebut
+  void openPicker(String pickerType) { 
     if (activePicker.value == pickerType) {
       activePicker.value = null;
       return;
     }
 
     activePicker.value = pickerType;
-    isCalendarView.value = true; // Selalu mulai dengan tampilan kalender
+    isCalendarView.value = true;
 
-    // Set tanggal awal di picker sesuai dengan nilai yang sudah ada
-    if (pickerType == 'start' && startTime.value != null) {
-      tempSelectedDate.value = startTime.value!;
-    } else if (pickerType == 'end' && endTime.value != null) {
-      tempSelectedDate.value = endTime.value!;
-    } else {
-      tempSelectedDate.value = DateTime.now();
+    // Set tanggal awal di picker
+    if (pickerType == 'start') {
+      tempSelectedDate.value = startTime.value ?? DateTime.now();
+    } else if (pickerType == 'end') {
+      tempSelectedDate.value = endTime.value ?? startTime.value ?? DateTime.now();
     }
   }
 
   // Menyimpan tanggal/waktu dari picker ke state utama (startTime atau endTime)
   void savePickedDate() {
+    final now = DateTime.now();
+
     if (activePicker.value == 'start') {
+      if (tempSelectedDate.value.isBefore(now.subtract(const Duration(minutes: 1)))) {
+        Get.snackbar(
+          'Invalid Time',
+          'Start time cannot be in the past.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return; // Hentikan proses simpan
+      }
+
       startTime.value = tempSelectedDate.value;
+
+      if (endTime.value != null && startTime.value!.isAfter(endTime.value!)) {
+        endTime.value = null;
+      }
+
     } else if (activePicker.value == 'end') {
+      if (startTime.value == null) {
+        Get.snackbar(
+          'Invalid Order',
+          'Please set the start time first.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.orange,
+          colorText: Colors.white,
+        );
+        return;
+      }
+
+      if (!tempSelectedDate.value.isAfter(startTime.value!)) {
+        Get.snackbar(
+          'Invalid Time',
+          'End time must be after the start time.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        return;
+      }
       endTime.value = tempSelectedDate.value;
     }
-    // Tutup picker setelah menyimpan
+
     activePicker.value = null;
   }
 
-  // Future<void> pickDateTime(...) { ... }
-  
-  void selectScheduleOption(ScheduleOption option) {
+  void selectScheduleOption(ScheduleOption option) { 
     scheduleOption.value = option;
   }
+
   String formatDateTime(DateTime? dt) {
     if (dt == null) {
       return 'Select time';
     }
     return DateFormat('dd/MM/yy, HH:mm').format(dt);
   }
+
   void showMessageEditPopup() {
     messageEditController.text = message.value;
     Get.to(

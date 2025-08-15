@@ -4,6 +4,7 @@ abstract class AppRoutes {
   static const Auth = '/auth';
   static const Dashboard = '/dashboard';
   static const DetailStar = '/detail-star';
+  static const GrupBaru = '/grup-baru';
   static const Profile = '/profile';
   static const QuickReplies = '/quick-replies';
   static const EditQuickReply = '/edit-quick-reply';
@@ -12,6 +13,5 @@ abstract class AppRoutes {
   static const ForgotPassword = '/forgot-password';
   static const DetailArsip = '/detail-arsip';
   static const ROOM_CHAT = '/room_chat';
-  static const Setting = '/setting';
-  
+  static const Setting = '/setting'; 
 }

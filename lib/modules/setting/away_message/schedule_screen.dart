@@ -1,3 +1,4 @@
+// lib/app/modules/setting/away_message/schedule_screen.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -12,10 +13,9 @@ class ScheduleScreen extends StatelessWidget {
     final AwayController controller = Get.find<AwayController>();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F6F6),
+      backgroundColor: const Color.fromARGB(255, 240, 240, 240),
       appBar: AppBar(
-        // ... AppBar tetap sama
-        backgroundColor: const Color(0xFFF6F6F6),
+        backgroundColor: const Color.fromARGB(255, 240, 240, 240),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
@@ -86,10 +86,7 @@ class ScheduleScreen extends StatelessWidget {
     );
   }
 
-  // --- WIDGET HELPER ---
-
   Widget _buildScheduleOptionTile(AwayController controller, String title, String subtitle, ScheduleOption value) {
-    
     return ListTile(
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
       subtitle: Text(subtitle, style: TextStyle(color: Colors.grey[600])),
@@ -198,10 +195,42 @@ class ScheduleScreen extends StatelessWidget {
   }
 
   Widget _buildCalendarView(AwayController controller) {
+    // Tentukan tanggal pertama yang bisa dipilih berdasarkan picker yang aktif
+    DateTime firstAvailableDay;
+    // Tentukan hari apa saja yang bisa di-tap
+    bool enabledDayPredicate(DateTime day) {
+        // Normalisasi tanggal agar perbandingan tidak terpengaruh oleh jam/menit
+        final today = DateTime.now();
+        final todayDate = DateTime(today.year, today.month, today.day);
+
+        if (controller.activePicker.value == 'start') {
+            // Untuk start time, tidak boleh memilih hari sebelum hari ini
+            return !day.isBefore(todayDate);
+        } else if (controller.activePicker.value == 'end') {
+            // Untuk end time, tidak boleh memilih hari sebelum start time
+            if (controller.startTime.value == null) return true; // Jika start time belum ada, semua boleh dipilih
+            final startDate = controller.startTime.value!;
+            final startDateOnly = DateTime(startDate.year, startDate.month, startDate.day);
+            return !day.isBefore(startDateOnly);
+        }
+        return true;
+    }
+
+    if (controller.activePicker.value == 'end' && controller.startTime.value != null) {
+      firstAvailableDay = controller.startTime.value!;
+    } else {
+      firstAvailableDay = DateTime.now();
+    }
+
+
     return Obx(() => TableCalendar(
       focusedDay: controller.tempSelectedDate.value,
-      firstDay: DateTime.utc(2010, 1, 1),
+      // Atur tanggal paling awal yang bisa ditampilkan di kalender
+      firstDay: firstAvailableDay.subtract(const Duration(days: 1)),
       lastDay: DateTime.utc(2040, 12, 31),
+      // Gunakan predicate untuk menonaktifkan hari yang tidak valid
+      enabledDayPredicate: enabledDayPredicate,
+
       selectedDayPredicate: (day) => isSameDay(controller.tempSelectedDate.value, day),
       onDaySelected: (selectedDay, focusedDay) {
         // Update hanya tanggal, pertahankan waktu yang sudah ada
@@ -220,6 +249,8 @@ class ScheduleScreen extends StatelessWidget {
         titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
       ),
       calendarStyle: CalendarStyle(
+        // Gaya untuk hari yang tidak bisa dipilih
+        disabledTextStyle: TextStyle(color: Colors.grey.shade400),
         selectedDecoration: const BoxDecoration(
           color: Color(0xFF3F51B5),
           shape: BoxShape.circle,
@@ -249,7 +280,7 @@ class ScheduleScreen extends StatelessWidget {
             }
           ),
           const Text(":", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-         
+          
           _timeWheel(
             itemCount: 60,
             initialItem: currentTime.minute,

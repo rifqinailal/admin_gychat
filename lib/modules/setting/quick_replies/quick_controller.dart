@@ -1,5 +1,4 @@
-// lib/modules/quick_replies/quick_controller.dart
-
+// lib/modules/setting/quick_replies/quick_controller.dart 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -34,20 +33,48 @@ class QuickController extends GetxController {
 
   var selectedImage = Rx<File?>(null);
 
-  void goToAddScreen() {
-    // Clear previous data
+  void goToAddScreen() { 
     shortcutController.clear();
     messageController.clear();
     selectedImage.value = null;
-    Get.to(() => EditQuickReplyScreen());
+
+    Get.bottomSheet(
+      Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20.0),
+            topRight: Radius.circular(20.0),
+          ),
+        ),
+        child: EditQuickReplyScreen(),
+      ),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+    );
   }
 
   void goToEditScreen(QuickReply reply) {
     shortcutController.text = reply.shortcut;
     messageController.text = reply.message;
-    selectedImage.value = reply.imageFile;
+    selectedImage.value = null;
 
-    Get.to(() => EditQuickReplyScreen(reply: reply));
+    Get.bottomSheet(
+      Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20.0),
+            topRight: Radius.circular(20.0),
+          ),
+        ),
+        child: EditQuickReplyScreen(reply: reply),
+      ),
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+    );
   }
 
   Future<void> pickImage() async {
@@ -71,25 +98,31 @@ class QuickController extends GetxController {
       Get.snackbar('Error', 'Shortcut and message cannot be empty.');
     }
   }
-
+  
   void updateReply(QuickReply reply) {
     int index = quickReplies.indexWhere((r) => r.id == reply.id);
     if (index != -1) {
-      reply.shortcut = shortcutController.text;
-      reply.message = messageController.text;
-      reply.imageFile = selectedImage.value;
-      quickReplies[index] = reply;
-      quickReplies.refresh(); 
+      final QuickReply itemToUpdate = quickReplies[index];
+      itemToUpdate.shortcut = shortcutController.text;
+      itemToUpdate.message = messageController.text;
+
+      if (selectedImage.value != null) {
+        itemToUpdate.imageFile = selectedImage.value;
+        itemToUpdate.imagePath = null;
+      }
+      
+      quickReplies[index] = itemToUpdate;
+      quickReplies.refresh();
       Get.back();
     }
   }
   
   void deleteReply(QuickReply reply) {
-     quickReplies.removeWhere((r) => r.id == reply.id);
-     Get.back(); 
-     Get.back();
+    quickReplies.removeWhere((r) => r.id == reply.id);
+    Get.back();
+    Get.back();
   }
-
+  
   void showDeleteConfirmation(QuickReply reply) {
     Get.bottomSheet(
       Padding(
@@ -97,8 +130,7 @@ class QuickController extends GetxController {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // --- KOTAK KONFIRMASI (PUTIH) ---
-            Container(
+            Container( 
               width: double.infinity,
               decoration: const BoxDecoration(
                 color: Colors.white,
@@ -132,8 +164,7 @@ class QuickController extends GetxController {
               ),
             ),
             const SizedBox(height: 10),
-            // --- TOMBOL CANCEL ---
-            SizedBox(
+            SizedBox( 
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () => Get.back(),
@@ -164,8 +195,7 @@ class QuickController extends GetxController {
   }
 
   @override
-  void onClose() {
-
+  void onClose() { 
     shortcutController.dispose();
     messageController.dispose();
     super.onClose();

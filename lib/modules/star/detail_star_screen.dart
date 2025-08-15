@@ -1,4 +1,4 @@
-// lib/modules/starred_messages/detail_star_screen.dart
+// lib/modules/star/detail_star_screen.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'detail_star_controller.dart';

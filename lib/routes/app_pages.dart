@@ -6,6 +6,8 @@ import 'package:admin_gychat/modules/dashboard/dashboard_binding.dart';
 import 'package:admin_gychat/modules/dashboard/dashboard_screen.dart';
 import 'package:admin_gychat/modules/setting/setting_binding.dart';
 import 'package:admin_gychat/modules/setting/setting_screen.dart';
+import 'package:admin_gychat/modules/grup_baru/grup_baru_binding.dart';
+import 'package:admin_gychat/modules/grup_baru/grup_baru_screen.dart';
 import 'package:admin_gychat/modules/star/detail_star_binding.dart';
 import 'package:admin_gychat/modules/star/detail_star_screen.dart';
 import 'package:admin_gychat/modules/arsip/detail_arsip_binding.dart';
@@ -42,6 +44,12 @@ class AppPages {
       name: AppRoutes.Dashboard,
       page: () => const DashboardScreen(),
       binding: DashboardBinding(),
+    ),
+    // Grup Baru
+    GetPage(
+      name: AppRoutes.GrupBaru,
+      page: () => const GrupBaruScreen(),
+      binding: GrupBaruBinding(),
     ),
     // Detail Star
     GetPage(

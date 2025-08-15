@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'profile_controller.dart';
-import 'edit_profile_screen.dart'; // Import the new screen
+import 'edit_profile_screen.dart';
 
 class ProfileScreen extends GetView<ProfileController> {
   const ProfileScreen({super.key});
@@ -12,14 +12,14 @@ class ProfileScreen extends GetView<ProfileController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F8F8),
+      backgroundColor: const Color(0xFFF6F6F6),
       appBar: AppBar(
         title: const Text(
           'Profile',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: const Color(0xFFF8F8F8),
+        backgroundColor: const Color(0xFFF6F6F6),
         foregroundColor: Colors.black,
         elevation: 0,
         leading: IconButton(
@@ -35,8 +35,7 @@ class ProfileScreen extends GetView<ProfileController> {
             children: [
               Center(child: _buildProfileImage()),
               const SizedBox(height: 40),
-              // Gunakan GetBuilder untuk update UI Name dan Bio
-              GetBuilder<ProfileController>(
+              GetBuilder<ProfileController>( 
                 builder: (_) {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -74,60 +73,69 @@ class ProfileScreen extends GetView<ProfileController> {
       ),
     );
   }
-
-  /// **UPDATED:** Menavigasi ke layar edit menggunakan Get.bottomSheet.
+  
   Future<void> _navigateToEditScreen({
     required String title,
     required String initialValue,
     required Function(String) onSave,
-  }) async {
-    // Menampilkan EditProfileScreen sebagai modal bottom sheet.
+  }) async { 
     final result = await Get.bottomSheet(
       EditProfileScreen(
         title: title,
         initialValue: initialValue,
       ),
-      // Memberi bentuk dengan sudut atas melengkung.
+      
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
           topLeft: Radius.circular(20.0),
           topRight: Radius.circular(20.0),
         ),
       ),
-      // Memastikan konten di dalam sheet mengikuti bentuk melengkung.
+
       clipBehavior: Clip.antiAliasWithSaveLayer,
-      // Penting agar sheet bisa lebih tinggi dan merespons keyboard.
+      
       isScrollControlled: true,
     );
-
-    // Jika pengguna menyimpan (hasil tidak null), perbarui controller.
+    
     if (result != null && result is String) {
       onSave(result);
-      controller.update(); // Refresh UI untuk menampilkan nilai baru
-      controller.saveProfile(); // Panggil metode simpan di controller
+      controller.update();
+      controller.saveProfile();
     }
   }
 
-  // Widget untuk menampilkan gambar profil dan tombol edit
+  // Menampilkan gambar profil dan tombol edit
   Widget _buildProfileImage() {
     return Column(
       children: [
-        Obx(() {
-          return CircleAvatar(
-            radius: 50,
-            backgroundColor: Colors.grey[200], 
-            backgroundImage: controller.profileImage.value != null
-            ? FileImage(controller.profileImage.value!)
-            : const AssetImage('assets/images/default_avatar.png') as ImageProvider,
-            child: controller.profileImage.value == null
-            ? Icon(
-              Icons.person,
-              size: 60,
-              color: Colors.grey[400],
-            )
-            : null,
-          );
-        }),
+        GestureDetector(
+          onTap: () {
+            // Jika sudah ada gambar, tampilkan full screen.
+            if (controller.profileImage.value != null) {
+              controller.viewProfileImage();
+            } else {
+              // Jika tidak ada gambar, langsung buka opsi pilih foto.
+              _showPhotoOptions();
+            }
+          },
+          child: Obx(() {
+            return CircleAvatar(
+              radius: 50,
+              backgroundColor: Colors.grey[200],
+              backgroundImage: controller.profileImage.value != null
+                  ? FileImage(controller.profileImage.value!)
+                  : const AssetImage('assets/images/default_avatar.png')
+                      as ImageProvider,
+              child: controller.profileImage.value == null
+                  ? Icon(
+                      Icons.person,
+                      size: 60,
+                      color: Colors.grey[400],
+                    )
+                  : null,
+            );
+          }),
+        ),
         const SizedBox(height: 8),
         TextButton(
           onPressed: _showPhotoOptions,
@@ -149,8 +157,7 @@ class ProfileScreen extends GetView<ProfileController> {
       ],
     );
   }
-
- 
+  
   Widget _buildProfileField({
     required String label,
     required String value,
@@ -212,7 +219,7 @@ class ProfileScreen extends GetView<ProfileController> {
     );
   }
 
-  /// Menampilkan bottom sheet dengan opsi untuk mengubah foto profil.
+  // Menampilkan opsi mengubah foto profil.
   void _showPhotoOptions() {
     Get.bottomSheet(
       Container(
@@ -287,8 +294,7 @@ class ProfileScreen extends GetView<ProfileController> {
       isScrollControlled: true,
     );
   }
-
-  // Widget yang dapat digunakan kembali untuk opsi bottom sheet.
+  
   Widget _buildBottomSheetOption({
     required String text,
     required IconData icon,
@@ -321,7 +327,7 @@ class ProfileScreen extends GetView<ProfileController> {
     );
   }
 
-  /// Menampilkan dialog untuk konfirmasi penghapusan foto.
+  /// Menampilkan konfirmasi penghapusan foto.
   void _showEditPhotoSheet() {
     Get.bottomSheet(
       Container(
@@ -369,7 +375,7 @@ class ProfileScreen extends GetView<ProfileController> {
                   ),
                   elevation: 0,
                 ),
-                onPressed: () => Get.back(), // Tutup bottom sheet
+                onPressed: () => Get.back(),
                 child: const Text(
                   'Cancel',
                   style: TextStyle(
@@ -381,10 +387,9 @@ class ProfileScreen extends GetView<ProfileController> {
             ),
           ],
         ),
-      ),
-
+      ), 
       backgroundColor: Colors.transparent,
       isScrollControlled: true,
     );
   }
-}
+} 
