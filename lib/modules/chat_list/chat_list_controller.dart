@@ -150,13 +150,37 @@ void _onSearchChanged() {
     _allChats.refresh();
   }
 
-  void fetchChats() {
-    var dummyData = [
-      ChatModel(id: 1, name: 'Jeremy Owen', unreadCount: 2),
-      ChatModel(id: 2, name: 'Olympiad Bus', isGroup: true, unreadCount: 5),
-      ChatModel(id: 3, name: 'Classtell', unreadCount: 0),
-      ChatModel(id: 7, name: 'Projek Selesai', isArchived: true),
-    ];
-    _allChats.assignAll(dummyData);
-  }
+ // Di dalam ChatListController
+void fetchChats() {
+  var dummyData = [
+    ChatModel(
+      id: 1,
+      name: 'Jeremy Owen',
+      unreadCount: 2,
+      // ISI DENGAN BEBERAPA CONTOH PESAN
+      messages: [
+        MessageModel(senderId: "user_01", senderName: "Jeremy Owen", text: "Langsung tanyakan ke indra aja", timestamp: DateTime.now(), isSender: false, type: MessageType.text),
+        MessageModel(senderId: "admin_01", senderName: "Anda", text: "Oke, siap.", timestamp: DateTime.now(), isSender: true, type: MessageType.text),
+      ],
+    ),
+    ChatModel(
+      id: 2,
+      name: 'Olympiad Bus',
+      isGroup: true,
+      unreadCount: 5,
+      messages: [
+        MessageModel(senderId: "user_02", senderName: "Pimpinan A", text: "Tolong segera diselesaikan ya.", timestamp: DateTime.now(), isSender: false, type: MessageType.text),
+      ],
+    ),
+    ChatModel(id: 3, name: 'Classtell', unreadCount: 0, messages: []),
+    ChatModel(id: 7, name: 'Projek Selesai', isArchived: true, messages: [
+       MessageModel(senderId: "user_03", senderName: "Indra Yulianto", text: "Laporan final sudah saya kirim.", timestamp: DateTime.now(), isSender: false, type: MessageType.text),
+    ]),
+    ChatModel(id: 8, name: 'Indra Yulianto', unreadCount: 0, messages: []),
+    ChatModel(id: 9, name: 'Agas Indransyah', unreadCount: 0, messages: [
+       MessageModel(senderId: "user_04", senderName: "Agas Indransyah", text: "mengetik.....", timestamp: DateTime.now(), isSender: false, type: MessageType.text),
+    ]),
+  ];
+  _allChats.assignAll(dummyData);
+}
 }
