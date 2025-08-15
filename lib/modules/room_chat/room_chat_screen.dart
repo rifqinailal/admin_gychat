@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:admin_gychat/models/message_model.dart';
 import 'package:admin_gychat/modules/room_chat/widget/chat_bubble.dart';
 import 'package:admin_gychat/modules/room_chat/widget/date_separator.dart';
@@ -78,18 +80,25 @@ class RoomChatScreen extends GetView<RoomChatController> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+          // 2. TAMBAHKAN LOGIKA UNTUK NILAI 'starred' DI SINI
           onSelected: (value) {
             if (value == 'search') {
               Future.delayed(Duration.zero, () {
                 controller.toggleSearchMode();
               });
+            } else if (value == 'starred') {
+              // <-- Tambahkan else if
+              // Pindahkan navigasi ke sini
+              Get.toNamed(AppRoutes.DetailStar);
             }
           },
           itemBuilder:
               (context) => [
                 const PopupMenuItem(value: 'search', child: Text('Search')),
+                // 1. UBAH `TextButton` MENJADI `Text` BIASA
                 const PopupMenuItem(
-                  value: 'starred',
+                  value:
+                      'starred', // <-- 'value' ini akan dikirim ke onSelected
                   child: Text('Pesan Berbintang'),
                 ),
               ],
@@ -156,10 +165,100 @@ class RoomChatScreen extends GetView<RoomChatController> {
           onPressed: () => controller.copySelectedMessagesText(),
           icon: const Icon(Icons.copy),
         ),
-        IconButton(onPressed: () {}, icon: const Icon(Icons.edit)),
-        IconButton(onPressed: () {}, icon: const Icon(Icons.delete_outline)),
+        Obx(() {
+          // Hanya tampilkan jika 1 pesan teks milik kita yang dipilih
+          if (controller.selectedMessages.length == 1 &&
+              controller.selectedMessages.first.isSender &&
+              (controller.selectedMessages.first.type == MessageType.text ||
+                  controller.selectedMessages.first.type ==
+                      MessageType.image)) {
+            return IconButton(
+              onPressed: () => controller.setEditMessage(),
+              icon: const Icon(Icons.edit),
+            );
+          }
+          return const SizedBox.shrink(); // Jika tidak, sembunyikan
+        }),
+        IconButton(
+          onPressed: () => controller.showDeleteConfirmationDialog(),
+          icon: const Icon(Icons.delete_outline),
+        ),
       ],
     );
+  }
+
+  Widget _buildEditPreview() {
+    return Obx(() {
+      final message = controller.editingMessage.value;
+      if (message == null) {
+        return const SizedBox.shrink();
+      }
+
+      // Tentukan widget pratinjau berdasarkan tipe pesan
+      Widget previewContent;
+      if (message.type == MessageType.image && message.imagePath != null) {
+        // Jika gambar, tampilkan gambar kecil (thumbnail)
+        previewContent = Row(
+          children: [
+            const Text(
+              'Edit Pesan untuk',
+              style: TextStyle(
+                color: ThemeColor.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const Spacer(),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: Image.file(
+                File(message.imagePath!),
+                width: 30,
+                height: 30,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ],
+        );
+      } else {
+        // Jika teks, tampilkan teksnya (logika lama)
+        previewContent = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Edit Pesan',
+              style: TextStyle(
+                color: ThemeColor.primary,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Text(
+              message.text ?? '',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: Colors.black54),
+            ),
+          ],
+        );
+      }
+
+      return Container(
+        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+        color: Colors.white,
+        child: Row(
+          children: [
+            const Icon(Icons.edit, color: ThemeColor.primary),
+            const SizedBox(width: 8),
+            Expanded(
+              child: previewContent,
+            ), // Tampilkan konten pratinjau di sini
+            IconButton(
+              onPressed: () => controller.cancelEdit(),
+              icon: const Icon(Icons.close),
+            ),
+          ],
+        ),
+      );
+    });
   }
 
   @override
@@ -284,6 +383,7 @@ class RoomChatScreen extends GetView<RoomChatController> {
                               type: message.type,
                               imagePath: message.imagePath,
                               documentName: message.documentName,
+                              isDeleted: message.isDeleted,
                               onTap: () {
                                 if (controller.isMessageSelectionMode.value) {
                                   controller.toggleMessageSelection(message);
@@ -309,6 +409,7 @@ class RoomChatScreen extends GetView<RoomChatController> {
             ),
             Column(
               children: [
+                _buildEditPreview(),
                 _buildReplyPreview(),
                 _buildQuickReplyList(),
                 _buildMessageInputBar(),

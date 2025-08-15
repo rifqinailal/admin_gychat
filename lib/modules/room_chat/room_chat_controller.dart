@@ -9,6 +9,9 @@ import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:open_filex/open_filex.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:saver_gallery/saver_gallery.dart';
+import 'dart:typed_data';
 
 class RoomChatController extends GetxController {
   late TextEditingController messageController;
@@ -25,6 +28,7 @@ class RoomChatController extends GetxController {
   var showQuickReplies = false.obs;
   var filteredQuickReplies = <QuickReply>[].obs;
   var replyMessage = Rxn<MessageModel>();
+  var editingMessage = Rxn<MessageModel>();
 
   List<MessageModel> get filteredMessages {
     if (searchQuery.isEmpty) {
@@ -66,10 +70,12 @@ class RoomChatController extends GetxController {
       final result = await OpenFilex.open(path);
       print(result.message); // Untuk debugging
     } catch (e) {
-      Get.snackbar('Error', 'Tidak dapat membuka file. Pastikan ada aplikasi yang mendukung.');
+      Get.snackbar(
+        'Error',
+        'Tidak dapat membuka file. Pastikan ada aplikasi yang mendukung.',
+      );
     }
   }
-
 
   void showAttachmentOptions() {
     Get.bottomSheet(
@@ -82,7 +88,9 @@ class RoomChatController extends GetxController {
               title: const Text('Galeri'),
               onTap: () {
                 Get.back(); // Tutup bottom sheet
-                _sendImage(ImageSource.gallery); // Panggil fungsi kirim gambar dari galeri
+                _sendImage(
+                  ImageSource.gallery,
+                ); // Panggil fungsi kirim gambar dari galeri
               },
             ),
             ListTile(
@@ -104,49 +112,44 @@ class RoomChatController extends GetxController {
   }
 
   Future<void> _sendImage(ImageSource source) async {
-  try {
-    // 1. Ambil gambar menggunakan image_picker
-    final XFile? pickedFile = await ImagePicker().pickImage(source: source);
+    try {
+      // 1. Ambil gambar menggunakan image_picker
+      final XFile? pickedFile = await ImagePicker().pickImage(source: source);
 
-    // 2. Cek apakah user memilih gambar
-    if (pickedFile != null) {
-      // 3. Tampilkan halaman pratinjau untuk menambahkan caption
-      _showImagePreview(pickedFile);
+      // 2. Cek apakah user memilih gambar
+      if (pickedFile != null) {
+        // 3. Tampilkan halaman pratinjau untuk menambahkan caption
+        _showImagePreview(pickedFile);
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Gagal mengambil gambar: $e');
     }
-  } catch (e) {
-    Get.snackbar('Error', 'Gagal mengambil gambar: $e');
   }
-}
 
   Future<void> _sendDocument() async {
-  try {
-    FilePickerResult? result = await FilePicker.platform.pickFiles();
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles();
 
-    if (result != null) {
-      final PlatformFile file = result.files.first;
-      
-      final newMessage = MessageModel(
-        senderId: currentUserId,
-        senderName: "Anda",
-        timestamp: DateTime.now(),
-        isSender: true,
-        type: MessageType.document,
-        documentPath: file.path,
-        documentName: file.name,
-        // ===============================================
-        // PERBAIKAN UTAMA ADA DI SINI
-        // ===============================================
-        // Isi properti `text` dengan nama dokumen.
-        text: file.name,
-        // ===============================================
-      );
+      if (result != null) {
+        final PlatformFile file = result.files.first;
 
-      messages.insert(0, newMessage);
+        final newMessage = MessageModel(
+          senderId: currentUserId,
+          senderName: "Anda",
+          timestamp: DateTime.now(),
+          isSender: true,
+          type: MessageType.document,
+          documentPath: file.path,
+          documentName: file.name,
+          text: file.name,
+        );
+
+        messages.insert(0, newMessage);
+      }
+    } catch (e) {
+      Get.snackbar('Error', 'Gagal memilih dokumen: $e');
     }
-  } catch (e) {
-    Get.snackbar('Error', 'Gagal memilih dokumen: $e');
   }
-}
 
   Future<void> _showImagePreview(XFile pickedFile) async {
     final TextEditingController captionController = TextEditingController();
@@ -355,6 +358,10 @@ class RoomChatController extends GetxController {
 
   // Fungsi untuk mengirim pesan baru
   void sendMessage() {
+    if (editingMessage.value != null) {
+      updateMessage();
+      return; // Hentikan eksekusi agar tidak mengirim pesan baru.
+    }
     final text = messageController.text.trim();
 
     if (text.isNotEmpty) {
@@ -426,5 +433,260 @@ class RoomChatController extends GetxController {
     // Beri feedback ke user
     Get.snackbar('Disalin', 'Teks pesan telah disalin ke clipboard.');
     clearMessageSelection();
+  }
+
+  void showDeleteConfirmationDialog() {
+    bool canDeleteForAll = selectedMessages.every((msg) => msg.isSender);
+
+    Get.dialog(
+      Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Judul
+              const Text(
+                'Hapus pesan',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey,
+                ),
+              ),
+              const SizedBox(height: 5),
+
+              // Tombol-tombol
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (canDeleteForAll)
+                    SizedBox(
+                      width: double.infinity,
+                      child: TextButton(
+                        onPressed: () {
+                          Get.back();
+                          deleteMessages(deleteForAll: true);
+                        },
+                        style: TextButton.styleFrom(
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        child: const Text(
+                          'Hapus untuk semua orang',
+                          textAlign: TextAlign.right,
+                          style: TextStyle(
+                            color: ThemeColor.primary,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton(
+                      onPressed: () {
+                        Get.back();
+                        deleteMessages(deleteForAll: false);
+                      },
+                      style: TextButton.styleFrom(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: const Text(
+                        'Hapus untuk saya',
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          color: ThemeColor.primary,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton(
+                      onPressed: () => Get.back(),
+                      style: TextButton.styleFrom(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: const Text(
+                        'Batal',
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          color: ThemeColor.primary,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // 2. Fungsi utama untuk menjalankan aksi hapus
+  void deleteMessages({required bool deleteForAll}) {
+    // Jika "Hapus untuk saya"
+    if (!deleteForAll) {
+      // Langsung hapus pesan dari daftar
+      messages.removeWhere((msg) => selectedMessages.contains(msg));
+    }
+    // Jika "Hapus untuk semua orang"
+    else {
+      // Jangan hapus, tapi ubah statusnya
+      for (var selectedMessage in selectedMessages) {
+        var index = messages.indexWhere((m) => m == selectedMessage);
+        if (index != -1) {
+          // Buat salinan pesan dengan status isDeleted = true
+          messages[index] = messages[index].copyWith(isDeleted: true);
+        }
+      }
+    }
+
+    messages.refresh();
+    clearMessageSelection(); // Bersihkan seleksi
+  }
+
+  void setEditMessage() {
+    if (selectedMessages.length == 1) {
+      final messageToEdit = selectedMessages.first;
+      if (messageToEdit.isSender &&
+          (messageToEdit.type == MessageType.text ||
+              messageToEdit.type == MessageType.image)) {
+        editingMessage.value = messageToEdit;
+        // Isi inputan dengan teks/caption yang sudah ada (atau string kosong jika belum ada).
+        messageController.text = messageToEdit.text ?? '';
+        messageController.selection = TextSelection.fromPosition(
+          TextPosition(offset: messageController.text.length),
+        );
+        clearMessageSelection();
+      } else {
+        Get.snackbar(
+          'Info',
+          'Hanya pesan teks atau gambar Anda yang bisa diedit.',
+        );
+        clearMessageSelection();
+      }
+    }
+  }
+
+  // 2. Fungsi untuk membatalkan mode edit.
+  void cancelEdit() {
+    editingMessage.value = null;
+    messageController.clear();
+  }
+
+  // 3. Fungsi untuk memperbarui pesan.
+  void updateMessage() {
+    final newText = messageController.text.trim();
+    // Pastikan ada pesan yang sedang diedit dan teks barunya tidak kosong.
+    if (editingMessage.value != null && newText.isNotEmpty) {
+      // Cari indeks pesan yang akan diupdate.
+      var index = messages.indexWhere((m) => m == editingMessage.value);
+      if (index != -1) {
+        // Buat salinan pesan dengan teks yang baru.
+        messages[index] = messages[index].copyWith(text: newText);
+      }
+      messages.refresh();
+      // Batalkan mode edit setelah selesai.
+      cancelEdit();
+    }
+  }
+
+  void showImageFullScreen(String imagePath) {
+    Get.dialog(
+      Scaffold(
+        backgroundColor: Colors.black.withOpacity(0.8), // Latar semi-transparan
+        body: Stack(
+          children: [
+            Center(
+              child: InteractiveViewer(
+                panEnabled: true, // Aktifkan pan
+                minScale: 0.5,
+                maxScale: 4,
+                child: Image.file(File(imagePath)),
+              ),
+            ),
+            Positioned(
+              top: 40,
+              left: 16,
+              child: CircleAvatar(
+                backgroundColor: Colors.black.withOpacity(0.5),
+                child: IconButton(
+                  onPressed: () => Get.back(),
+                  icon: const Icon(Icons.close, color: Colors.white),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 40,
+              right: 16,
+              child: CircleAvatar(
+                backgroundColor: Colors.black.withOpacity(0.5),
+                child: IconButton(
+                  onPressed: () {
+                    downloadImage(imagePath);
+                  },
+                  // ===============================================
+                  icon: const Icon(Icons.download, color: Colors.white),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      // Gunakan `barrierColor` untuk kontrol penuh atas latar belakang
+      barrierColor: Colors.black.withOpacity(0.5),
+    );
+  }
+
+  Future<void> downloadImage(String imagePath) async {
+    // Meminta izin penyimpanan
+    var status = await Permission.storage.request();
+
+    if (status.isGranted) {
+      try {
+        // Membuat nama file yang unik berdasarkan waktu
+        final String fileName =
+            "IMG_${DateTime.now().millisecondsSinceEpoch}.jpg";
+        final result = await SaverGallery.saveFile(
+          androidRelativePath: "Pictures/GychatAdmin",
+          filePath: imagePath,
+          fileName: fileName,
+          skipIfExists: true, 
+        );
+        // ===============================================
+
+        if (result.isSuccess) {
+          Get.snackbar('Berhasil', 'Gambar berhasil disimpan di galeri.');
+        } else {
+          Get.snackbar(
+            'Gagal',
+            'Tidak dapat menyimpan gambar: ${result.errorMessage}',
+          );
+        }
+      } catch (e) {
+        Get.snackbar('Error', 'Terjadi kesalahan saat menyimpan gambar.');
+      }
+    } else {
+      Get.snackbar(
+        'Izin Ditolak',
+        'Izin akses penyimpanan dibutuhkan untuk menyimpan gambar.',
+      );
+    }
   }
 }

@@ -1,4 +1,6 @@
+import 'package:admin_gychat/models/chat_model.dart';
 import 'package:admin_gychat/routes/app_routes.dart';
+import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:admin_gychat/shared/widgets/chat_header.dart';
 import 'package:admin_gychat/shared/widgets/chat_list_tile.dart';
 import 'package:flutter/material.dart';
@@ -14,79 +16,212 @@ class ChatListView extends GetView<ChatListController> {
 
   @override
   Widget build(BuildContext context) {
-    // Obx tetap membungkus semuanya agar seluruh UI bisa reaktif
-    return Obx(() {
-      List<ChatModel> chatList;
+    // Hanya satu Obx() untuk mengambil chatList berdasarkan type
+    List<ChatModel> getChatList() {
       switch (listType) {
         case ChatListType.all:
-          chatList = controller.allChats;
-          break;
+          return controller.allChats;
         case ChatListType.unread:
-          chatList = controller.unreadChats;
-          break;
+          return controller.unreadChats;
         case ChatListType.group:
-          chatList = controller.groupChats;
-          break;
+          return controller.groupChats;
       }
+    }
 
-      // 2. GUNAKAN COLUMN SEBAGAI WIDGET UTAMA
-      // untuk menyusun Header di atas dan List di bawah.
-      return Column(
+    return Column(
+      children: [
+        const ChatHeader(),
+        const SizedBox(height: 20),
+        // Satu Obx untuk handle conditional rendering
+        Expanded(
+          child: Obx(() {
+            final chatList = getChatList();
+            
+            if (controller.isSearching.value) {
+              // Ketika searching, tampilkan hasil pencarian
+              return _buildSearchResults();
+            } else {
+              // Ketika tidak searching, tampilkan archived + chat list
+              return Column(
+                children: [
+                  // Section Diarsipkan
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 36),
+                    child: InkWell(
+                      onTap: () {
+                        Get.toNamed(AppRoutes.DetailArsip);
+                      },
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.archive_outlined,
+                            color: ThemeColor.gray,
+                          ),
+                          const SizedBox(width: 12),
+                          const Text(
+                            'Diarsipkan',
+                            style: TextStyle(
+                              color: ThemeColor.gray,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const Spacer(),
+                          // Langsung akses tanpa Obx tambahan
+                          Text(
+                            controller.archivedChatsCount.toString(),
+                            style: const TextStyle(
+                              color: ThemeColor.gray,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  // Chat List
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: chatList.length,
+                      itemBuilder: (context, index) {
+                        final chat = chatList[index];
+                        
+                        // Wrap dengan Obx untuk reactive selection state
+                        return Obx(() {
+                          final isSelected = controller.selectedChats.contains(chat);
+                          
+                          return ChatListTile(
+                            isPinned: chat.isPinned,
+                            name: chat.name,
+                            lastMessage: "Hi, I have a problem with....",
+                            avatarUrl: "https://i.pravatar.cc/150?u=${chat.name}",
+                            time: "10.16",
+                            unreadCount: chat.unreadCount,
+                            isOnline: chat.name == 'Jeremy Owen',
+                            isSelected: isSelected,
+                            onTap: () {
+                              if (controller.isSelectionMode.value) {
+                                controller.toggleSelection(chat);
+                              } else {
+                                Get.toNamed(
+                                  AppRoutes.ROOM_CHAT,
+                                  arguments: {
+                                    "id": chat.id,
+                                    "name": chat.name,
+                                    "isGroup": chat.isGroup,
+                                    "members": "Pak Ketua, Pimpinan B, Admin A...",
+                                  },
+                                );
+                              }
+                            },
+                            onLongPress: () {
+                              controller.startSelection(chat);
+                            },
+                          );
+                        });
+                      },
+                    ),
+                  ),
+                ],
+              );
+            }
+          }),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSearchResults() {
+    return Obx(() {
+      return ListView(
+        padding: const EdgeInsets.all(16),
         children: [
-          // ANAK PERTAMA: PANGGIL WIDGET HEADER ANDA
-          const ChatHeader(),
-
-          // ANAK KEDUA: GUNAKAN EXPANDED
-          // Ini sangat penting agar ListView tahu batasan tingginya.
-          Expanded(
-            // ListView.builder Anda sekarang berada di dalam Expanded
-            child: ListView.builder(
-              itemCount: chatList.length,
-              itemBuilder: (context, index) {
-                final chat = chatList[index];
-                // GANTI ListTile YANG LAMA DENGAN INI
-                return Obx(() {
-                  final isSelected = controller.selectedChats.contains(chat);
-                  return ChatListTile(
-                    // Hubungkan data dari model Anda ke parameter widget
-                    name: chat.name,
-                    lastMessage:
-                        "Hi, I have a problem with....", // Ganti dengan data asli
-                    avatarUrl:
-                        "https://i.pravatar.cc/150?u=${chat.name}", // Contoh URL dinamis
-                    time: "10.16", // Ganti dengan data asli
-                    unreadCount: chat.unreadCount,
-                    isOnline: chat.name == 'Jeremy Owen',
-                    isPinned:
-                        chat.name == 'Jeremy Owen', // Contoh logika online
-                    isSelected: isSelected,
-                    onTap: () {
-                      if (controller.isSelectionMode.value) {
-                        controller.toggleSelection(chat);
-                      } else {
-                        // Ganti print dengan navigasi menggunakan GetX
-                        Get.toNamed(
-                          AppRoutes.ROOM_CHAT,
-                          arguments: {
-                            "id": chat.id, // Pastikan ChatModel punya id
-                            "name": chat.name,
-                            "isGroup":
-                                chat.isGroup, // Pastikan ChatModel punya isGroup
-                            "members":
-                                "Pak Ketua, Pimpinan B, Admin A...", // Contoh
-                          },
-                        );
-                      }
-                    },
-                    onLongPress: () {
-                      // Selalu mulai mode seleksi saat di-tap lama.
-                      controller.startSelection(chat);
+          // Hasil Pencarian Chat
+          if (controller.searchResultChats.isNotEmpty) ...[
+            const Text(
+              'Chat',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+            const Divider(),
+            ...controller.searchResultChats.map((chat) {
+              return ChatListTile(
+                name: chat.name,
+                avatarUrl: "https://i.pravatar.cc/150?u=${chat.id}",
+                unreadCount: chat.unreadCount,
+                isPinned: chat.isPinned,
+                lastMessage: "Hasil pencarian...",
+                time: "",
+                isSelected: false,
+                isOnline: false,
+                onTap: () {
+                  Get.toNamed(
+                    AppRoutes.ROOM_CHAT,
+                    arguments: {
+                      "id": chat.id,
+                      "name": chat.name,
+                      "isGroup": chat.isGroup,
+                      "members": "Pak Ketua, Pimpinan B, Admin A...",
                     },
                   );
-                });
-              },
+                },
+                onLongPress: () {},
+              );
+            }).toList(),
+            const SizedBox(height: 24),
+          ],
+          
+          // Hasil Pencarian Pesan
+          if (controller.searchResultMessages.isNotEmpty) ...[
+            const Text(
+              'Pesan',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-          ),
+            const Divider(),
+            ...controller.searchResultMessages.map((result) {
+              return ListTile(
+                leading: CircleAvatar(
+                  backgroundImage: NetworkImage(
+                    "https://i.pravatar.cc/150?u=${result.chat.id}",
+                  ),
+                ),
+                title: Text(
+                  result.chat.name,
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  result.message.text ?? '',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                onTap: () => Get.toNamed(
+                  AppRoutes.ROOM_CHAT,
+                  arguments: {
+                    "id": result.chat.id,
+                    "name": result.chat.name,
+                    "isGroup": result.chat.isGroup,
+                    "members": "Pak Ketua, Pimpinan B, Admin A...",
+                  },
+                ),
+              );
+            }),
+          ],
+          
+          // Tampilkan pesan jika tidak ada hasil
+          if (controller.searchResultChats.isEmpty && 
+              controller.searchResultMessages.isEmpty) ...[
+            const Center(
+              child: Padding(
+                padding: EdgeInsets.all(32),
+                child: Text(
+                  'Tidak ada hasil pencarian',
+                  style: TextStyle(
+                    color: ThemeColor.gray,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ],
       );
     });

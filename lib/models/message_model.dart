@@ -15,6 +15,7 @@ class MessageModel {
   final bool isSender;
   final String? documentPath;
   final String? documentName;
+  final bool isDeleted;
 
   MessageModel({
     required this.senderId,
@@ -30,32 +31,31 @@ class MessageModel {
     required this.type,
     this.isStarred = false,
     this.isPinned = false,
+    this.isDeleted = false,
   }) : assert(
          (type == MessageType.text && text != null && text.isNotEmpty) ||
-         (type == MessageType.image && imagePath != null) ||
-         (type == MessageType.document && documentPath != null),
-        'Setiap tipe pesan harus memiliki data yang sesuai.'
+             (type == MessageType.image && imagePath != null) ||
+             (type == MessageType.document &&
+                 documentPath != null &&
+                 documentName != null),
+         'Setiap tipe pesan harus memiliki data yang sesuai.',
        );
 
-  // 2. LENGKAPI `copyWith`
-  MessageModel copyWith({
-    bool? isStarred,
-    bool? isPinned,
-  }) {
+  MessageModel copyWith({String? text,bool? isStarred, bool? isPinned,bool? isDeleted, }) {
     return MessageModel(
-      // Salin semua data asli
       senderId: senderId,
-      text: text,
+      text: text ?? this.text, 
       timestamp: timestamp,
       isSender: isSender,
       senderName: senderName,
       repliedMessage: repliedMessage,
-      imagePath: imagePath, // <-- Tambahkan ini
-      type: type,           // <-- Tambahkan ini
-
-      // Gunakan data baru jika ada, jika tidak, pakai data lama
+      imagePath: imagePath,
+      type: type,
+      documentPath: documentPath, 
+      documentName: documentName, 
       isStarred: isStarred ?? this.isStarred,
       isPinned: isPinned ?? this.isPinned,
+      isDeleted: isDeleted ?? this.isDeleted,
     );
   }
 }

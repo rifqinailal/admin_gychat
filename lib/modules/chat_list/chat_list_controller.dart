@@ -1,93 +1,186 @@
-// lib/app/modules/chat_list/chat_list_controller.dart
-
+import 'package:admin_gychat/models/chat_model.dart';
+import 'package:admin_gychat/models/message_model.dart';
+import 'package:admin_gychat/shared/widgets/pin_confirmation_dialog.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-// Jangan lupa import model Anda nanti
-// import 'package:chatapp_admin/app/data/models/chat_model.dart';
 
-// Untuk sementara, kita buat model dummy di sini
-class ChatModel {
-  final int id;
-  final String name;
-  final bool isGroup;
-  final int unreadCount;
-  ChatModel({required this.id, required this.name, this.isGroup = false, this.unreadCount = 0});
+class SearchResultMessage {
+  final ChatModel chat; // Dari obrolan mana pesan ini berasal
+  final MessageModel message;
+  SearchResultMessage({required this.chat, required this.message});
 }
 
-
 class ChatListController extends GetxController {
-  // Ini adalah "Single Source of Truth" atau sumber data utama untuk semua chat.
-  // Semua perubahan (data baru, chat dibaca) hanya terjadi pada list ini.
-  var allChats = <ChatModel>[].obs;
+  var _allChats = <ChatModel>[].obs;
   var isSelectionMode = false.obs;
   var selectedChats = <ChatModel>{}.obs;
+  int get archivedChatsCount =>
+      _allChats.where((chat) => chat.isArchived).length;
+  final int pinLimit = 2;
+  late TextEditingController searchController;
+  var searchQuery = ''.obs;
+  var isSearching = false.obs;
+  var searchResultChats = <ChatModel>[].obs;
+  var searchResultMessages = <SearchResultMessage>[].obs;
 
   @override
   void onInit() {
     super.onInit();
-    // Nanti, di sini Anda akan memanggil repository untuk mengambil data dari API.
-    // Untuk sekarang, kita isi dengan data dummy.
+        searchController = TextEditingController();
+    // Tambahkan listener untuk mendeteksi setiap ketikan
+    searchController.addListener(_onSearchChanged);
     fetchChats();
   }
 
+  List<ChatModel> get allChatsInternal => _allChats;
+  List<ChatModel> get allChats {
+    final chats = _allChats.where((chat) => !chat.isArchived).toList();
+    chats.sort((a, b) {
+      // Jika a di-pin dan b tidak, maka a harus di atas (return -1)
+      if (a.isPinned && !b.isPinned) return -1;
+      // Jika b di-pin dan a tidak, maka b harus di atas (return 1)
+      if (!a.isPinned && b.isPinned) return 1;
+      // Jika keduanya sama (sama-sama di-pin atau tidak), biarkan urutan aslinya
+      return 0;
+    });
+    return chats;
+  }
+
+  List<ChatModel> get unreadChats =>
+      allChats.where((chat) => chat.unreadCount > 0).toList();
+  List<ChatModel> get groupChats =>
+      allChats.where((chat) => chat.isGroup).toList();
+
+void _onSearchChanged() {
+    // `debounce` memberi jeda agar pencarian tidak dijalankan pada setiap huruf,
+    // tapi hanya setelah user berhenti mengetik selama 500 milidetik.
+    debounce(searchQuery, (_) => _performSearch(), time: const Duration(milliseconds: 500));
+    searchQuery.value = searchController.text;
+  }
+
+  // FUNGSI BARU: Untuk melakukan pencarian
+  void _performSearch() {
+    final query = searchQuery.value.toLowerCase();
+    
+    // Jika query kosong, keluar dari mode search
+    if (query.isEmpty) {
+      isSearching.value = false;
+      searchResultChats.clear();
+      searchResultMessages.clear();
+      return;
+    }
+    
+    isSearching.value = true;
+    
+    // 1. Cari di nama chat
+    searchResultChats.assignAll(
+      _allChats.where((chat) => chat.name.toLowerCase().contains(query))
+    );
+
+    // 2. Cari di dalam pesan
+    List<SearchResultMessage> messageResults = [];
+    for (var chat in _allChats) {
+      for (var message in chat.messages) {
+        if (message.text != null && message.text!.toLowerCase().contains(query)) {
+          messageResults.add(SearchResultMessage(chat: chat, message: message));
+        }
+      }
+    }
+    searchResultMessages.assignAll(messageResults);
+  }
+
+  // FUNGSI BARU: Untuk membersihkan search
+  void clearSearch() {
+    searchController.clear();
+    // _onSearchChanged akan otomatis terpanggil dan membersihkan state
+  }
+
+  
+  void pinSelectedChats() {
+    int currentPinnedCount = _allChats.where((c) => c.isPinned).length;
+    int newPinsCount = selectedChats.where((c) => !c.isPinned).length;
+    if (currentPinnedCount + newPinsCount > pinLimit) {
+      Get.dialog(PinConfirmationDialog(chatCount: pinLimit));
+      return;
+    }
+    for (var chat in selectedChats) {
+      chat.isPinned = !chat.isPinned;
+    }
+
+    _allChats.refresh();
+    clearSelection();
+  }
+
+  void archiveSelectedChats() {
+    for (var chat in selectedChats) {
+      chat.isArchived = true;
+    }
+    _allChats.refresh();
+    clearSelection();
+  }
+
   void deleteSelectedChats() {
-    print('Menghapus ${selectedChats.length} chat...');
-    allChats.removeWhere((chat) => selectedChats.contains(chat));
+    _allChats.removeWhere((chat) => selectedChats.contains(chat));
     Get.back();
     clearSelection();
   }
 
   void startSelection(ChatModel chat) {
-    // Mengaktifkan mode seleksi.
     isSelectionMode.value = true;
-    // Menambahkan chat pertama yang dipilih.
     selectedChats.add(chat);
   }
 
   void toggleSelection(ChatModel chat) {
-    // Jika item sudah ada di dalam daftar pilihan, maka hapus (deselect).
-    // Jika belum ada, maka tambahkan (select).
     if (selectedChats.contains(chat)) {
       selectedChats.remove(chat);
     } else {
       selectedChats.add(chat);
     }
-
-    // Jika setelah itu tidak ada lagi item yang dipilih,
-    // maka matikan mode seleksi secara otomatis.
     if (selectedChats.isEmpty) {
       isSelectionMode.value = false;
     }
   }
 
   void clearSelection() {
-    // Menghapus semua item dari daftar pilihan.
     selectedChats.clear();
-    // Menonaktifkan mode seleksi.
     isSelectionMode.value = false;
   }
 
-  // --- GETTERS UNTUK FILTERING ---
-  // GetX akan secara otomatis memperbarui UI yang menggunakan getter ini
-  // setiap kali `allChats` berubah.
-
-  /// Mengembalikan list chat yang belum dibaca.
-  List<ChatModel> get unreadChats => allChats.where((chat) => chat.unreadCount > 0).toList();
-
-  /// Mengembalikan list chat grup.
-  List<ChatModel> get groupChats => allChats.where((chat) => chat.isGroup).toList();
-
-
-  void fetchChats() {
-    // Simulasi pengambilan data dari API
-    var dummyData = [
-      ChatModel(id:1, name: 'Jeremy Owen', unreadCount: 2),
-      ChatModel(id:2,name: 'Olympiad Bus', isGroup: true, unreadCount: 5),
-      ChatModel(id:3,name: 'Classtell', unreadCount: 0),
-      ChatModel(id:4,name: 'Olympiad Mace', isGroup: true, unreadCount: 0),
-      ChatModel(id:5,name: 'Dian Puspita', unreadCount: 1),
-      ChatModel(id:6,name: 'Projek Internal', isGroup: true, unreadCount: 1),
-     
-    ];
-    allChats.assignAll(dummyData);
+  void refreshChatList() {
+    _allChats.refresh();
   }
+
+ // Di dalam ChatListController
+void fetchChats() {
+  var dummyData = [
+    ChatModel(
+      id: 1,
+      name: 'Jeremy Owen',
+      unreadCount: 2,
+      // ISI DENGAN BEBERAPA CONTOH PESAN
+      messages: [
+        MessageModel(senderId: "user_01", senderName: "Jeremy Owen", text: "Langsung tanyakan ke indra aja", timestamp: DateTime.now(), isSender: false, type: MessageType.text),
+        MessageModel(senderId: "admin_01", senderName: "Anda", text: "Oke, siap.", timestamp: DateTime.now(), isSender: true, type: MessageType.text),
+      ],
+    ),
+    ChatModel(
+      id: 2,
+      name: 'Olympiad Bus',
+      isGroup: true,
+      unreadCount: 5,
+      messages: [
+        MessageModel(senderId: "user_02", senderName: "Pimpinan A", text: "Tolong segera diselesaikan ya.", timestamp: DateTime.now(), isSender: false, type: MessageType.text),
+      ],
+    ),
+    ChatModel(id: 3, name: 'Classtell', unreadCount: 0, messages: []),
+    ChatModel(id: 7, name: 'Projek Selesai', isArchived: true, messages: [
+       MessageModel(senderId: "user_03", senderName: "Indra Yulianto", text: "Laporan final sudah saya kirim.", timestamp: DateTime.now(), isSender: false, type: MessageType.text),
+    ]),
+    ChatModel(id: 8, name: 'Indra Yulianto', unreadCount: 0, messages: []),
+    ChatModel(id: 9, name: 'Agas Indransyah', unreadCount: 0, messages: [
+       MessageModel(senderId: "user_04", senderName: "Agas Indransyah", text: "mengetik.....", timestamp: DateTime.now(), isSender: false, type: MessageType.text),
+    ]),
+  ];
+  _allChats.assignAll(dummyData);
+}
 }

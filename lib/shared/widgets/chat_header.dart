@@ -3,7 +3,6 @@ import 'package:admin_gychat/modules/dashboard/dashboard_controller.dart';
 import 'package:admin_gychat/routes/app_routes.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:admin_gychat/shared/widgets/delete_confirmation_dialog.dart';
-import 'package:admin_gychat/shared/widgets/pin_confirmation_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -11,11 +10,9 @@ enum MainMenuAction { groupBaru, berbintang, pengaturan }
 
 class ChatHeader extends StatelessWidget {
   const ChatHeader({super.key});
-
-  // Method ini SEKARANG HANYA membuat baris judul "Gychat" dan menu titik tiga.
   Widget _buildTitleBar() {
     return Row(
-      key: const ValueKey('normalHeader'), // Key untuk animasi
+      key: const ValueKey('normalHeader'),
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         const Text(
@@ -55,10 +52,8 @@ class ChatHeader extends StatelessWidget {
             }
           },
 
-          // Fungsi yang membangun (membuat) daftar item di dalam menu.
           itemBuilder:
               (BuildContext context) => <PopupMenuEntry<MainMenuAction>>[
-                // ITEM MENU 1: Group Baru
                 PopupMenuItem<MainMenuAction>(
                   value: MainMenuAction.groupBaru,
                   child: Row(
@@ -69,8 +64,6 @@ class ChatHeader extends StatelessWidget {
                     ],
                   ),
                 ),
-
-                // ITEM MENU 2: Berbintang
                 PopupMenuItem<MainMenuAction>(
                   value: MainMenuAction.berbintang,
                   child: Row(
@@ -81,8 +74,6 @@ class ChatHeader extends StatelessWidget {
                     ],
                   ),
                 ),
-
-                // ITEM MENU 3: Pengaturan
                 PopupMenuItem<MainMenuAction>(
                   value: MainMenuAction.pengaturan,
                   child: Row(
@@ -122,7 +113,7 @@ class ChatHeader extends StatelessWidget {
         Row(
           children: [
             IconButton(
-              onPressed: () {},
+              onPressed: () => controller.archiveSelectedChats(),
               icon: const Icon(
                 Icons.archive_outlined,
                 color: Color(0xFF353435),
@@ -130,18 +121,14 @@ class ChatHeader extends StatelessWidget {
             ),
             IconButton(
               onPressed: () {
-                if (controller.selectedChats.length >= 5)
-                  Get.dialog(
-                    PinConfirmationDialog(
-                      chatCount: controller.selectedChats.length,
-                    ),
-                  );
+                controller.pinSelectedChats();
               },
               icon: Transform.rotate(
-                angle: 1, // dalam radian,
+                angle: 1,
                 child: Icon(Icons.push_pin_outlined, color: Color(0xFF353435)),
               ),
             ),
+
             IconButton(
               onPressed: () {
                 Get.dialog(
@@ -187,45 +174,48 @@ class ChatHeader extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: TextField(
+            // Hubungkan controller
+            controller: controller.searchController,
             decoration: InputDecoration(
               hintText: 'Search Here',
               hintStyle: TextStyle(color: ThemeColor.gray),
-              prefixIcon: Icon(Icons.search_rounded, color: ThemeColor.gray),
+              // Buat ikon menjadi dinamis
+              prefixIcon: Obx(
+                () =>
+                    controller
+                            .isSearching
+                            .value // TANYA: Apakah sedang mencari?
+                        // JIKA YA: Tampilkan IconButton untuk kembali/batal
+                        ? IconButton(
+                          icon: const Icon(
+                            Icons.arrow_back_ios,
+                            color: ThemeColor.gray,
+                          ),
+                          onPressed: () => controller.clearSearch(),
+                        )
+                        // JIKA TIDAK: Tampilkan ikon search biasa
+                        : const Icon(
+                          Icons.search_rounded,
+                          color: ThemeColor.gray,
+                        ),
+              ),
+              // Tambahkan tombol clear di kanan saat mencari
+
+              // KEMBALIKAN fillColor
               filled: true,
-              fillColor: Color.fromRGBO(240, 240, 240, 1),
-              contentPadding: EdgeInsets.symmetric(vertical: 10),
-              border: OutlineInputBorder(
+              fillColor: const Color.fromRGBO(240, 240, 240, 1),
+              contentPadding: const EdgeInsets.symmetric(vertical: 10),
+              // PASTIKAN borderSide ADALAH none
+              border: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(20)),
+                borderSide: BorderSide.none,
+              ),
+              // Hilangkan fokus border juga agar sama
+              focusedBorder: const OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(20)),
                 borderSide: BorderSide.none,
               ),
             ),
-          ),
-        ),
-        const SizedBox(height: 20),
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 36,
-          ), // Disesuaikan paddingnya
-          child: InkWell(
-            onTap: () {
-              Get.toNamed(AppRoutes.DetailArsip);
-            },
-              child: Row(
-                children: [
-                  const Icon(Icons.archive_outlined, color: ThemeColor.gray),
-                  const SizedBox(width: 12),
-                  const Text(
-                    'Diarsipkan',
-                    style: TextStyle(color: ThemeColor.gray, fontSize: 16),
-                  ),
-                  const Spacer(),
-                  const Text(
-                    '13',
-                    style: TextStyle(color: ThemeColor.gray, fontSize: 16),
-                  ),
-                ],
-              ),
-            
           ),
         ),
       ],
