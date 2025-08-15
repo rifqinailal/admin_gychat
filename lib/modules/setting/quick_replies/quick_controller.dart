@@ -18,17 +18,7 @@ class QuickController extends GetxController {
       message: 'this is a quick message',
       imagePath: 'assets/images/pp2.jpg',
     ),
-    QuickReply(
-      id: '2',
-      shortcut: '02',
-      message: 'this is a quick message this is a quick message',
-    ),
-    QuickReply(
-      id: '3',
-      shortcut: '03',
-      message: 'this is a quick message',
-      imagePath: 'assets/images/pp2.jpg',
-    ),
+    
   ].obs;
 
   var selectedImage = Rx<File?>(null);
@@ -40,6 +30,7 @@ class QuickController extends GetxController {
 
     Get.bottomSheet(
       Container(
+        height: 800,
         clipBehavior: Clip.antiAlias,
         decoration: const BoxDecoration(
           color: Colors.white,
@@ -62,6 +53,7 @@ class QuickController extends GetxController {
 
     Get.bottomSheet(
       Container(
+         height: 800,
         clipBehavior: Clip.antiAlias,
         decoration: const BoxDecoration(
           color: Colors.white,

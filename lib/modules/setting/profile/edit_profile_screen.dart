@@ -16,10 +16,14 @@ class EditProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final textController = TextEditingController(text: initialValue);
 
-    return Scaffold( 
+    return Container(
+      height: 500,
+      child: Scaffold( 
+      
       backgroundColor: Colors.white,
       
       body: SafeArea(
+        
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 30),
           child: SingleChildScrollView(
@@ -93,6 +97,7 @@ class EditProfileScreen extends StatelessWidget {
           ),
         ),
       ),
+    ),
     );
   }
 } 
