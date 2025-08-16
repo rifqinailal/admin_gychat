@@ -4,6 +4,7 @@ import 'package:admin_gychat/routes/app_routes.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:admin_gychat/shared/widgets/delete_confirmation_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:get/get.dart';
 
 enum MainMenuAction { groupBaru, berbintang, pengaturan }
@@ -78,7 +79,7 @@ class ChatHeader extends StatelessWidget {
                   value: MainMenuAction.pengaturan,
                   child: Row(
                     children: const [
-                      Icon(Icons.settings_outlined, color: Colors.black54),
+                      Icon(Ionicons.ios_settings_outline, color: Colors.black54),
                       SizedBox(width: 12),
                       Text('Pengaturan'),
                     ],
@@ -115,7 +116,7 @@ class ChatHeader extends StatelessWidget {
             IconButton(
               onPressed: () => controller.archiveSelectedChats(),
               icon: const Icon(
-                Icons.archive_outlined,
+               Ionicons.md_archive_outline, size: 30,
                 color: Color(0xFF353435),
               ),
             ),
@@ -124,8 +125,8 @@ class ChatHeader extends StatelessWidget {
                 controller.pinSelectedChats();
               },
               icon: Transform.rotate(
-                angle: 1,
-                child: Icon(Icons.push_pin_outlined, color: Color(0xFF353435)),
+                angle: 1.5,
+                child: Icon(Octicons.pin, color: Color(0xFF353435)),
               ),
             ),
 
@@ -138,7 +139,7 @@ class ChatHeader extends StatelessWidget {
                   ),
                 );
               },
-              icon: const Icon(Icons.delete_outline, color: Color(0xFF353435)),
+              icon: const Icon(FontAwesome5Regular.trash_alt, color: Color(0xFF353435)),
             ),
           ],
         ),

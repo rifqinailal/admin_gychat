@@ -8,6 +8,7 @@ import 'package:admin_gychat/routes/app_routes.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'room_chat_controller.dart';
@@ -146,19 +147,16 @@ class RoomChatScreen extends GetView<RoomChatController> {
         ],
       ),
       actions: [
-        IconButton(onPressed: () {}, icon: const Icon(Icons.reply)),
+        IconButton(onPressed: () {}, icon: const Icon(Octicons.reply)),
 
         IconButton(
           onPressed: () => controller.starSelectedMessages(),
-          icon: const Icon(Icons.star_border),
+          icon: const Icon(AntDesign.staro),
         ),
 
         IconButton(
           onPressed: () => controller.pinSelectedMessages(),
-          icon: Transform.rotate(
-            angle: 1,
-            child: Icon(Icons.push_pin_outlined, color: Color(0xFF1D2C86)),
-          ),
+          icon: Transform.rotate(angle: 1.5, child: Icon(Octicons.pin)),
         ),
 
         IconButton(
@@ -174,14 +172,14 @@ class RoomChatScreen extends GetView<RoomChatController> {
                       MessageType.image)) {
             return IconButton(
               onPressed: () => controller.setEditMessage(),
-              icon: const Icon(Icons.edit),
+              icon: const Icon(Octicons.pencil),
             );
           }
           return const SizedBox.shrink(); // Jika tidak, sembunyikan
         }),
         IconButton(
           onPressed: () => controller.showDeleteConfirmationDialog(),
-          icon: const Icon(Icons.delete_outline),
+          icon: const Icon(FontAwesome5Regular.trash_alt, size: 20),
         ),
       ],
     );
@@ -474,7 +472,10 @@ class RoomChatScreen extends GetView<RoomChatController> {
 
           IconButton(
             onPressed: controller.sendMessage,
-            icon: const Icon(Icons.send, color: ThemeColor.primary),
+            icon: Transform.rotate(
+              angle: 0.8,
+              child: Icon(FontAwesome5Solid.location_arrow, color: ThemeColor.primary),
+            ),
           ),
         ],
       ),

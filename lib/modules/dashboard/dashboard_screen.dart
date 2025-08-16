@@ -1,6 +1,7 @@
 // lib/app/modules/dashboard/dashboard_screen.dart
 import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:get/get.dart';
 import '../chat_list/chat_list_view.dart';
 import '../setting/setting_screen.dart';
@@ -31,21 +32,28 @@ class DashboardScreen extends GetView<DashboardController> {
       bottomNavigationBar: Obx(
         () => BottomNavigationBar(
           selectedItemColor: ThemeColor.primary,
+          unselectedItemColor: const Color(0xFF646164),
           type: BottomNavigationBarType.fixed,
           currentIndex: controller.tabIndex.value,
           onTap: controller.changeTabIndex,
           items: const [
             BottomNavigationBarItem(
-              icon: Icon(Icons.chat_bubble),
+              icon: Icon(MaterialCommunityIcons.message_text_outline, size: 32,),
+              activeIcon: Icon(MaterialIcons.chat, size: 32),
               label: 'Chats',
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.mark_chat_unread),
+              icon: Icon(Ionicons.ios_chatbox_ellipses_outline, size: 32),
+              activeIcon:Icon(Ionicons.ios_chatbox_ellipses_sharp, size: 32),
               label: 'Unread',
             ),
-            BottomNavigationBarItem(icon: Icon(Icons.group), label: 'Group'),
             BottomNavigationBarItem(
-              icon: Icon(Icons.settings),
+              activeIcon: Icon(MaterialCommunityIcons.account_group, size: 32),
+              icon: Icon(MaterialCommunityIcons.account_group_outline, size: 32),
+               label: 'Group'),
+            BottomNavigationBarItem(
+              activeIcon: Icon(Ionicons.ios_settings_sharp, size: 32),
+              icon: Icon(Ionicons.ios_settings_outline, size: 32),
               label: 'Setting',
             ),
           ],

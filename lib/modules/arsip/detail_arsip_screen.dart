@@ -4,6 +4,7 @@ import 'package:admin_gychat/modules/arsip/detail_arsip_controller.dart';
 import 'package:admin_gychat/routes/app_routes.dart';
 import 'package:admin_gychat/shared/widgets/chat_list_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
@@ -82,7 +83,7 @@ class DetailArsipScreen extends GetView<DetailArsipController> {
             // Cek status seleksi langsung dari controller
             if (controller.selectedArchivedChats.isNotEmpty) {
               return IconButton(
-                icon: const Icon(Icons.unarchive_outlined, color: Colors.black),
+                icon: const Icon(Feather.upload, color: Colors.black),
                 onPressed: () {
                   // Panggil fungsi unarchive dari controller
                   controller.unarchiveChats();

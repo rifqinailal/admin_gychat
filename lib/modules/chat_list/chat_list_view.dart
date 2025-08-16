@@ -4,6 +4,7 @@ import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:admin_gychat/shared/widgets/chat_header.dart';
 import 'package:admin_gychat/shared/widgets/chat_list_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:get/get.dart';
 import 'chat_list_controller.dart';
 
@@ -54,7 +55,7 @@ class ChatListView extends GetView<ChatListController> {
                       child: Row(
                         children: [
                           const Icon(
-                            Icons.archive_outlined,
+                            Ionicons.ios_archive_outline,
                             color: ThemeColor.gray,
                           ),
                           const SizedBox(width: 12),
