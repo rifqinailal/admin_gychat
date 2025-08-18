@@ -221,6 +221,7 @@ class ProfileScreen extends GetView<ProfileController> {
   void _showPhotoOptions() {
     Get.bottomSheet(
       Container(
+        height: 800,
         padding: const EdgeInsets.fromLTRB(12, 12, 12, 34),
         decoration: const BoxDecoration(
           color: Color(0xFFF0F0F0),

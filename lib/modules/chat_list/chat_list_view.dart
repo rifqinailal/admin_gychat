@@ -4,6 +4,7 @@ import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:admin_gychat/shared/widgets/chat_header.dart';
 import 'package:admin_gychat/shared/widgets/chat_list_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:get/get.dart';
 import 'chat_list_controller.dart';
 
@@ -54,7 +55,7 @@ class ChatListView extends GetView<ChatListController> {
                       child: Row(
                         children: [
                           const Icon(
-                            Icons.archive_outlined,
+                            Ionicons.ios_archive_outline,
                             color: ThemeColor.gray,
                           ),
                           const SizedBox(width: 12),
@@ -140,16 +141,16 @@ class ChatListView extends GetView<ChatListController> {
           if (controller.searchResultChats.isNotEmpty) ...[
             const Text(
               'Chat',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style: TextStyle( color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            const Divider(),
+            SizedBox(height: 10,),
             ...controller.searchResultChats.map((chat) {
               return ChatListTile(
                 name: chat.name,
                 avatarUrl: "https://i.pravatar.cc/150?u=${chat.id}",
                 unreadCount: chat.unreadCount,
                 isPinned: chat.isPinned,
-                lastMessage: "Hasil pencarian...",
+                lastMessage: 'assalamualaikum',
                 time: "",
                 isSelected: false,
                 isOnline: false,
@@ -167,23 +168,23 @@ class ChatListView extends GetView<ChatListController> {
                 onLongPress: () {},
               );
             }).toList(),
-            const SizedBox(height: 24),
+            const SizedBox(height: 10),
           ],
           
           // Hasil Pencarian Pesan
           if (controller.searchResultMessages.isNotEmpty) ...[
             const Text(
               'Pesan',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style: TextStyle( color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            const Divider(),
             ...controller.searchResultMessages.map((result) {
               return ListTile(
-                leading: CircleAvatar(
-                  backgroundImage: NetworkImage(
-                    "https://i.pravatar.cc/150?u=${result.chat.id}",
-                  ),
-                ),
+                textColor: Colors.grey,
+                // leading: CircleAvatar(
+                //   backgroundImage: NetworkImage(
+                //     "https://i.pravatar.cc/150?u=${result.chat.id}",
+                //   ),
+                // ),
                 title: Text(
                   result.chat.name,
                   style: const TextStyle(fontWeight: FontWeight.bold),

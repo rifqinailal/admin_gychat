@@ -1,5 +1,6 @@
 import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
 class ChatListTile extends StatelessWidget {
   // Parameter yang akan diterima oleh widget ini
@@ -107,8 +108,8 @@ class ChatListTile extends StatelessWidget {
                 children: [
                   if (isPinned)
                     Transform.rotate(
-                      angle: 1, // dalam radian,
-                      child: Icon(Icons.push_pin_outlined, color: ThemeColor.gray),
+                      angle: 1.5, // dalam radian,
+                      child: Icon(Octicons.pin, size: 18, color: ThemeColor.gray),
                     ),
                     SizedBox(width: 5,),
                   if (unreadCount > 0)
