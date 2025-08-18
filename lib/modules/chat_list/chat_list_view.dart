@@ -141,16 +141,16 @@ class ChatListView extends GetView<ChatListController> {
           if (controller.searchResultChats.isNotEmpty) ...[
             const Text(
               'Chat',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style: TextStyle( color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            const Divider(),
+            SizedBox(height: 10,),
             ...controller.searchResultChats.map((chat) {
               return ChatListTile(
                 name: chat.name,
                 avatarUrl: "https://i.pravatar.cc/150?u=${chat.id}",
                 unreadCount: chat.unreadCount,
                 isPinned: chat.isPinned,
-                lastMessage: "Hasil pencarian...",
+                lastMessage: 'assalamualaikum',
                 time: "",
                 isSelected: false,
                 isOnline: false,
@@ -168,23 +168,23 @@ class ChatListView extends GetView<ChatListController> {
                 onLongPress: () {},
               );
             }).toList(),
-            const SizedBox(height: 24),
+            const SizedBox(height: 10),
           ],
           
           // Hasil Pencarian Pesan
           if (controller.searchResultMessages.isNotEmpty) ...[
             const Text(
               'Pesan',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              style: TextStyle( color: Colors.grey, fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            const Divider(),
             ...controller.searchResultMessages.map((result) {
               return ListTile(
-                leading: CircleAvatar(
-                  backgroundImage: NetworkImage(
-                    "https://i.pravatar.cc/150?u=${result.chat.id}",
-                  ),
-                ),
+                textColor: Colors.grey,
+                // leading: CircleAvatar(
+                //   backgroundImage: NetworkImage(
+                //     "https://i.pravatar.cc/150?u=${result.chat.id}",
+                //   ),
+                // ),
                 title: Text(
                   result.chat.name,
                   style: const TextStyle(fontWeight: FontWeight.bold),
