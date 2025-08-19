@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'away_controller.dart';
 
@@ -91,7 +92,7 @@ class ScheduleScreen extends StatelessWidget {
       title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
       subtitle: Text(subtitle, style: TextStyle(color: Colors.grey[600])),
       trailing: controller.scheduleOption.value == value
-          ? const Icon(Icons.check, color: Color(0xFF3F51B5))
+          ? const Icon(Icons.check, color:  ThemeColor.primary)
           : null,
       onTap: () => controller.selectScheduleOption(value),
     );
@@ -129,7 +130,7 @@ class ScheduleScreen extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () => controller.savePickedDate(),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3F51B5),
+                backgroundColor: ThemeColor.primary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8)
                 )
@@ -152,14 +153,14 @@ class ScheduleScreen extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
-                color: controller.isCalendarView.value ? const Color(0xFF3F51B5).withOpacity(0.1) : Colors.transparent,
+                color: controller.isCalendarView.value ? ThemeColor.primary.withOpacity(0.1) : Colors.transparent,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Center(
                 child: Text(
                   DateFormat('d MMM yyyy').format(controller.tempSelectedDate.value),
                   style: TextStyle(
-                    color: controller.isCalendarView.value ? const Color(0xFF3F51B5) : Colors.grey,
+                    color: controller.isCalendarView.value ? ThemeColor.primary : Colors.grey,
                     fontWeight: FontWeight.bold
                   ),
                 ),
@@ -175,14 +176,14 @@ class ScheduleScreen extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
-                color: !controller.isCalendarView.value ? const Color(0xFF3F51B5).withOpacity(0.1) : Colors.transparent,
+                color: !controller.isCalendarView.value ? ThemeColor.primary.withOpacity(0.1) : Colors.transparent,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Center(
                 child: Text(
                   DateFormat('HH:mm').format(controller.tempSelectedDate.value),
                   style: TextStyle(
-                    color: !controller.isCalendarView.value ? const Color(0xFF3F51B5) : Colors.grey,
+                    color: !controller.isCalendarView.value ? ThemeColor.primary : Colors.grey,
                     fontWeight: FontWeight.bold
                   ),
                 ),
@@ -252,11 +253,11 @@ class ScheduleScreen extends StatelessWidget {
         // Gaya untuk hari yang tidak bisa dipilih
         disabledTextStyle: TextStyle(color: Colors.grey.shade400),
         selectedDecoration: const BoxDecoration(
-          color: Color(0xFF3F51B5),
+          color:  ThemeColor.primary,
           shape: BoxShape.circle,
         ),
         todayDecoration: BoxDecoration(
-          color: const Color(0xFF3F51B5).withOpacity(0.3),
+          color: ThemeColor.primary.withOpacity(0.3),
           shape: BoxShape.circle,
         ),
       ),

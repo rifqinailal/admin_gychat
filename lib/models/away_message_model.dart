@@ -1,6 +1,6 @@
-// models/away_message_model.dart
+// lib/models/away_message_model.dart
 
-// Enum untuk membedakan tipe jadwal
+// Enum tipe jadwal
 enum ScheduleType { always, custom }
 
 class AwayMessage {

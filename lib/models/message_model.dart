@@ -1,4 +1,4 @@
-// lib/app/data/models/message_model.dart
+// lib/models/message_model.dart
 
 enum MessageType { text, image, document }
 
@@ -18,8 +18,7 @@ class MessageModel {
   final bool isDeleted;
 
   MessageModel({
-    required this.senderId,
-    // 1. UBAH `required this.text` MENJADI `this.text`
+    required this.senderId, 
     this.text,
     required this.timestamp,
     required this.isSender,

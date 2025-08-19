@@ -1,4 +1,5 @@
 // lib/modules/star/detail_star_screen.dart
+import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'detail_star_controller.dart';
@@ -9,8 +10,8 @@ class DetailStarScreen extends GetView<DetailStarsController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: _buildAppBar(),
-
+      // AppBar sekarang dibangun berdasarkan state dari controller
+      appBar: _buildAppBar(), // _buildAppBar() already returns Obx, which wraps an AppBar
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
@@ -41,83 +42,120 @@ class DetailStarScreen extends GetView<DetailStarsController> {
     );
   }
 
+  /// AppBar Switcher
+  /// Memilih AppBar yang akan ditampilkan berdasarkan state
   PreferredSizeWidget _buildAppBar() {
+    return PreferredSize(
+      // Menentukan tinggi standar AppBar
+      preferredSize: const Size.fromHeight(kToolbarHeight), 
+      child: Obx(() {
+        if (controller.isSearchActive.value) {
+          return _buildSearchAppBar();
+        } else if (controller.isSelectionMode.value) {
+          return _buildSelectionAppBar();
+        } else {
+          return _buildDefaultAppBar();
+        }
+      }),
+    );
+  }
+
+  /// AppBar untuk tampilan default (tidak sedang search atau selection)
+  AppBar _buildDefaultAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0.5,
-      leading: Obx(
-        () =>
-            controller.isSelectionMode.value
-                ? IconButton(
-                  icon: const Icon(Icons.close, color: Colors.black),
-                  onPressed: () => controller.exitSelectionMode(),
-                )
-                : IconButton(
-                  icon: const Icon(
-                    Icons.arrow_back_ios_new,
-                    color: Colors.black,
-                  ),
-                  onPressed: () => Get.back(),
-                ),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back_ios_new, color: ThemeColor.darkGrey2),
+        onPressed: () => Get.back(),
       ),
-      title: Obx(() {
-        if (controller.isSearchActive.value) {
-          return TextField(
-            controller: controller.searchController,
-            autofocus: true,
-            decoration: const InputDecoration(
-              hintText: 'Search here...',
-              border: InputBorder.none,
-              hintStyle: TextStyle(color: Colors.grey),
-            ),
-            style: const TextStyle(color: Colors.black, fontSize: 16),
-          );
-        }
-        
-        if (controller.isSelectionMode.value) {
-          return Text(
-            '${controller.selectedMessages.length} dipilih',
-            style: const TextStyle(color: Colors.black, fontSize: 18),
-          );
-        }
-        return const Text(
-          'Berbintang',
-          style: TextStyle(color: Colors.black, fontSize: 18),
-        );
-      }),
+      title: const Text(
+        'Berbintang',
+        style: TextStyle(color: ThemeColor.darkGrey2, fontSize: 18),
+      ),
       actions: [
-        Obx(() {
-          if (controller.isSelectionMode.value) {
-            return IconButton(
-              icon: const Icon(Icons.star_border, color: Colors.black, size: 22),
-              onPressed: () => controller.confirmDeleteSelected(),
-            );
-          } else if (controller.isSearchActive.value) {
-            return IconButton(
-              icon: const Icon(Icons.close, color: Colors.black),
-              onPressed: () => controller.toggleSearch(),
-            );
-          } else {
-            return Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.search, color: Colors.black),
-                  onPressed: () => controller.toggleSearch(),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete_outline, color: Colors.black),
-                  onPressed: () => controller.confirmDeleteAll(),
-                ),
-              ],
-            );
-          }
-        }),
+        IconButton(
+          icon: const Icon(Icons.search, color: ThemeColor.darkGrey2),
+          onPressed: () => controller.toggleSearch(),
+        ),
+        IconButton(
+          icon: const Icon(Icons.delete_outline, color: ThemeColor.darkGrey2),
+          onPressed: () => controller.confirmDeleteAll(),
+        ),
       ],
     );
   }
 
+  /// AppBar untuk tampilan ketika mode pencarian aktif
+  /// AppBar untuk tampilan ketika mode pencarian aktif
+  AppBar _buildSearchAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0.5,
+      automaticallyImplyLeading: false,
+      
+      // TAMBAHKAN BARIS INI
+      // Menambahkan spasi 16 pixel di kiri dan kanan search bar
+      titleSpacing: 16.0, 
+
+      title: Container(
+        width: double.infinity,
+        height: 40,
+        decoration: BoxDecoration(
+          color: const Color(0xFFF0F0F0),
+          borderRadius: BorderRadius.circular(30.0),
+        ),
+        child: Row(
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black54, size: 20),
+              onPressed: () => controller.toggleSearch(),
+            ),
+            Expanded(
+              child: TextField(
+                controller: controller.searchController,
+                autofocus: true,
+                decoration: const InputDecoration(
+                  hintText: 'Search Here...',
+                  border: InputBorder.none,
+                  hintStyle: TextStyle(color: Colors.grey),
+                ),
+                style: const TextStyle(color: Colors.black, fontSize: 16),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// AppBar untuk tampilan ketika mode seleksi pesan aktif
+  AppBar _buildSelectionAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0.5,
+      leading: IconButton(
+        icon: const Icon(Icons.close, color: Colors.black),
+        onPressed: () => controller.exitSelectionMode(),
+      ),
+      title: Obx(() => Text(
+        '${controller.selectedMessages.length} dipilih',
+        style: const TextStyle(color: Colors.black, fontSize: 18),
+      )),
+      actions: [
+        IconButton(
+          // Mengganti ikon menjadi hapus, lebih sesuai dengan fungsinya
+          icon: const Icon(Icons.delete_outline, color: Colors.black),
+          onPressed: () => controller.confirmDeleteSelected(),
+        ),
+      ],
+    );
+  }
+  
+  // Kode _buildMessageItem tidak diubah, tetap sama
   Widget _buildMessageItem(DetailStar message, BuildContext context) {
-    return GestureDetector(
+    // ... (kode Anda yang sudah ada di sini)
+     return GestureDetector(
       onTap: () => controller.handleMessageTap(message),
       onLongPress: () => controller.handleMessageLongPress(message),
       child: Obx(
@@ -132,7 +170,6 @@ class DetailStarScreen extends GetView<DetailStarsController> {
             children: [
               CircleAvatar(
                 radius: 20,
-                // Pastikan path avatarUrl benar atau tangani jika null
                 backgroundImage: AssetImage(
                   message.avatarUrl ?? 'assets/images/default_avatar.png',
                 ),
@@ -142,8 +179,6 @@ class DetailStarScreen extends GetView<DetailStarsController> {
                 backgroundColor: const Color.fromARGB(255, 192, 186, 186),
               ),
               const SizedBox(width: 12),
-              // DITAMBAHKAN: Expanded untuk memberi batasan lebar pada Column di bawah ini.
-              // Ini adalah perbaikan utama untuk error layout.
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -151,7 +186,6 @@ class DetailStarScreen extends GetView<DetailStarsController> {
                     Row(
                       children: [
                         Text(
-                          // Penanganan null untuk keamanan
                           message.sender ?? 'No Sender',
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
@@ -182,7 +216,7 @@ class DetailStarScreen extends GetView<DetailStarsController> {
                     const SizedBox(height: 4),
                     ConstrainedBox(
                       constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width * 0.7,
+                        maxWidth: MediaQuery.of(context).size.width * 0.66,
                       ),
                       child: Container(
                         padding: const EdgeInsets.symmetric(

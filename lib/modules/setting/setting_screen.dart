@@ -2,6 +2,8 @@
 import 'package:admin_gychat/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:admin_gychat/shared/theme/colors.dart';
 import 'setting_controller.dart';
 
 class SettingScreen extends GetView<SettingController> {
@@ -10,24 +12,25 @@ class SettingScreen extends GetView<SettingController> {
   @override
   Widget build(BuildContext context) { 
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 240, 240, 240),
+      backgroundColor: ThemeColor.lightGrey1,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 20),
+              const SizedBox(height: 40),
               const Text(
                 'Setting',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
-                  color: const Color(0xFF3F51B5),
+                  color: ThemeColor.blue1,
+                  
                 ),
               ),
 
-              const SizedBox(height: 30),
+              const SizedBox(height: 25),
               _buildProfileCard(),
 
               const SizedBox(height: 20),
@@ -36,7 +39,7 @@ class SettingScreen extends GetView<SettingController> {
               const Spacer(),
               _buildLogoutButton(context, controller),
 
-              const SizedBox(height: 310),
+              const SizedBox(height: 295),
             ],
           ),
         ),
@@ -47,14 +50,14 @@ class SettingScreen extends GetView<SettingController> {
   Widget _buildProfileCard() { 
     return Card(
       elevation: 0,
-      color: Colors.white,
+      color: ThemeColor.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 8.0),
         child: ListTile(
           leading: CircleAvatar(
             radius: 28,
-            backgroundColor: Colors.white,
+            backgroundColor: ThemeColor.white,
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
               child: Image.asset(
@@ -78,10 +81,10 @@ class SettingScreen extends GetView<SettingController> {
           ),
           title: const Text(
             'GYPEM INDONESIA',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.black87),
+            style: TextStyle(fontWeight: FontWeight.bold, color: ThemeColor.black),
           ),
-          subtitle: const Text('Chat Only !', style: TextStyle(color: Colors.grey)),
-          trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+          subtitle: const Text('Chat Only !', style: TextStyle(color: ThemeColor.black, fontSize: 14, fontWeight: FontWeight.normal)),
+          trailing: const Icon(Icons.chevron_right, color: ThemeColor.black),
           onTap: () {
             Get.toNamed(AppRoutes.Profile);
           },
@@ -93,25 +96,25 @@ class SettingScreen extends GetView<SettingController> {
   Widget _buildOptionsCard() { 
     return Card(
       elevation: 0,
-      color: Colors.white,
+      color: ThemeColor.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Column(
         children: [
           ListTile(
-            leading: const Icon(Icons.dark_mode_outlined, color: Colors.grey),
-            title: const Text('Away Message'),
+            leading: const Icon(Icons.dark_mode_outlined, color: ThemeColor.black),
+            title: const Text('Away Message', style: TextStyle(fontWeight: FontWeight.bold)),
             subtitle: const Text('Reply automatically when you are away'),
-            trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+            trailing: const Icon(Icons.chevron_right, color: ThemeColor.black),
             onTap: () {
               Get.toNamed(AppRoutes.AwayMessage);
             },
             
           ),
           ListTile(
-            leading: const Icon(Icons.flash_on, color: Colors.grey),
-            title: const Text('Quick Replies'),
+            leading: const Icon(Icons.flash_on, color: ThemeColor.black),
+            title: const Text('Quick Replies', style: TextStyle(fontWeight: FontWeight.bold)),
             subtitle: const Text('Reuse frequent message'),
-            trailing: const Icon(Icons.chevron_right, color: Colors.grey),
+            trailing: const Icon(Icons.chevron_right, color: ThemeColor.black),
             onTap: () {
               Get.toNamed(AppRoutes.QuickReplies);
             },
@@ -129,10 +132,10 @@ class SettingScreen extends GetView<SettingController> {
           controller.showLogoutConfirmation(context);
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF3F51B5), 
-          padding: const EdgeInsets.symmetric(vertical: 17),
+          backgroundColor: ThemeColor.blue1, 
+          padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder( 
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(15),
           ),
           elevation: 0,
         ),
@@ -141,7 +144,7 @@ class SettingScreen extends GetView<SettingController> {
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
-            color: Colors.white,
+            color: ThemeColor.white,
           ),
         ),
       ),

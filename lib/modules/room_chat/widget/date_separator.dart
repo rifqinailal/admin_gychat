@@ -1,4 +1,4 @@
-// lib/app/modules/room_chat/widgets/date_separator.dart
+// lib/app/modules/room_chat/widget/date_separator.dart
 
 import 'package:flutter/material.dart';
 

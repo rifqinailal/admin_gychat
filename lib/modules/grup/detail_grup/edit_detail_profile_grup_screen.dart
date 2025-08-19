@@ -1,90 +1,116 @@
 // lib/modules/grup/detail_grup/edit_detail_profile_grup_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'detail_grup_controller.dart';
 
-class EditDetailProfileGrupScreen extends GetView<DetailGrupController> {
+// Ubah menjadi StatelessWidget karena kita tidak butuh GetView lagi
+class EditDetailProfileGrupScreen extends StatelessWidget {
   const EditDetailProfileGrupScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF007AFF);
+    // Ambil controller secara manual
+    final controller = Get.find<DetailGrupController>();
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F7),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF2F2F7),
-        elevation: 0,
-        leading: TextButton(
-          onPressed: () => Get.back(),
-          child: const Text('Cancel', style: TextStyle(color: primaryColor, fontSize: 17)),
+    // 1. Widget terluar adalah Container untuk styling (warna, border radius)
+    return Container(
+      // Atur agar sudut atasnya melengkung, persis seperti bottom sheet
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(40),
+          topRight: Radius.circular(40),
         ),
-        centerTitle: true,
-        title: const Text(
-          'Edit Group',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
-        actions: [
-          TextButton(
-            onPressed: controller.saveGroupInfo,
-            child: const Text('Save', style: TextStyle(color: primaryColor, fontSize: 17, fontWeight: FontWeight.bold)),
-          ),
-        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            GestureDetector(
-              onTap: controller.showEditPhotoOptions,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Obx(() => CircleAvatar(
-                        radius: 60,
-                        backgroundColor: Colors.grey.shade300,
-                        backgroundImage: controller.groupImage.value != null
-                            ? FileImage(controller.groupImage.value!)
-                            : null,
-                        child: controller.groupImage.value == null
-                            ? const Icon(Icons.group, size: 70, color: Colors.white)
-                            : null,
-                      )),
-                  Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.4),
-                      shape: BoxShape.circle,
+      // Atur tinggi agar hampir penuh layar, sisakan sedikit di atas
+      height: MediaQuery.of(context).size.height * 0.85,
+      child: Scaffold(
+        // 2. Scaffold di dalam dibuat transparan agar warna Container terlihat
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
+            child: Column(
+              children: [
+                // 3. Buat AppBar manual menggunakan Row, seperti di contoh Anda
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    TextButton(
+                      onPressed: () => Get.back(),
+                      child: const Text('Cancel', style: TextStyle(color: Colors.black, fontSize: 17, fontWeight: FontWeight.normal)),
                     ),
-                    child: const Icon(Icons.camera_alt, color: Colors.white, size: 40),
+                    const Text(
+                      'Edit Group',
+                      style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 17),
+                    ),
+                    TextButton(
+                      onPressed: controller.saveGroupInfo,
+                      child: const Text('Save', style: TextStyle(color: Colors.black, fontSize: 17, fontWeight: FontWeight.normal)),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 30),
+                
+                // Isi kontennya sama seperti sebelumnya
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          onTap: controller.showEditPhotoOptions,
+                          child: Column(
+                            children: [
+                              Obx(() => CircleAvatar(
+                                    radius: 50,
+                                    backgroundColor: const Color.fromARGB(255, 100, 100, 100).withOpacity(0.1),
+                                    backgroundImage: controller.groupImage.value != null ? FileImage(controller.groupImage.value!) : null,
+                                    child: controller.groupImage.value == null ? Icon(Icons.person, size: 60, color: const Color.fromARGB(149, 118, 118, 118).withOpacity(0.7)) : null,
+                                  )),
+                              const SizedBox(height: 12),
+                              const Text('Add photo', style: TextStyle(color: Color.fromARGB(255, 253, 214, 20), fontSize: 16, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 40),
+                        GetBuilder<DetailGrupController>(
+                          builder: (c) {
+                            return TextFormField(
+                              controller: c.nameController,
+                              style: const TextStyle(fontSize: 16, color: Colors.black),
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: const Color.fromARGB(255, 239, 239, 239),
+                                contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide.none,
+                                ),
+                                suffixIcon: c.nameController.text.isNotEmpty
+                                    ? IconButton(
+                                        icon: Icon(Icons.cancel, color: Colors.grey.shade500),
+                                        onPressed: () {
+                                          c.nameController.clear();
+                                          c.update();
+                                        },
+                                      )
+                                    : null,
+                              ),
+                              onChanged: (value) {
+                                c.update();
+                              },
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 30),
-            TextField(
-              controller: controller.nameController,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-              decoration: InputDecoration(
-                hintText: 'Group Name',
-                border: InputBorder.none,
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(vertical: 15),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-              ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

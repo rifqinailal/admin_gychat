@@ -1,3 +1,4 @@
+// lib/app/modules/room_chat/widget/chat_bubble.dart
 import 'dart:io';
 
 import 'package:admin_gychat/models/message_model.dart';
@@ -57,7 +58,7 @@ class ChatBubble extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: const EdgeInsets.all(8),
-        color: Colors.black.withOpacity(0.05),
+        color: ThemeColor.black.withOpacity(0.05),
         child: IntrinsicHeight(
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -77,7 +78,7 @@ class ChatBubble extends StatelessWidget {
                     repliedMessage!['name'] ?? 'Unknown',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
-                      color: isSender ? Colors.white : ThemeColor.primary,
+                      color: isSender ? ThemeColor.white : ThemeColor.primary,
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -103,7 +104,7 @@ class ChatBubble extends StatelessWidget {
     if (highlightText == null || highlightText!.isEmpty) {
       return Text(
         text ?? '',
-        style: TextStyle(color: isSender ? Colors.white : Colors.black),
+        style: TextStyle(color: isSender ? ThemeColor.white : ThemeColor.black),
       );
     }
 
@@ -113,7 +114,7 @@ class ChatBubble extends StatelessWidget {
     if (matches.isEmpty) {
       return Text(
         text ?? '',
-        style: TextStyle(color: isSender ? Colors.white : Colors.black),
+        style: TextStyle(color: isSender ? ThemeColor.white : ThemeColor.black),
       );
     }
 
@@ -121,7 +122,7 @@ class ChatBubble extends StatelessWidget {
     return RichText(
       text: TextSpan(
         style: TextStyle(
-          color: isSender ? Colors.white : Colors.black,
+          color: isSender ? ThemeColor.white : ThemeColor.black,
           fontSize: 14,
         ),
         // `children` diisi oleh list `TextSpan` yang sudah dipecah.
@@ -145,8 +146,8 @@ class ChatBubble extends StatelessWidget {
         TextSpan(
           text: text.substring(match.start, match.end),
           style: const TextStyle(
-            backgroundColor: Colors.yellow, // Warna highlight
-            color: Colors.black, // Warna teks di dalam highlight
+            backgroundColor: ThemeColor.yelow, // Warna highlight
+            color: ThemeColor.black, // Warna teks di dalam highlight
           ),
         ),
       );
@@ -171,7 +172,7 @@ class ChatBubble extends StatelessWidget {
         child: Icon(
           isSender ? Icons.arrow_right : Icons.arrow_left,
           size: 20,
-          color: isSender ? ThemeColor.primary : Colors.white,
+          color: isSender ? ThemeColor.primary : ThemeColor.white,
         ),
       );
     }
@@ -318,7 +319,7 @@ class ChatBubble extends StatelessWidget {
                                 ? Colors.yellow.shade200
                                 : (isSender
                                     ? ThemeColor.primary
-                                    : Colors.white),
+                                    : ThemeColor.white),
                         borderRadius: BorderRadius.only(
                           topLeft: const Radius.circular(16),
                           topRight: const Radius.circular(16),

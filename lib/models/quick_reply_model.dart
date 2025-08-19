@@ -5,8 +5,8 @@ class QuickReply {
   final String id;
   String shortcut;
   String message;
-  String? imagePath; // For existing assets
-  File? imageFile;   // For newly picked images
+  String? imagePath;
+  File? imageFile;
 
   QuickReply({
     required this.id,

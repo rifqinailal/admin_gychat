@@ -1,9 +1,11 @@
-// lib/modules/setting/quick_replies/quick_controller.dart 
+// lib/modules/setting/quick_replies/quick_controller.dart
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
+import 'package:image_cropper/image_cropper.dart'; // <-- Import package baru
 import 'package:admin_gychat/models/quick_reply_model.dart';
+import 'package:admin_gychat/shared/theme/colors.dart';
 import 'edit_quick_reply_screen.dart';
 
 class QuickController extends GetxController {
@@ -18,42 +20,28 @@ class QuickController extends GetxController {
       message: 'this is a quick message',
       imagePath: 'assets/images/pp2.jpg',
     ),
-    
   ].obs;
 
   var selectedImage = Rx<File?>(null);
 
-  void goToAddScreen() { 
+  void goToAddScreen() {
     shortcutController.clear();
     messageController.clear();
     selectedImage.value = null;
-
-    Get.bottomSheet(
-      Container(
-        height: 800,
-        clipBehavior: Clip.antiAlias,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20.0),
-            topRight: Radius.circular(20.0),
-          ),
-        ),
-        child: EditQuickReplyScreen(),
-      ),
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-    );
+    _showEditScreen();
   }
 
   void goToEditScreen(QuickReply reply) {
     shortcutController.text = reply.shortcut;
     messageController.text = reply.message;
     selectedImage.value = null;
+    _showEditScreen(reply: reply);
+  }
 
+  void _showEditScreen({QuickReply? reply}) {
     Get.bottomSheet(
       Container(
-         height: 800,
+        height: 700,
         clipBehavior: Clip.antiAlias,
         decoration: const BoxDecoration(
           color: Colors.white,
@@ -69,11 +57,159 @@ class QuickController extends GetxController {
     );
   }
 
-  Future<void> pickImage() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      selectedImage.value = File(image.path);
+  void showImageOptions(QuickReply? reply) {
+    final bool hasExistingImage = selectedImage.value?.path.isNotEmpty ??
+        (reply?.imageFile != null || (reply?.imagePath?.isNotEmpty ?? false));
+
+    Get.bottomSheet(
+      Container(
+        padding: const EdgeInsets.all(16),
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: Wrap(
+          spacing: 8,
+          children: [
+            if (hasExistingImage)
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('Lihat Gambar'),
+                onTap: () {
+                  Get.back();
+                  _showImagePreview(reply);
+                },
+              ),
+            ListTile(
+              leading: const Icon(Icons.photo_album),
+              title: Text(hasExistingImage ? 'Ganti dari Galeri' : 'Ambil dari Galeri'),
+              onTap: () {
+                Get.back();
+                pickImage(ImageSource.gallery);
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.camera_alt),
+              title: Text(hasExistingImage ? 'Ganti dari Kamera' : 'Ambil dari Kamera'),
+              onTap: () {
+                Get.back();
+                pickImage(ImageSource.camera);
+              },
+            ),
+            if (hasExistingImage)
+              ListTile(
+                leading: Icon(Icons.delete, color: Colors.red.shade700),
+                title: Text('Hapus Gambar', style: TextStyle(color: Colors.red.shade700)),
+                onTap: () {
+                  Get.back();
+                  removeImage();
+                },
+              ),
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.cancel),
+              title: const Text('Batal'),
+              onTap: () => Get.back(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showImagePreview(QuickReply? reply) {
+    ImageProvider? imageProvider;
+    if (selectedImage.value != null && selectedImage.value!.path.isNotEmpty) {
+      imageProvider = FileImage(selectedImage.value!);
+    } else if (reply?.imageFile != null) {
+      imageProvider = FileImage(reply!.imageFile!);
+    } else if (reply?.imagePath != null && reply!.imagePath!.isNotEmpty) {
+      imageProvider = AssetImage(reply.imagePath!);
     }
+
+    if (imageProvider != null) {
+      Get.dialog(
+        // Dialog dibuat transparan dan bisa di-zoom
+        GestureDetector(
+          onTap: () => Get.back(),
+          child: Container(
+            color: Colors.black.withOpacity(0.5),
+            child: InteractiveViewer(
+              panEnabled: true,
+              minScale: 0.5,
+              maxScale: 4.0,
+              child: Center(
+                child: Image(
+                  image: imageProvider,
+                ),
+              ),
+            ),
+          ),
+        ),
+        barrierColor: Colors.transparent,
+      );
+    }
+  }
+
+  Future<void> pickImage(ImageSource source) async {
+    final XFile? image = await _picker.pickImage(source: source);
+    if (image != null) {
+      if (source == ImageSource.camera) {
+        // Jika dari kamera, panggil fungsi crop
+        _cropImage(File(image.path));
+      } else {
+        // Jika dari galeri, langsung gunakan
+        selectedImage.value = File(image.path);
+      }
+    }
+  }
+
+  // Fungsi baru untuk cropping
+  Future<void> _cropImage(File imageFile) async {
+    CroppedFile? croppedFile = await ImageCropper().cropImage(
+      sourcePath: imageFile.path,
+      // Parameter 'aspectRatioPresets' dipindahkan ke dalam uiSettings di bawah ini
+      uiSettings: [
+        AndroidUiSettings(
+            toolbarTitle: 'Crop Gambar',
+            toolbarColor: Colors.black,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false,
+            // Ditambahkan di sini untuk Android
+            aspectRatioPresets: [
+              CropAspectRatioPreset.original,
+              CropAspectRatioPreset.square,
+              CropAspectRatioPreset.ratio3x2,
+              CropAspectRatioPreset.ratio4x3,
+              CropAspectRatioPreset.ratio16x9,
+            ]),
+        IOSUiSettings(
+          title: 'Crop Gambar',
+          aspectRatioLockEnabled: false,
+           // Ditambahkan di sini untuk iOS
+          aspectRatioPresets: [
+            CropAspectRatioPreset.original,
+            CropAspectRatioPreset.square,
+            CropAspectRatioPreset.ratio3x2,
+            CropAspectRatioPreset.ratio4x3,
+            CropAspectRatioPreset.ratio16x9,
+          ],
+        ),
+      ],
+    );
+
+    if (croppedFile != null) {
+      selectedImage.value = File(croppedFile.path);
+    }
+  }
+
+
+  void removeImage() {
+    selectedImage.value = File('');
   }
 
   void saveNewReply() {
@@ -90,7 +226,7 @@ class QuickController extends GetxController {
       Get.snackbar('Error', 'Shortcut and message cannot be empty.');
     }
   }
-  
+
   void updateReply(QuickReply reply) {
     int index = quickReplies.indexWhere((r) => r.id == reply.id);
     if (index != -1) {
@@ -99,10 +235,15 @@ class QuickController extends GetxController {
       itemToUpdate.message = messageController.text;
 
       if (selectedImage.value != null) {
-        itemToUpdate.imageFile = selectedImage.value;
-        itemToUpdate.imagePath = null;
+        if (selectedImage.value!.path.isEmpty) {
+          itemToUpdate.imageFile = null;
+          itemToUpdate.imagePath = null;
+        } else {
+          itemToUpdate.imageFile = selectedImage.value;
+          itemToUpdate.imagePath = null;
+        }
       }
-      
+
       quickReplies[index] = itemToUpdate;
       quickReplies.refresh();
       Get.back();
@@ -114,7 +255,7 @@ class QuickController extends GetxController {
     Get.back();
     Get.back();
   }
-  
+
   void showDeleteConfirmation(QuickReply reply) {
     Get.bottomSheet(
       Padding(
@@ -122,7 +263,7 @@ class QuickController extends GetxController {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container( 
+            Container(
               width: double.infinity,
               decoration: const BoxDecoration(
                 color: Colors.white,
@@ -130,12 +271,7 @@ class QuickController extends GetxController {
               ),
               child: Column(
                 children: [
-                  const SizedBox(height: 15),
-                  const Text(
-                    'Edit Quick Reply',
-                    style: TextStyle(color: Colors.grey, fontSize: 14),
-                  ),
-                  const Divider(),
+                  const SizedBox(height: 5),
                   InkWell(
                     onTap: () => deleteReply(reply),
                     child: Container(
@@ -146,7 +282,7 @@ class QuickController extends GetxController {
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           color: Color(0xFFE53935),
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -156,13 +292,13 @@ class QuickController extends GetxController {
               ),
             ),
             const SizedBox(height: 10),
-            SizedBox( 
+            SizedBox(
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () => Get.back(),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3F51B5),
-                  padding: const EdgeInsets.symmetric(vertical: 17),
+                  backgroundColor: ThemeColor.primary,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(14),
                   ),
@@ -187,7 +323,7 @@ class QuickController extends GetxController {
   }
 
   @override
-  void onClose() { 
+  void onClose() {
     shortcutController.dispose();
     messageController.dispose();
     super.onClose();

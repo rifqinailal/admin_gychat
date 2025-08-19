@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:admin_gychat/shared/theme/colors.dart';
 
 class ProfileController extends GetxController {
   final Rx<File?> profileImage = Rx<File?>(null);
@@ -45,7 +46,7 @@ class ProfileController extends GetxController {
             'Profile photo updated successfully.',
             snackPosition: SnackPosition.TOP,
             backgroundColor: Colors.green,
-            colorText: Colors.white,
+            colorText: ThemeColor.white,
             margin: const EdgeInsets.all(18),
           );
         }
@@ -64,7 +65,7 @@ class ProfileController extends GetxController {
         AndroidUiSettings(
           toolbarTitle: 'Crop Image',
           toolbarColor: const Color.fromARGB(255, 0, 0, 0),
-          toolbarWidgetColor: Colors.white,
+          toolbarWidgetColor: ThemeColor.white,
           initAspectRatio: CropAspectRatioPreset.original,
           lockAspectRatio: false,
           aspectRatioPresets: [
@@ -90,7 +91,7 @@ class ProfileController extends GetxController {
     if (profileImage.value != null) {
       Get.to(
         () => Scaffold(
-          backgroundColor: Colors.black,
+          backgroundColor: ThemeColor.black,
           body: Stack(
             fit: StackFit.expand,
             children: [
@@ -114,9 +115,9 @@ class ProfileController extends GetxController {
                 top: 50.0,
                 left: 16.0,
                 child: CircleAvatar(
-                  backgroundColor: Colors.black.withOpacity(0.5),
+                  backgroundColor: ThemeColor.black.withOpacity(0.5),
                   child: IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white),
+                    icon: const Icon(Icons.close, color: ThemeColor.white),
                     onPressed: () => Get.back(),
                   ),
                 ),
@@ -139,7 +140,7 @@ class ProfileController extends GetxController {
         'Profile photo has been deleted.',
         snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.green,
-        colorText: Colors.white,
+        colorText: ThemeColor.white,
         margin: const EdgeInsets.all(18),
       );
       } else {
@@ -154,7 +155,7 @@ class ProfileController extends GetxController {
       'Profile updated successfully.',
       snackPosition: SnackPosition.TOP,
       backgroundColor: Colors.green,
-      colorText: Colors.white,
+      colorText: ThemeColor.white,
       margin: const EdgeInsets.all(18),
     );
 

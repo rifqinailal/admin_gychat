@@ -1,4 +1,4 @@
-abstract class AppRoutes { 
+abstract class AppRoutes {
   static const Auth = '/auth';
   static const Dashboard = '/dashboard';
   static const DetailStar = '/detail-star';

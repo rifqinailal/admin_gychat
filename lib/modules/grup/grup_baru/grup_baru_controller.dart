@@ -1,9 +1,10 @@
-// lib/app/modules/grup_baru/grup_baru_controller.dart
+// lib/app/modules/grup/grup_baru/grup_baru_controller.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
+import 'package:admin_gychat/shared/theme/colors.dart';
 
 class GrupBaruController extends GetxController {
   var selectedImagePath = ''.obs;
@@ -33,7 +34,7 @@ class GrupBaruController extends GetxController {
       Container(
         padding: const EdgeInsets.all(16),
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: ThemeColor.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         ),
         child: Wrap(
@@ -120,7 +121,7 @@ class GrupBaruController extends GetxController {
               onPressed: () => Get.back(),
               icon: const CircleAvatar(
                 backgroundColor: Colors.black54,
-                child: Icon(Icons.close, color: Colors.white),
+                child: Icon(Icons.close, color: ThemeColor.white),
               ),
             ),
           ),
@@ -157,7 +158,7 @@ class GrupBaruController extends GetxController {
           AndroidUiSettings(
             toolbarTitle: 'Crop Image',
             toolbarColor: Colors.black,
-            toolbarWidgetColor: Colors.white,
+            toolbarWidgetColor: ThemeColor.white,
             initAspectRatio: CropAspectRatioPreset.original,
             lockAspectRatio: false,
           ),
@@ -195,7 +196,7 @@ class GrupBaruController extends GetxController {
         "Grup '${groupNameController.text}' berhasil dibuat.",
         snackPosition: SnackPosition.TOP,
         backgroundColor: Colors.green,
-        colorText: Colors.white,
+        colorText: ThemeColor.white,
         margin: const EdgeInsets.all(12),
         borderRadius: 8,
       );

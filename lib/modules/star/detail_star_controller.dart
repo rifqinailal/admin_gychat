@@ -1,4 +1,5 @@
 // lib/modules/star/detail_star_controller.dart
+import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -154,7 +155,7 @@ class DetailStarsController extends GetxController {
   void _showDeleteDialog({required String title, required VoidCallback onConfirm}) {
     Get.dialog(
       AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: ThemeColor.white,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -181,8 +182,8 @@ class DetailStarsController extends GetxController {
           const SizedBox(width: 10),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.blue[800],
-              foregroundColor: Colors.white,
+              backgroundColor: ThemeColor.primary,
+              foregroundColor: ThemeColor.white,
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),

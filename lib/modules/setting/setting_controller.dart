@@ -2,8 +2,12 @@
 import 'package:flutter/material.dart';
 import 'package:admin_gychat/routes/app_routes.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:admin_gychat/shared/theme/colors.dart';
 
 class SettingController extends GetxController {
+  final box = GetStorage();
+
   void showLogoutConfirmation(BuildContext context) {
     Get.bottomSheet(
       Padding(
@@ -14,7 +18,7 @@ class SettingController extends GetxController {
             Container(
               width: double.infinity,
               decoration: const BoxDecoration(
-                color: Colors.white,
+                color: ThemeColor.white,
                 borderRadius: BorderRadius.all(Radius.circular(16)),
               ),
               child: Column(
@@ -22,10 +26,12 @@ class SettingController extends GetxController {
                   const SizedBox(height:25),
                   const Text(
                     'Are you sure you want to leave?',
-                    style: TextStyle(color: Colors.grey, fontSize: 14),
+                    style: TextStyle(fontFamily: 'Poppins', color: ThemeColor.grey2, fontSize: 12),
                   ),
                   InkWell(
                     onTap: () {
+                      box.remove('isLoggedIn');
+                      
                       Get.back();
                       Get.offAllNamed(AppRoutes.Auth);
                     },
@@ -36,8 +42,8 @@ class SettingController extends GetxController {
                         'Log Out',
                         textAlign: TextAlign.center,
                         style: TextStyle(
-                          color: Colors.red,
-                          fontSize: 18,
+                          color: ThemeColor.Red1,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -55,18 +61,18 @@ class SettingController extends GetxController {
                   Get.back();
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3F51B5),
+                  backgroundColor: ThemeColor.blue1,
                   padding: const EdgeInsets.symmetric(vertical: 17),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+                    borderRadius: BorderRadius.circular(25),
                   ),
                 ),
                 child: const Text(
                   'Cancel',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: ThemeColor.white,
                   ),
                 ),
               ),

@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'profile_controller.dart';
 import 'edit_profile_screen.dart';
+import 'package:admin_gychat/shared/theme/colors.dart';
 
 class ProfileScreen extends GetView<ProfileController> {
   const ProfileScreen({super.key});
@@ -10,15 +11,15 @@ class ProfileScreen extends GetView<ProfileController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F6F6),
+      backgroundColor: ThemeColor.lightGrey1,
       appBar: AppBar(
         title: const Text(
           'Profile',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
-        backgroundColor: const Color(0xFFF6F6F6),
-        foregroundColor: Colors.black,
+        backgroundColor: ThemeColor.lightGrey1,
+        foregroundColor: ThemeColor.black,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new),
@@ -138,7 +139,7 @@ class ProfileScreen extends GetView<ProfileController> {
         TextButton(
           onPressed: _showPhotoOptions,
           style: TextButton.styleFrom(
-            foregroundColor: const Color(0xFFFFA726),
+            foregroundColor: ThemeColor.yelow,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
             ),
@@ -146,7 +147,7 @@ class ProfileScreen extends GetView<ProfileController> {
           child: const Text(
             'Edit',
             style: TextStyle(
-              color: Color(0xFFFFA726),
+              color: ThemeColor.yelow,
               fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
@@ -171,13 +172,13 @@ class ProfileScreen extends GetView<ProfileController> {
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w500,
-              color: Colors.black54,
+              color: ThemeColor.black,
             ),
           ),
         ),
         const SizedBox(height: 8),
         Material(
-          color: Colors.white,
+          color: ThemeColor.white,
           borderRadius: BorderRadius.circular(12),
           child: InkWell(
             onTap: onTap,
@@ -197,7 +198,7 @@ class ProfileScreen extends GetView<ProfileController> {
                       value,
                       style: const TextStyle(
                         fontSize: 16,
-                        color: Colors.black87,
+                        color: ThemeColor.black,
                       ),
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -220,8 +221,7 @@ class ProfileScreen extends GetView<ProfileController> {
   // Menampilkan opsi mengubah foto profil.
   void _showPhotoOptions() {
     Get.bottomSheet(
-      Container(
-        height: 800,
+      Container( 
         padding: const EdgeInsets.fromLTRB(12, 12, 12, 34),
         decoration: const BoxDecoration(
           color: Color(0xFFF0F0F0),
@@ -244,7 +244,7 @@ class ProfileScreen extends GetView<ProfileController> {
             const SizedBox(height: 20),
             Container(
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: ThemeColor.white,
                 borderRadius: BorderRadius.circular(15),
               ),
               child: ClipRRect(
@@ -298,11 +298,11 @@ class ProfileScreen extends GetView<ProfileController> {
     required String text,
     required IconData icon,
     required VoidCallback onTap,
-    Color textColor = Colors.black87,
-    Color iconColor = Colors.black54,
+    Color textColor = ThemeColor.black,
+    Color iconColor = ThemeColor.black,
   }) {
     return Material(
-      color: Colors.white,
+      color: ThemeColor.white,
       child: InkWell(
         onTap: onTap,
         child: Padding(
@@ -339,7 +339,7 @@ class ProfileScreen extends GetView<ProfileController> {
               width: double.infinity,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
+                  backgroundColor: ThemeColor.white,
                   foregroundColor: Colors.red,
                   padding: const EdgeInsets.symmetric(vertical: 17),
                   shape: RoundedRectangleBorder(
@@ -367,7 +367,7 @@ class ProfileScreen extends GetView<ProfileController> {
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF1E3A8A),
-                  foregroundColor: Colors.white,
+                  foregroundColor: ThemeColor.white,
                   padding: const EdgeInsets.symmetric(vertical: 17),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(18),

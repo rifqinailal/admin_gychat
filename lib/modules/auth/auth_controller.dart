@@ -2,10 +2,12 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:admin_gychat/routes/app_routes.dart';
+import 'package:get_storage/get_storage.dart';
 
 class AuthController extends GetxController {
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
+  final box = GetStorage();
 
   final showLoginCard = false.obs;
   final isPasswordHidden = true.obs;
@@ -35,7 +37,9 @@ class AuthController extends GetxController {
     
     isLoading.value = false;
     
-    if (username == 'admin1@gmail.com' && password == 'admin1123') { 
+    if (username == 'admin1@gmail.com' && password == 'admin1123') {
+      box.write('isLoggedIn', true);
+      
       Get.dialog(
         const SuccessDialog(),
         barrierDismissible: false,

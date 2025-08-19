@@ -1,3 +1,4 @@
+// lib/app/modules/chat_list/chat_list_view.dart
 import 'package:admin_gychat/models/chat_model.dart';
 import 'package:admin_gychat/routes/app_routes.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
@@ -16,36 +17,33 @@ class ChatListView extends GetView<ChatListController> {
   const ChatListView({super.key, required this.listType});
 
   @override
-  Widget build(BuildContext context) {
-    // Hanya satu Obx() untuk mengambil chatList berdasarkan type
+  Widget build(BuildContext context) { 
     List<ChatModel> getChatList() {
       switch (listType) {
         case ChatListType.all:
-          return controller.allChats;
+        return controller.allChats;
+
         case ChatListType.unread:
-          return controller.unreadChats;
+        return controller.unreadChats;
+
         case ChatListType.group:
-          return controller.groupChats;
+        return controller.groupChats;
       }
     }
 
     return Column(
       children: [
         const ChatHeader(),
-        const SizedBox(height: 20),
-        // Satu Obx untuk handle conditional rendering
+        const SizedBox(height: 20), 
         Expanded(
           child: Obx(() {
             final chatList = getChatList();
             
-            if (controller.isSearching.value) {
-              // Ketika searching, tampilkan hasil pencarian
+            if (controller.isSearching.value) { 
               return _buildSearchResults();
-            } else {
-              // Ketika tidak searching, tampilkan archived + chat list
+            } else { 
               return Column(
-                children: [
-                  // Section Diarsipkan
+                children: [ 
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 36),
                     child: InkWell(
@@ -67,7 +65,6 @@ class ChatListView extends GetView<ChatListController> {
                             ),
                           ),
                           const Spacer(),
-                          // Langsung akses tanpa Obx tambahan
                           Text(
                             controller.archivedChatsCount.toString(),
                             style: const TextStyle(
@@ -87,8 +84,7 @@ class ChatListView extends GetView<ChatListController> {
                       itemBuilder: (context, index) {
                         final chat = chatList[index];
                         
-                        // Wrap dengan Obx untuk reactive selection state
-                        return Obx(() {
+                        return Obx(() { 
                           final isSelected = controller.selectedChats.contains(chat);
                           
                           return ChatListTile(
@@ -103,7 +99,7 @@ class ChatListView extends GetView<ChatListController> {
                             onTap: () {
                               if (controller.isSelectionMode.value) {
                                 controller.toggleSelection(chat);
-                              } else {
+                              } else { 
                                 Get.toNamed(
                                   AppRoutes.ROOM_CHAT,
                                   arguments: {

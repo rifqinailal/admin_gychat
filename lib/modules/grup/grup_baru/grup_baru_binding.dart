@@ -1,4 +1,4 @@
-// lib/app/modules/grup_baru/grup_baru_binding.dart
+// lib/app/modules/grup/grup_baru/grup_baru_binding.dart
 import 'package:get/get.dart';
 import 'grup_baru_controller.dart';
 

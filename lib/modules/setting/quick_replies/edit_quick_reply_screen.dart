@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'quick_controller.dart';
-import 'package:admin_gychat/models/quick_reply_model.dart';
+import 'quick_controller.dart'; // Pastikan path import ini benar
+import 'package:admin_gychat/models/quick_reply_model.dart'; // Pastikan path import ini benar
+import 'dart:io'; // Diperlukan untuk tipe data File
 
 class EditQuickReplyScreen extends GetView<QuickController> {
   final QuickReply? reply;
@@ -11,15 +12,26 @@ class EditQuickReplyScreen extends GetView<QuickController> {
   Widget build(BuildContext context) {
     final bool isEditMode = reply != null;
 
+    // Inisialisasi controller hanya jika dalam mode edit dan saat pertama kali build
+    if (isEditMode && controller.shortcutController.text != reply!.shortcut) {
+      controller.shortcutController.text = reply?.shortcut ?? '';
+      controller.messageController.text = reply?.message ?? '';
+    } else if (!isEditMode) {
+      // Dikosongkan hanya untuk mode tambah baru
+      controller.shortcutController.clear();
+      controller.messageController.clear();
+      controller.selectedImage.value = null;
+    }
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color.fromARGB(255, 240, 240, 240),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 30),
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children:[
+              children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -38,7 +50,6 @@ class EditQuickReplyScreen extends GetView<QuickController> {
                         ),
                       ),
                     ),
-
                     Text(
                       isEditMode ? 'Edit Quick Reply' : 'Tambah Quick Reply',
                       style: const TextStyle(
@@ -47,7 +58,6 @@ class EditQuickReplyScreen extends GetView<QuickController> {
                         fontSize: 17,
                       ),
                     ),
-                    
                     InkWell(
                       onTap: () {
                         if (isEditMode) {
@@ -62,7 +72,7 @@ class EditQuickReplyScreen extends GetView<QuickController> {
                         child: Text(
                           'Save',
                           style: TextStyle(
-                            color: Colors.grey,
+                            color: Colors.black,
                             fontSize: 17,
                             fontWeight: FontWeight.normal,
                           ),
@@ -72,49 +82,47 @@ class EditQuickReplyScreen extends GetView<QuickController> {
                   ],
                 ),
                 const SizedBox(height: 25),
-                
                 _buildTextField(
-                  label: 'Shortcut', controller: controller.shortcutController),
-                  const SizedBox(height: 16),
+                    label: 'Shortcut',
+                    controller: controller.shortcutController),
+                const SizedBox(height: 16),
                 _buildTextField(
-                  label: 'Message',
-                  controller: controller.messageController, maxLines: 5),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Attach Media',
-                    style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 8),
-                    _buildMediaAttachment(isEditMode),
-                    if (isEditMode) ...[
-                      const SizedBox(height: 40),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () => controller.showDeleteConfirmation(reply!),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-                            padding: const EdgeInsets.symmetric(vertical: 15),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                              elevation: 1,
-                          ),
-                          child: const Text(
-                            'Delete',
-                            style: TextStyle(
+                    label: 'Message',
+                    controller: controller.messageController,
+                    maxLines: 5),
+                const SizedBox(height: 16),
+                const Text('Attach Media',
+                    style: TextStyle(
+                        color: Colors.black, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                _buildMediaAttachment(isEditMode),
+                if (isEditMode) ...[
+                  const SizedBox(height: 20),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => controller.showDeleteConfirmation(reply!),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 15),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
+                      ),
+                      child: const Text('Delete',
+                          style: TextStyle(
                               fontSize: 16,
                               color: Colors.red,
-                              fontWeight: FontWeight.bold
-                            )
-                          ),
-                        ),
-                      ),
-                    ]
-                  ],
-                ),
-              ),
+                              fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                ]
+              ],
             ),
           ),
-        );
+        ),
+      ),
+    );
   }
 
   Widget _buildTextField(
@@ -124,12 +132,21 @@ class EditQuickReplyScreen extends GetView<QuickController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('   $label', style: const TextStyle(color: Colors.black)),
+        Text(label,
+            style: const TextStyle(
+                color: Colors.black, fontWeight: FontWeight.bold)),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: const Color(0xFFF2F2F7),
+            color: Colors.white,
             borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.1),
+                spreadRadius: 1,
+                blurRadius: 3,
+              ),
+            ],
           ),
           child: TextField(
             controller: controller,
@@ -146,71 +163,118 @@ class EditQuickReplyScreen extends GetView<QuickController> {
     );
   }
 
+  /// Membangun bagian lampiran media, menampilkan placeholder atau gambar yang dipilih.
   Widget _buildMediaAttachment(bool isEditMode) {
+    // --- PERUBAHAN DI SINI ---
+    // Mengubah onTap untuk memanggil fungsi pilihan
     return GestureDetector(
-      onTap: () => controller.pickImage(),
+      onTap: () => controller.showImageOptions(reply),
       child: Obx(() {
         final newPickedImage = controller.selectedImage.value;
-        final existingImageFile = isEditMode ? reply?.imageFile : null;
-        final existingImagePath = isEditMode ? reply?.imagePath : null;
+        Image? displayImage;
 
+        // --- Logika Penampilan Gambar Diperbarui ---
         if (newPickedImage != null) {
-          return _buildImageDisplay(
-            image: Image.file(newPickedImage, fit: BoxFit.cover),
-          );
+          // Jika ada gambar baru yang dipilih (atau ditandai hapus)
+          if (newPickedImage.path.isNotEmpty) {
+            // Jika path tidak kosong, tampilkan gambar baru
+            displayImage = Image.file(newPickedImage, fit: BoxFit.cover);
+          }
+          // Jika path kosong (tanda hapus), displayImage tetap null, tampilkan placeholder
+        } else if (isEditMode) {
+          // Jika tidak ada interaksi baru, tampilkan gambar lama
+          final existingImageFile = reply?.imageFile;
+          final existingImagePath = reply?.imagePath;
+          if (existingImageFile != null) {
+            displayImage = Image.file(existingImageFile, fit: BoxFit.cover);
+          } else if (existingImagePath != null && existingImagePath.isNotEmpty) {
+            displayImage = Image.asset(existingImagePath, fit: BoxFit.cover);
+          }
         }
 
-        if (existingImageFile != null) {
-          return _buildImageDisplay(
-            image: Image.file(existingImageFile, fit: BoxFit.cover),
+        if (displayImage != null) {
+          // Jika gambar tersedia, tampilkan dengan gaya baru.
+          return _buildImageDisplay(image: displayImage);
+        } else {
+          // Jika tidak ada gambar, tampilkan placeholder.
+          return Container(
+            height: 150,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.15),
+                  spreadRadius: 1,
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: const Center(
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.add_photo_alternate_outlined,
+                        size: 40, color: Colors.grey),
+                    SizedBox(height: 8),
+                    Text('Add Media', style: TextStyle(color: Colors.grey)),
+                  ]),
+            ),
           );
         }
-
-        if (existingImagePath != null) {
-          return _buildImageDisplay(
-            image: Image.asset(existingImagePath, fit: BoxFit.cover),
-          );
-        }
-        return Container(
-          height: 150,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: const Color(0xFFF2F2F7),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: const Center(
-            child: Icon(Icons.image_outlined, size: 50, color: Colors.grey),
-          ),
-        );
       }),
     );
   }
 
+  /// Membangun kartu tampilan gambar yang sesuai dengan screenshot.
   Widget _buildImageDisplay({required Image image}) {
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
-        color: const Color(0xFFF2F2F7),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: SizedBox(
-              height: 150,
-              width: double.infinity,
-              child: image,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            controller.messageController.text,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(color: Colors.black54),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.2),
+            spreadRadius: 1,
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Container ini membungkus gambar dan memberinya border.
+          Container(
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.grey.shade200, width: 1.5),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: ClipRRect(
+              borderRadius:
+                  BorderRadius.circular(10.5), // Agar border tidak terpotong
+              child: SizedBox(
+                height: 200,
+                width: double.infinity,
+                child: image,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Menampilkan teks pesan di bawah gambar.
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0),
+            child: Text(
+                controller.messageController.text, // Dibuat reaktif
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(color: Colors.black87, fontSize: 16),
+              ),
+            ),
+          ],
       ),
     );
   }

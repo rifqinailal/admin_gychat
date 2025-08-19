@@ -1,5 +1,4 @@
-
-
+// lib/modules/arsip/detail_arsip_screen.dart
 import 'package:admin_gychat/modules/arsip/detail_arsip_controller.dart';
 import 'package:admin_gychat/routes/app_routes.dart';
 import 'package:admin_gychat/shared/widgets/chat_list_tile.dart';
@@ -27,18 +26,16 @@ class DetailArsipScreen extends GetView<DetailArsipController> {
                 itemCount: controller.archivedChats.length,
                 itemBuilder: (context, index) {
                   final chat = controller.archivedChats[index];
-                  return Obx(() {
-                    // Ambil status `isSelected` langsung dari controller
+                  return Obx(() { 
                     final isSelected = controller.selectedArchivedChats.contains(chat);
                     return ChatListTile(
                       avatarUrl: "https://i.pravatar.cc/150?u=${chat.id}",
                       name: chat.name,
                       lastMessage: chat.name,
-                      time: 'Arsip', // Contoh teks
+                      time: 'Arsip',
                       unreadCount: chat.unreadCount,
                       isSelected: isSelected,
-                      onTap: () {
-                        // Semua logika sekarang memanggil fungsi dari `controller`
+                      onTap: () { 
                         if (controller.selectedArchivedChats.isNotEmpty) {
                           controller.toggleSelection(chat);
                         } else {
@@ -79,13 +76,11 @@ class DetailArsipScreen extends GetView<DetailArsipController> {
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 12.0),
-          child: Obx(() {
-            // Cek status seleksi langsung dari controller
+          child: Obx(() { 
             if (controller.selectedArchivedChats.isNotEmpty) {
               return IconButton(
                 icon: const Icon(Feather.upload, color: Colors.black),
-                onPressed: () {
-                  // Panggil fungsi unarchive dari controller
+                onPressed: () { 
                   controller.unarchiveChats();
                 },
               );

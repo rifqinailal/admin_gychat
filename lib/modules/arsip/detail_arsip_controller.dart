@@ -1,3 +1,4 @@
+// lib/modules/arsip/detail_arsip_controller.dart
 import 'package:admin_gychat/models/chat_model.dart';
 import 'package:admin_gychat/modules/chat_list/chat_list_controller.dart';
 import 'package:get/get.dart';

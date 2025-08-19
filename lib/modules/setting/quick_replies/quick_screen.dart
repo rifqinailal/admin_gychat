@@ -1,6 +1,7 @@
 // lib/modules/setting/quick_replies/quick_screen.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:admin_gychat/shared/theme/colors.dart';
 import 'quick_controller.dart';
 
 class QuickScreen extends GetView<QuickController> {
@@ -8,9 +9,9 @@ class QuickScreen extends GetView<QuickController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor:const Color.fromARGB(255, 240, 240, 240),
+      backgroundColor: const Color.fromARGB(255, 240, 240, 240),
       appBar: AppBar(
-        backgroundColor:const Color.fromARGB(255, 240, 240, 240),
+        backgroundColor: const Color.fromARGB(255, 240, 240, 240),
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
@@ -45,7 +46,7 @@ class QuickScreen extends GetView<QuickController> {
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () => controller.goToEditScreen(reply),
-                  borderRadius: BorderRadius.circular(20), 
+                  borderRadius: BorderRadius.circular(20),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -56,7 +57,7 @@ class QuickScreen extends GetView<QuickController> {
                           vertical: 8.0,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF3F51B5),
+                          color: ThemeColor.primary,
                           borderRadius: BorderRadius.circular(8.0),
                         ),
                         child: Text(
@@ -68,29 +69,26 @@ class QuickScreen extends GetView<QuickController> {
                           ),
                         ),
                       ),
-                      
                       const SizedBox(height: 12),
                       if (reply.imagePath != null || reply.imageFile != null)
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12.0),
-                        child: reply.imageFile != null
-                        ? Image.file(
-                          reply.imageFile!,
-                          height: 100,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          )
-                        : Image.asset(
-                          reply.imagePath!,
-                          height: 150,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          ),
-                      ),
-                      
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12.0),
+                          child: reply.imageFile != null
+                              ? Image.file(
+                                  reply.imageFile!,
+                                  height: 150,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                )
+                              : Image.asset(
+                                  reply.imagePath!,
+                                  height: 150,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                ),
+                        ),
                       if (reply.imagePath != null || reply.imageFile != null)
-                      const SizedBox(height: 12),
-                      
+                        const SizedBox(height: 12),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 4.0),
                         child: Text(

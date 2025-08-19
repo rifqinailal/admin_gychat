@@ -1,3 +1,4 @@
+// lib/app/modules/room_chat/room_chat_screen.dart
 import 'dart:io';
 
 import 'package:admin_gychat/models/message_model.dart';
@@ -15,8 +16,8 @@ import 'room_chat_controller.dart';
 
 bool isSameDay(DateTime date1, DateTime date2) {
   return date1.year == date2.year &&
-      date1.month == date2.month &&
-      date1.day == date2.day;
+  date1.month == date2.month &&
+  date1.day == date2.day;
 }
 
 String formatDateSeparator(DateTime date) {
@@ -25,8 +26,7 @@ String formatDateSeparator(DateTime date) {
   if (isSameDay(date, now)) return "Today";
   if (isSameDay(date, yesterday)) return "Yesterday";
   return DateFormat('dd MMMM yyyy').format(date);
-}
-// AKHIR FUNGSI HELPER
+} 
 
 class RoomChatScreen extends GetView<RoomChatController> {
   const RoomChatScreen({super.key});
@@ -39,67 +39,69 @@ class RoomChatScreen extends GetView<RoomChatController> {
         onPressed: () => Get.back(),
         icon: const Icon(Icons.arrow_back_ios),
       ),
-      title: Row(
-        children: [
-          const CircleAvatar(
-            backgroundImage: NetworkImage(
-              "https://i.pravatar.cc/150?u=a042581f4e29026704d",
+      title:
+      InkWell(
+        onTap: () {
+          Get.toNamed(AppRoutes.DetailGrup);
+        },
+        child: Row(
+          children: [
+            const CircleAvatar(
+              backgroundImage: NetworkImage(
+                "https://i.pravatar.cc/150?u=a042581f4e29026704d",
+              ),
             ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Obx(
-                  () => Text(
-                    controller.chatRoomInfo['name'] ?? 'Chat Room',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Obx(
+                    () => Text(
+                      controller.chatRoomInfo['name'] ?? 'Chat Room',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
-                ),
-                Obx(() {
-                  if (controller.chatRoomInfo['isGroup'] == true) {
-                    return Text(
-                      controller.chatRoomInfo['members'] ?? 'Tidak ada member',
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
-                    );
-                  }
-                  return const SizedBox.shrink();
-                }),
-              ],
+                  Obx(() {
+                    if (controller.chatRoomInfo['isGroup'] == true) {
+                      return Text(
+                        controller.chatRoomInfo['members'] ?? 'Tidak ada member',
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  }),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       actions: [
         PopupMenuButton(
           color: Colors.white,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-          ),
-          // 2. TAMBAHKAN LOGIKA UNTUK NILAI 'starred' DI SINI
+          ), 
           onSelected: (value) {
             if (value == 'search') {
-              Future.delayed(Duration.zero, () {
+              Future.delayed(Duration.zero,(){
                 controller.toggleSearchMode();
               });
             } else if (value == 'starred') {
-              // <-- Tambahkan else if
-              // Pindahkan navigasi ke sini
-              Get.toNamed(AppRoutes.DetailStar);
-            }
+                Get.toNamed(AppRoutes.DetailStar);
+              }
           },
           itemBuilder:
               (context) => [
                 const PopupMenuItem(value: 'search', child: Text('Search')),
-                // 1. UBAH `TextButton` MENJADI `Text` BIASA
-                const PopupMenuItem(
+                const PopupMenuItem( 
                   value:
-                      'starred', // <-- 'value' ini akan dikirim ke onSelected
+                  'starred',
                   child: Text('Pesan Berbintang'),
                 ),
               ],

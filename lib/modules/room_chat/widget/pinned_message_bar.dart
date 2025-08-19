@@ -1,3 +1,4 @@
+// lib/app/modules/room_chat/widget/pinned_message_bar.dart
 import 'package:admin_gychat/models/message_model.dart';
 import 'package:flutter/material.dart';
 

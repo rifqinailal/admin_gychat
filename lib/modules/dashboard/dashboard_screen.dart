@@ -22,15 +22,15 @@ class DashboardScreen extends GetView<DashboardController> {
     return Scaffold(
       body: Obx(
         () => IndexedStack(
-          // index akan menentukan widget mana dari `children` yang ditampilkan
+          
           index: controller.tabIndex.value,
-
-          // `children` diisi dengan list widget yang sudah kita siapkan
+          
           children: bodyContent,
         ),
       ),
       bottomNavigationBar: Obx(
         () => BottomNavigationBar(
+          backgroundColor: const Color.fromARGB(255, 240, 240, 240),
           selectedItemColor: ThemeColor.primary,
           unselectedItemColor: const Color(0xFF646164),
           type: BottomNavigationBarType.fixed,

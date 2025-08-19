@@ -17,7 +17,7 @@ class EditProfileScreen extends StatelessWidget {
     final textController = TextEditingController(text: initialValue);
 
     return Container(
-      height: 500,
+      height: 700,
       child: Scaffold( 
       
       backgroundColor: Colors.white,
@@ -64,7 +64,7 @@ class EditProfileScreen extends StatelessWidget {
                         child: Text(
                           'Save',
                           style: TextStyle(
-                            color: Colors.grey,
+                            color: Colors.black,
                             fontSize: 17,
                             fontWeight: FontWeight.normal,
                           ),

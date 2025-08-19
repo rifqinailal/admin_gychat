@@ -2,6 +2,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:admin_gychat/routes/app_routes.dart'; 
 import 'away_controller.dart';
 
@@ -69,7 +70,7 @@ class AwayScreen extends GetView<AwayController> {
         () => CupertinoSwitch(
           value: controller.isAwayEnabled.value,
           onChanged: (value) => controller.toggleAway(value),
-          activeColor: const Color(0xFF3F51B5),
+          activeColor: ThemeColor.primary,
         ),
       ),
     );
