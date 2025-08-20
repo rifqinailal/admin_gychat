@@ -13,7 +13,6 @@ import 'package:open_filex/open_filex.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:saver_gallery/saver_gallery.dart';
 
-
 class RoomChatController extends GetxController {
   late TextEditingController messageController;
   late TextEditingController searchController;
@@ -81,27 +80,40 @@ class RoomChatController extends GetxController {
   void showAttachmentOptions() {
     Get.bottomSheet(
       Container(
-        color: Colors.white,
-        child: Wrap(
-          children: <Widget>[
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
             ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Galeri'),
+              trailing: const Icon(Icons.photo_library,color: Colors.blueAccent,),
+              leading: const Text(
+                'Choose images',
+                style: TextStyle(fontSize: 17, color: Colors.black),
+              ),
               onTap: () {
-                Get.back(); // Tutup bottom sheet
-                _sendImage(
-                  ImageSource.gallery,
-                ); // Panggil fungsi kirim gambar dari galeri
+                Get.back();
+                _sendImage(ImageSource.gallery);
               },
             ),
+            const Divider(height: 1, thickness: 1),
             ListTile(
-              leading: const Icon(Icons.insert_drive_file),
-              title: const Text('Dokumen'),
+              trailing: const Icon(Icons.insert_drive_file,color: Colors.red,),
+              leading: const Text(
+                'Choose dokumen',
+                style: TextStyle(fontSize: 17, color: Colors.black),
+              ),
               onTap: () {
-                Get.back(); // Tutup bottom sheet
-                _sendDocument(); // Panggil fungsi kirim dokumen
+                Get.back();
+                _sendDocument();
               },
             ),
+             const Divider(height: 1, thickness: 1),
           ],
         ),
       ),
@@ -668,7 +680,7 @@ class RoomChatController extends GetxController {
           androidRelativePath: "Pictures/GychatAdmin",
           filePath: imagePath,
           fileName: fileName,
-          skipIfExists: true, 
+          skipIfExists: true,
         );
         // ===============================================
 

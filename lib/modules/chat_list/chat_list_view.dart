@@ -5,6 +5,7 @@ import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:admin_gychat/shared/widgets/chat_header.dart';
 import 'package:admin_gychat/shared/widgets/chat_list_tile.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:get/get.dart';
 import 'chat_list_controller.dart';
@@ -54,11 +55,17 @@ class ChatListView extends GetView<ChatListController> {
                         },
                         child: Row(
                           children: [
-                            const Icon(
-                              Ionicons.ios_archive_outline,
-                              color: ThemeColor.gray,
+                            SvgPicture.asset(
+                              'assets/icons/Arhive_load_duotone_line.svg',
+                              width: 2,
+                              height: 25,
+                              // Atur warna untuk ikon tidak aktif
+                              colorFilter: const ColorFilter.mode(
+                                Colors.grey,
+                                BlendMode.srcIn,
+                              ),
                             ),
-                            const SizedBox(width: 12),
+                            const SizedBox(width: 20),
                             const Text(
                               'Diarsipkan',
                               style: TextStyle(

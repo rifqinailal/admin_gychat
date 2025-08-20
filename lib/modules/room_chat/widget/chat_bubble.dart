@@ -77,7 +77,8 @@ class ChatBubble extends StatelessWidget {
                   Text(
                     repliedMessage!['name'] ?? 'Unknown',
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
                       color: isSender ? ThemeColor.white : ThemeColor.primary,
                     ),
                   ),
@@ -87,6 +88,8 @@ class ChatBubble extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
+                      fontWeight: FontWeight.w300,
+                      fontSize: 12,
                       color: isSender ? Colors.white70 : Colors.black54,
                     ),
                   ),
@@ -124,6 +127,7 @@ class ChatBubble extends StatelessWidget {
         style: TextStyle(
           color: isSender ? ThemeColor.white : ThemeColor.black,
           fontSize: 14,
+          fontWeight: FontWeight.w400,
         ),
         // `children` diisi oleh list `TextSpan` yang sudah dipecah.
         children: _generateSpans(text ?? '', matches),
@@ -214,7 +218,7 @@ class ChatBubble extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: ThemeColor.secondary,
+            color: ThemeColor.lightGrey1,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -357,6 +361,7 @@ class ChatBubble extends StatelessWidget {
                                       : const EdgeInsets.fromLTRB(8, 0, 8, 8),
                               child: _buildReplyPreview(),
                             ),
+                          SizedBox(height: 5),
                           buildMessageContent(),
                           buildStatusRow(),
                         ],

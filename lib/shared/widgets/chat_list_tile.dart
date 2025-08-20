@@ -85,13 +85,13 @@ class ChatListTile extends StatelessWidget {
               children: [
                 Text(
                   name,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 1),
                 Text(
                   lastMessage,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 14, color: const Color(0xFF9A9696)),
+                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: ThemeColor.gray),
                 ),
               ],
             ),
@@ -101,7 +101,7 @@ class ChatListTile extends StatelessWidget {
             children: [
               Text(
                 time,
-                style: TextStyle(fontSize: 14, color: ThemeColor.gray),
+                style: TextStyle(fontSize: 14,  fontWeight: FontWeight.w400, color: ThemeColor.gray),
               ),
               const SizedBox(height: 8),
               Row(

@@ -4,7 +4,7 @@ class ThemeColor {
   static const primary = Color(0xFF2738A5); //2738A5 100%
   static const secondary = Color.fromRGBO(83, 100, 208, 30);
   static const dangger = Color.fromRGBO(220, 53, 69, 100);
-  static const gray = Color.fromRGBO(163, 161, 161, 100);
+  static const gray = Color(0xFF5F5D5D);
   static const lightGrey1 = Color(0xFFF3F3F3); //F3F3F3 100%
   static const white = Color(0xFFFFFFFF); //FFFFFF 100%
   static const primaryBlue30 = Color(0x4D2738A5); //2738A5 30%

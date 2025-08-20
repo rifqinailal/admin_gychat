@@ -186,7 +186,7 @@ class ChatHeader extends StatelessWidget {
             controller: controller.searchController,
             decoration: InputDecoration(
               hintText: 'Search Here',
-              hintStyle: TextStyle(color: const Color(0xFF9A9696)),
+              hintStyle: TextStyle(color:  Color(0xFF9A9696)),
               // Buat ikon menjadi dinamis
               prefixIcon: Obx(
                 () =>
@@ -197,7 +197,7 @@ class ChatHeader extends StatelessWidget {
                         ? IconButton(
                           icon: const Icon(
                             Icons.arrow_back_ios,
-                            color: ThemeColor.gray,
+                           color:  Color(0xFF9A9696),
                           ),
                           onPressed: () => controller.clearSearch(),
                         )
@@ -211,7 +211,7 @@ class ChatHeader extends StatelessWidget {
                             angle: 1.5,
                             child: const Icon(
                               Icons.search_rounded,
-                              color: ThemeColor.gray,
+                              color:  Color(0xFF9A9696),
                             ),
                           ),
                         ),

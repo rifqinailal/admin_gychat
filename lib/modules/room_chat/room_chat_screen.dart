@@ -35,6 +35,8 @@ class RoomChatScreen extends GetView<RoomChatController> {
     return AppBar(
       backgroundColor: Colors.white,
       scrolledUnderElevation: 0.0,
+       leadingWidth: 35, 
+       titleSpacing:0,
       leading: IconButton(
         onPressed: () => Get.back(),
         icon: const Icon(Icons.arrow_back_ios),

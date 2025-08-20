@@ -57,4 +57,42 @@ class MessageModel {
       isDeleted: isDeleted ?? this.isDeleted,
     );
   }
+  Map<String, dynamic> toJson() {
+    return {
+      'senderId': senderId,
+      'text': text,
+      'timestamp': timestamp.toIso8601String(), // Ubah DateTime menjadi String
+      'senderName': senderName,
+      'repliedMessage': repliedMessage,
+      'isStarred': isStarred,
+      'isPinned': isPinned,
+      'type': type.name, // Ubah enum menjadi String
+      'imagePath': imagePath,
+      'isSender': isSender,
+      'documentPath': documentPath,
+      'documentName': documentName,
+      'isDeleted': isDeleted,
+    };
+  }
+
+  // FACTORY CONSTRUCTOR BARU: Membuat object MessageModel dari Map (JSON)
+  factory MessageModel.fromJson(Map<String, dynamic> json) {
+    return MessageModel(
+      senderId: json['senderId'],
+      text: json['text'],
+      timestamp: DateTime.parse(json['timestamp']), // Ubah String menjadi DateTime
+      senderName: json['senderName'],
+      repliedMessage: json['repliedMessage'] != null
+          ? Map<String, String>.from(json['repliedMessage'])
+          : null,
+      isStarred: json['isStarred'] ?? false,
+      isPinned: json['isPinned'] ?? false,
+      type: MessageType.values.firstWhere((e) => e.name == json['type']), // Ubah String menjadi enum
+      imagePath: json['imagePath'],
+      isSender: json['isSender'],
+      documentPath: json['documentPath'],
+      documentName: json['documentName'],
+      isDeleted: json['isDeleted'] ?? false,
+    );
+  }
 }
