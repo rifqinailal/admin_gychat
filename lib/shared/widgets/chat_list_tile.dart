@@ -36,7 +36,7 @@ class ChatListTile extends StatelessWidget {
       onLongPress: onLongPress,
       child: Container(
       margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
-      padding: const EdgeInsets.all(5),
+      padding: const EdgeInsets.symmetric(horizontal: 10,vertical: 3),
       decoration: BoxDecoration(
         color: isSelected ? ThemeColor.secondary.withOpacity(0.3) : Colors.transparent,
         border: Border.all(
@@ -55,7 +55,7 @@ class ChatListTile extends StatelessWidget {
             clipBehavior: Clip.none,
             children: [
               const CircleAvatar(
-                radius: 30,
+                radius: 20,
                 backgroundImage: NetworkImage(
                   "https://i.pravatar.cc/150?u=a042581f4e29026704d",
                 ),
@@ -91,7 +91,7 @@ class ChatListTile extends StatelessWidget {
                 Text(
                   lastMessage,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 14, color: ThemeColor.gray),
+                  style: TextStyle(fontSize: 14, color: const Color(0xFF9A9696)),
                 ),
               ],
             ),
@@ -101,7 +101,7 @@ class ChatListTile extends StatelessWidget {
             children: [
               Text(
                 time,
-                style: TextStyle(fontSize: 12, color: ThemeColor.gray),
+                style: TextStyle(fontSize: 14, color: ThemeColor.gray),
               ),
               const SizedBox(height: 8),
               Row(

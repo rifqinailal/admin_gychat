@@ -79,7 +79,10 @@ class ChatHeader extends StatelessWidget {
                   value: MainMenuAction.pengaturan,
                   child: Row(
                     children: const [
-                      Icon(Ionicons.ios_settings_outline, color: Colors.black54),
+                      Icon(
+                        Ionicons.ios_settings_outline,
+                        color: Colors.black54,
+                      ),
                       SizedBox(width: 12),
                       Text('Pengaturan'),
                     ],
@@ -116,7 +119,8 @@ class ChatHeader extends StatelessWidget {
             IconButton(
               onPressed: () => controller.archiveSelectedChats(),
               icon: const Icon(
-               Ionicons.md_archive_outline, size: 30,
+                Ionicons.md_archive_outline,
+                size: 30,
                 color: Color(0xFF353435),
               ),
             ),
@@ -139,7 +143,10 @@ class ChatHeader extends StatelessWidget {
                   ),
                 );
               },
-              icon: const Icon(FontAwesome5Regular.trash_alt, color: Color(0xFF353435)),
+              icon: const Icon(
+                FontAwesome5Regular.trash_alt,
+                color: Color(0xFF353435),
+              ),
             ),
           ],
         ),
@@ -173,13 +180,13 @@ class ChatHeader extends StatelessWidget {
         // Bagian bawah yang statis (selalu ada)
         const SizedBox(height: 20),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: TextField(
             // Hubungkan controller
             controller: controller.searchController,
             decoration: InputDecoration(
               hintText: 'Search Here',
-              hintStyle: TextStyle(color: ThemeColor.gray),
+              hintStyle: TextStyle(color: const Color(0xFF9A9696)),
               // Buat ikon menjadi dinamis
               prefixIcon: Obx(
                 () =>
@@ -195,16 +202,25 @@ class ChatHeader extends StatelessWidget {
                           onPressed: () => controller.clearSearch(),
                         )
                         // JIKA TIDAK: Tampilkan ikon search biasa
-                        : const Icon(
-                          Icons.search_rounded,
-                          color: ThemeColor.gray,
+                        : Padding(
+                          padding: const EdgeInsets.only(
+                            left: 25,
+                            right: 1,
+                          ), // Ubah sesuai kebutuhan
+                          child: Transform.rotate(
+                            angle: 1.5,
+                            child: const Icon(
+                              Icons.search_rounded,
+                              color: ThemeColor.gray,
+                            ),
+                          ),
                         ),
               ),
               // Tambahkan tombol clear di kanan saat mencari
 
               // KEMBALIKAN fillColor
               filled: true,
-              fillColor: const Color.fromRGBO(240, 240, 240, 1),
+              fillColor: const Color(0xFFF2F2F2),
               contentPadding: const EdgeInsets.symmetric(vertical: 10),
               // PASTIKAN borderSide ADALAH none
               border: const OutlineInputBorder(

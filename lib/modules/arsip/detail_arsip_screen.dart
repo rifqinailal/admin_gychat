@@ -32,7 +32,7 @@ class DetailArsipScreen extends GetView<DetailArsipController> {
                       avatarUrl: "https://i.pravatar.cc/150?u=${chat.id}",
                       name: chat.name,
                       lastMessage: chat.name,
-                      time: 'Arsip',
+                      time: '10.12',
                       unreadCount: chat.unreadCount,
                       isSelected: isSelected,
                       onTap: () { 
