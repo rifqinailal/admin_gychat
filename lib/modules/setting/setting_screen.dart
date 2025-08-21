@@ -2,7 +2,6 @@
 import 'package:admin_gychat/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:admin_gychat/modules/setting/profile/profile_controller.dart';
 import 'setting_controller.dart';
@@ -14,7 +13,6 @@ class SettingScreen extends GetView<SettingController> {
   @override
   Widget build(BuildContext context) { 
     final profileController = Get.find<ProfileController>();
-
     return Scaffold(
       backgroundColor: ThemeColor.lightGrey1,
       body: SafeArea(
