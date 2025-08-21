@@ -2,6 +2,7 @@
 import 'package:admin_gychat/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:admin_gychat/modules/setting/profile/profile_controller.dart';
 import 'setting_controller.dart';
@@ -28,7 +29,7 @@ class SettingScreen extends GetView<SettingController> {
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                   color: ThemeColor.blue1,
-                  
+                  fontFamily: 'Poppins',
                 ),
               ),
 
@@ -63,24 +64,24 @@ class SettingScreen extends GetView<SettingController> {
         child: ListTile(
           leading: CircleAvatar(
             radius: 28,
-            backgroundColor: Colors.grey[200],
+            backgroundColor: const Color.fromARGB(255, 243, 243, 243),
             // Tampilkan gambar profil dari controller
-            backgroundImage: profileCtrl.profileImage.value != null
-                ? FileImage(profileCtrl.profileImage.value! as File)
-                : const AssetImage('assets/images/gypem_logo.png')
-                    as ImageProvider,
+            backgroundImage:profileCtrl.profileImage.value != null
+            ? FileImage(profileCtrl.profileImage.value!) : null,
+            child: profileCtrl.profileImage.value == null ? Icon(Icons.person, size: 40, color: Colors.grey.withOpacity(0.7)) : null,
           ),
           // Tampilkan nama dan bio dari controller
           title: Text(
             profileCtrl.nameController.text,
-            style: const TextStyle(fontWeight: FontWeight.bold, color: ThemeColor.black),
+            style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold, color: ThemeColor.black),
           ),
           subtitle: Text(
             profileCtrl.aboutController.text,
             style: const TextStyle(
-                color: ThemeColor.black,
-                fontSize: 14,
-                fontWeight: FontWeight.normal),
+              fontFamily: 'Poppins',
+              color: ThemeColor.black,
+              fontSize: 14,
+              fontWeight: FontWeight.normal),
           ),
           trailing: const Icon(Icons.chevron_right, color: ThemeColor.black),
           onTap: () {
@@ -100,7 +101,7 @@ class SettingScreen extends GetView<SettingController> {
         children: [
           ListTile(
             leading: const Icon(Icons.dark_mode_outlined, color: ThemeColor.black),
-            title: const Text('Away Message', style: TextStyle(fontWeight: FontWeight.bold)),
+            title: const Text('Away Message', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
             subtitle: const Text('Reply automatically when you are away'),
             trailing: const Icon(Icons.chevron_right, color: ThemeColor.black),
             onTap: () {
@@ -110,7 +111,7 @@ class SettingScreen extends GetView<SettingController> {
           ),
           ListTile(
             leading: const Icon(Icons.flash_on, color: ThemeColor.black),
-            title: const Text('Quick Replies', style: TextStyle(fontWeight: FontWeight.bold)),
+            title: const Text('Quick Replies', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
             subtitle: const Text('Reuse frequent message'),
             trailing: const Icon(Icons.chevron_right, color: ThemeColor.black),
             onTap: () {
@@ -140,6 +141,7 @@ class SettingScreen extends GetView<SettingController> {
         child: const Text(
           'Logout',
           style: TextStyle(
+            fontFamily: 'Poppins',
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: ThemeColor.white,
