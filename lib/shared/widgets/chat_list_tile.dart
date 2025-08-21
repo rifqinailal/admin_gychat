@@ -77,8 +77,6 @@ class ChatListTile extends StatelessWidget {
             ],
           ),
           const SizedBox(width: 16),
-          // `Expanded` akan "memaksa" anaknya (Column) untuk mengisi semua
-          // ruang horizontal yang tersisa di dalam Row. Ini sangat penting!
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

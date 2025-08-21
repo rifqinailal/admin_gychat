@@ -8,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -17,6 +18,8 @@ class RoomChatController extends GetxController {
   late TextEditingController messageController;
   late TextEditingController searchController;
   var messages = <MessageModel>[].obs;
+  late GetStorage _box;
+  String get _boxKey => 'messages_${chatRoomInfo["id"]}';
   final String currentUserId = "admin_01";
   var chatRoomInfo = {}.obs;
   var isSearchMode = false.obs;
@@ -50,14 +53,22 @@ class RoomChatController extends GetxController {
     searchController = TextEditingController();
     quickController = Get.find<QuickController>();
     messageController.addListener(_onTextChanged);
-    if (Get.arguments != null) {
+     if (Get.arguments != null) {
       chatRoomInfo.value = Get.arguments as Map<String, dynamic>;
     }
-    fetchMessages();
+    final roomId = Get.arguments?['id'] ?? 'default_room';
+    _box = GetStorage('ChatRoom_$roomId');
+    loadMessagesFromStorage();
+    // `debounce` digunakan agar penyimpanan tidak terjadi pada setiap perubahan kecil,
+    // tapi hanya setelah ada jeda 1 detik. Ini sangat efisien.
+    debounce(messages, (_) => saveMessagesToStorage(), time: const Duration(seconds: 1));
+   
+   // fetchMessages();
   }
 
   @override
   void onClose() {
+    saveMessagesToStorage();
     messageController.removeListener(_onTextChanged);
     messageController.dispose();
     searchController.dispose();
@@ -74,6 +85,30 @@ class RoomChatController extends GetxController {
         'Error',
         'Tidak dapat membuka file. Pastikan ada aplikasi yang mendukung.',
       );
+    }
+  }
+
+  // FUNGSI BARU: Untuk menyimpan pesan ke local storage
+  void saveMessagesToStorage() {
+    // 1. Ubah list `MessageModel` menjadi `List<Map<String, dynamic>>`
+    List<Map<String, dynamic>> messagesJson = messages.map((msg) => msg.toJson()).toList();
+    // 2. Simpan ke GetStorage dengan key yang sudah kita tentukan
+    _box.write(_boxKey, messagesJson);
+    print("Messages for room ${_boxKey} saved!"); // Untuk debugging
+  }
+
+  // FUNGSI BARU: Untuk membaca pesan dari local storage
+  void loadMessagesFromStorage() {
+    // 1. Baca data dari GetStorage
+    var messagesJson = _box.read<List>(_boxKey);
+    // 2. Cek apakah ada data tersimpan
+    if (messagesJson != null) {
+      // Jika ada, ubah kembali dari `List<Map>` menjadi `List<MessageModel>`
+      messages.value = messagesJson.map((json) => MessageModel.fromJson(Map<String, dynamic>.from(json))).toList();
+      print("Messages for room ${_boxKey} loaded!"); // Untuk debugging
+    } else {
+      // Jika tidak ada (pertama kali buka), panggil data dummy
+      fetchMessages();
     }
   }
 
