@@ -17,11 +17,12 @@ class ChatHeader extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         const Text(
-          'Gychat',
+          'GyChat',
           style: TextStyle(
+            fontFamily: 'Poppins',
             color: ThemeColor.primary,
             fontWeight: FontWeight.w600,
-            fontSize: 26,
+            fontSize: 32,
           ),
         ),
         PopupMenuButton<MainMenuAction>(
@@ -163,7 +164,7 @@ class ChatHeader extends StatelessWidget {
     return Column(
       children: [
         // Bagian atas yang dinamis (bisa berubah)
-        SizedBox(height: 40),
+        SizedBox(height: 2),
         Padding(
           padding: const EdgeInsets.only(top: 16, left: 24, right: 24),
           child: Obx(

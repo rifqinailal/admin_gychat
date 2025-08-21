@@ -1,26 +1,52 @@
 // lib/modules/setting/profile/profile_controller.dart
-import 'dart:io'; 
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
 
 class ProfileController extends GetxController {
   final Rx<File?> profileImage = Rx<File?>(null);
-  
+
   late TextEditingController nameController;
   late TextEditingController aboutController;
 
+  // GetStorage
+  final box = GetStorage();
+
+  final String _nameKey = 'profile_name';
+  final String _aboutKey = 'profile_about';
+  final String _imagePathKey = 'profile_image_path';
   // ImagePicker
   final ImagePicker _picker = ImagePicker();
 
   @override
   void onInit() {
     super.onInit();
-    
-    nameController = TextEditingController(text: 'GYPEM INDONESIA');
-    aboutController = TextEditingController(text: 'Chat Only !');
+    _loadProfileData();
+  }
+
+  void _loadProfileData() {
+    // Muat nama
+    nameController = TextEditingController(
+      text: box.read(_nameKey) ?? 'GYPEM INDONESIA',
+    );
+    // Muat bio
+    aboutController = TextEditingController(
+      text: box.read(_aboutKey) ?? 'Chat Only !',
+    );
+    // Muat path gambar
+    final imagePath = box.read<String?>(_imagePathKey);
+    if (imagePath != null && imagePath.isNotEmpty) {
+      profileImage.value = File(imagePath);
+    }
+
+    // Tambahkan listener untuk otomatis menyimpan saat teks berubah
+    // Ini opsional, karena penyimpanan sudah ada di fungsi saveProfile
+    // nameController.addListener(() => box.write(_nameKey, nameController.text));
+    // aboutController.addListener(() => box.write(_aboutKey, aboutController.text));
   }
 
   @override
@@ -34,13 +60,13 @@ class ProfileController extends GetxController {
   Future<void> pickImage(ImageSource source) async {
     try {
       final XFile? pickedFile = await _picker.pickImage(source: source);
-      
+
       if (pickedFile != null) {
-        
-        final croppedFile = await _cropImage(File(pickedFile.path));
-        
+        final croppedFile = await _cropImage(File(pickedFile.path)); 
+
         if (croppedFile != null) {
           profileImage.value = File(croppedFile.path);
+          box.write(_imagePathKey, croppedFile.path);
           Get.snackbar(
             'Success',
             'Profile photo updated successfully.',
@@ -73,7 +99,7 @@ class ProfileController extends GetxController {
             CropAspectRatioPreset.square,
             CropAspectRatioPreset.ratio3x2,
             CropAspectRatioPreset.ratio4x3,
-            CropAspectRatioPreset.ratio16x9
+            CropAspectRatioPreset.ratio16x9,
           ],
         ),
         IOSUiSettings(
@@ -109,7 +135,7 @@ class ProfileController extends GetxController {
                   ),
                 ),
               ),
-              
+
               // Tombol 'close'
               Positioned(
                 top: 50.0,
@@ -135,6 +161,7 @@ class ProfileController extends GetxController {
   void deleteProfileImage() {
     if (profileImage.value != null) {
       profileImage.value = null;
+      box.remove(_imagePathKey);
       Get.snackbar(
         'Success',
         'Profile photo has been deleted.',
@@ -143,13 +170,16 @@ class ProfileController extends GetxController {
         colorText: ThemeColor.white,
         margin: const EdgeInsets.all(18),
       );
-      } else {
-        Get.snackbar('Info', 'No profile photo to delete.');
-      }
+    } else {
+      Get.snackbar('Info', 'No profile photo to delete.');
     }
+  }
 
   // Save profile
   void saveProfile() {
+    box.write(_nameKey, nameController.text);
+    box.write(_aboutKey, aboutController.text);
+
     Get.snackbar(
       'Success',
       'Profile updated successfully.',
@@ -159,7 +189,7 @@ class ProfileController extends GetxController {
       margin: const EdgeInsets.all(18),
     );
 
-    print("Name: ${nameController.text}");
-    print("About: ${aboutController.text}");
-  } 
-} 
+    print("Name saved: ${nameController.text}");
+    print("About saved: ${aboutController.text}");
+  }
+}

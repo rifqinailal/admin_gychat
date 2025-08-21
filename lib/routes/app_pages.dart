@@ -4,7 +4,7 @@ import 'package:admin_gychat/modules/auth/forgot_password/forgot_password_bindin
 import 'package:admin_gychat/modules/auth/forgot_password/forgot_password_screen.dart';
 import 'package:admin_gychat/modules/dashboard/dashboard_binding.dart';
 import 'package:admin_gychat/modules/dashboard/dashboard_screen.dart';
-import 'package:admin_gychat/modules/setting/setting_binding.dart';
+//import 'package:admin_gychat/modules/setting/setting_binding.dart.txt';
 import 'package:admin_gychat/modules/setting/setting_screen.dart';
 import 'package:admin_gychat/modules/grup/detail_grup/detail_grup_binding.dart';
 import 'package:admin_gychat/modules/grup/detail_grup/detail_grup_screen.dart';
@@ -14,7 +14,7 @@ import 'package:admin_gychat/modules/star/detail_star_binding.dart';
 import 'package:admin_gychat/modules/star/detail_star_screen.dart';
 import 'package:admin_gychat/modules/arsip/detail_arsip_binding.dart';
 import 'package:admin_gychat/modules/arsip/detail_arsip_screen.dart';
-import 'package:admin_gychat/modules/setting/profile/profile_binding.dart';
+//import 'package:admin_gychat/modules/setting/profile/profile_binding.dart.txt';
 import 'package:admin_gychat/modules/setting/profile/profile_screen.dart';
 import 'package:admin_gychat/modules/setting/quick_replies/quick_binding.dart';
 import 'package:admin_gychat/modules/setting/quick_replies/quick_screen.dart';
@@ -75,7 +75,7 @@ class AppPages {
     GetPage(
       name: AppRoutes.Profile,
       page: () => const ProfileScreen(),
-      binding: ProfileBinding(),
+      //binding: ProfileBinding(),
     ),
     // Quick Replies
     GetPage(
@@ -107,9 +107,10 @@ class AppPages {
       binding: RoomChatBinding(),
     ),
     // Setting
-   GetPage(name:AppRoutes.Setting,
-    page: () => SettingScreen(),
-    binding: SettingBinding()
+    GetPage(
+      name:AppRoutes.Setting,
+      page: () => SettingScreen(),
+      //binding: SettingBinding()
     )
   ];
 }

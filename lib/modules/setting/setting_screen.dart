@@ -4,13 +4,17 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
+import 'package:admin_gychat/modules/setting/profile/profile_controller.dart';
 import 'setting_controller.dart';
+import 'dart:io';
 
 class SettingScreen extends GetView<SettingController> {
   const SettingScreen({super.key});
 
   @override
   Widget build(BuildContext context) { 
+    final profileController = Get.find<ProfileController>();
+
     return Scaffold(
       backgroundColor: ThemeColor.lightGrey1,
       body: SafeArea(
@@ -31,7 +35,11 @@ class SettingScreen extends GetView<SettingController> {
               ),
 
               const SizedBox(height: 25),
-              _buildProfileCard(),
+              GetBuilder<ProfileController>(
+                builder: (profileCtrl) {
+                  return _buildProfileCard(profileCtrl);
+                },
+              ),
 
               const SizedBox(height: 20),
               _buildOptionsCard(),
@@ -39,7 +47,7 @@ class SettingScreen extends GetView<SettingController> {
               const Spacer(),
               _buildLogoutButton(context, controller),
 
-              const SizedBox(height: 295),
+              const SizedBox(height: 275),
             ],
           ),
         ),
@@ -47,7 +55,7 @@ class SettingScreen extends GetView<SettingController> {
     );
   }
 
-  Widget _buildProfileCard() { 
+  Widget _buildProfileCard(ProfileController profileCtrl) {
     return Card(
       elevation: 0,
       color: ThemeColor.white,
@@ -57,33 +65,25 @@ class SettingScreen extends GetView<SettingController> {
         child: ListTile(
           leading: CircleAvatar(
             radius: 28,
-            backgroundColor: ThemeColor.white,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset(
-                'assets/images/gypem_logo.png',
-                width: 50,
-                height: 50,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(Icons.business, color: Colors.grey[800]),
-                  );
-                },
-              ),
-            ),
+            backgroundColor: Colors.grey[200],
+            // Tampilkan gambar profil dari controller
+            backgroundImage: profileCtrl.profileImage.value != null
+                ? FileImage(profileCtrl.profileImage.value! as File)
+                : const AssetImage('assets/images/gypem_logo.png')
+                    as ImageProvider,
           ),
-          title: const Text(
-            'GYPEM INDONESIA',
-            style: TextStyle(fontWeight: FontWeight.bold, color: ThemeColor.black),
+          // Tampilkan nama dan bio dari controller
+          title: Text(
+            profileCtrl.nameController.text,
+            style: const TextStyle(fontWeight: FontWeight.bold, color: ThemeColor.black),
           ),
-          subtitle: const Text('Chat Only !', style: TextStyle(color: ThemeColor.black, fontSize: 14, fontWeight: FontWeight.normal)),
+          subtitle: Text(
+            profileCtrl.aboutController.text,
+            style: const TextStyle(
+                color: ThemeColor.black,
+                fontSize: 14,
+                fontWeight: FontWeight.normal),
+          ),
           trailing: const Icon(Icons.chevron_right, color: ThemeColor.black),
           onTap: () {
             Get.toNamed(AppRoutes.Profile);

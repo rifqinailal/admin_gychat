@@ -36,8 +36,9 @@ class ChatListView extends GetView<ChatListController> {
       color: Colors.white,
       child: Column(
         children: [
+          SizedBox(height: 50),
           const ChatHeader(),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           Expanded(
             child: Obx(() {
               final chatList = getChatList();
@@ -46,9 +47,13 @@ class ChatListView extends GetView<ChatListController> {
                 return _buildSearchResults();
               } else {
                 return Column(
+                  
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 36),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 36,
+                        vertical: 0,
+                      ),
                       child: InkWell(
                         onTap: () {
                           Get.toNamed(AppRoutes.DetailArsip);
@@ -57,8 +62,8 @@ class ChatListView extends GetView<ChatListController> {
                           children: [
                             SvgPicture.asset(
                               'assets/icons/Arhive_load_duotone_line.svg',
-                              width: 2,
-                              height: 25,
+                              width: 20,
+                              height: 20,
                               // Atur warna untuk ikon tidak aktif
                               colorFilter: const ColorFilter.mode(
                                 Colors.grey,
@@ -86,10 +91,11 @@ class ChatListView extends GetView<ChatListController> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     // Chat List
                     Expanded(
                       child: ListView.builder(
+                        padding: EdgeInsets.zero, 
                         itemCount: chatList.length,
                         itemBuilder: (context, index) {
                           final chat = chatList[index];

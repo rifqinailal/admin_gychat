@@ -23,7 +23,7 @@ class SettingController extends GetxController {
               ),
               child: Column(
                 children: [
-                  const SizedBox(height:25),
+                  const SizedBox(height:10),
                   const Text(
                     'Are you sure you want to leave?',
                     style: TextStyle(fontFamily: 'Poppins', color: ThemeColor.grey2, fontSize: 12),
