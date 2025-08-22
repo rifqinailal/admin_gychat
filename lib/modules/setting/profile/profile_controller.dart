@@ -10,8 +10,8 @@ import 'package:admin_gychat/shared/theme/colors.dart';
 class ProfileController extends GetxController {
   final Rx<File?> profileImage = Rx<File?>(null);
 
-  late TextEditingController nameController;
-  late TextEditingController aboutController;
+  final name = 'GYPEM INDONESIA'.obs;
+  final about = 'Chat Only !'.obs;
 
   // GetStorage
   final box = GetStorage();
@@ -29,14 +29,11 @@ class ProfileController extends GetxController {
   }
 
   void _loadProfileData() {
-    // Muat nama
-    nameController = TextEditingController(
-      text: box.read(_nameKey) ?? 'GYPEM INDONESIA',
-    );
-    // Muat bio
-    aboutController = TextEditingController(
-      text: box.read(_aboutKey) ?? 'Chat Only !',
-    );
+    // Muat name
+    name.value = box.read(_nameKey) ?? 'GYPEM INDONESIA';
+    //Muat bio
+    about.value = box.read(_aboutKey) ?? 'Chat Only !';
+
     // Muat path gambar
     final imagePath = box.read<String?>(_imagePathKey);
     if (imagePath != null && imagePath.isNotEmpty) {
@@ -49,14 +46,7 @@ class ProfileController extends GetxController {
     // aboutController.addListener(() => box.write(_aboutKey, aboutController.text));
   }
 
-  @override
-  void onClose() {
-    nameController.dispose();
-    aboutController.dispose();
-    super.onClose();
-  }
-
-  // Pick and crop an image
+  // Pick and crop an image 
   Future<void> pickImage(ImageSource source) async {
     try {
       final XFile? pickedFile = await _picker.pickImage(source: source);
@@ -71,7 +61,7 @@ class ProfileController extends GetxController {
             'Success',
             'Profile photo updated successfully.',
             snackPosition: SnackPosition.TOP,
-            backgroundColor: Colors.green,
+            backgroundColor: ThemeColor.primary.withOpacity(0.6),
             colorText: ThemeColor.white,
             margin: const EdgeInsets.all(18),
           );
@@ -90,7 +80,7 @@ class ProfileController extends GetxController {
       uiSettings: [
         AndroidUiSettings(
           toolbarTitle: 'Crop Image',
-          toolbarColor: const Color.fromARGB(255, 0, 0, 0),
+          toolbarColor: ThemeColor.black,
           toolbarWidgetColor: ThemeColor.white,
           initAspectRatio: CropAspectRatioPreset.original,
           lockAspectRatio: false,
@@ -166,7 +156,7 @@ class ProfileController extends GetxController {
         'Success',
         'Profile photo has been deleted.',
         snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.green,
+        backgroundColor: ThemeColor.primary.withOpacity(0.6),
         colorText: ThemeColor.white,
         margin: const EdgeInsets.all(18),
       );
@@ -177,19 +167,10 @@ class ProfileController extends GetxController {
 
   // Save profile
   void saveProfile() {
-    box.write(_nameKey, nameController.text);
-    box.write(_aboutKey, aboutController.text);
-
-    Get.snackbar(
-      'Success',
-      'Profile updated successfully.',
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.green,
-      colorText: ThemeColor.white,
-      margin: const EdgeInsets.all(18),
-    );
-
-    print("Name saved: ${nameController.text}");
-    print("About saved: ${aboutController.text}");
+    box.write(_nameKey, name.value);
+    box.write(_aboutKey, about.value);
+    
+    print("Name saved: ${name.value}");
+    print("About saved: ${about.value}");
   }
 }

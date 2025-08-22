@@ -34,11 +34,9 @@ class SettingScreen extends GetView<SettingController> {
               ),
 
               const SizedBox(height: 25),
-              GetBuilder<ProfileController>(
-                builder: (profileCtrl) {
-                  return _buildProfileCard(profileCtrl);
-                },
-              ),
+              Obx(() {
+                return _buildProfileCard(profileController);
+              }),
 
               const SizedBox(height: 20),
               _buildOptionsCard(),
@@ -64,19 +62,20 @@ class SettingScreen extends GetView<SettingController> {
         child: ListTile(
           leading: CircleAvatar(
             radius: 28,
-            backgroundColor: const Color.fromARGB(255, 243, 243, 243),
-            // Tampilkan gambar profil dari controller
+            backgroundColor: const Color.fromARGB(255, 243, 243, 243), 
             backgroundImage:profileCtrl.profileImage.value != null
-            ? FileImage(profileCtrl.profileImage.value!) : null,
-            child: profileCtrl.profileImage.value == null ? Icon(Icons.person, size: 40, color: Colors.grey.withOpacity(0.7)) : null,
-          ),
-          // Tampilkan nama dan bio dari controller
+            ? FileImage(profileCtrl.profileImage.value!) 
+            : null,
+            child: profileCtrl.profileImage.value == null 
+            ? Icon(Icons.person, size: 40, color: Colors.grey.withOpacity(0.7)) 
+            : null,
+          ), 
           title: Text(
-            profileCtrl.nameController.text,
+            profileCtrl.name.value,
             style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold, color: ThemeColor.black),
           ),
           subtitle: Text(
-            profileCtrl.aboutController.text,
+            profileCtrl.about.value,
             style: const TextStyle(
               fontFamily: 'Poppins',
               color: ThemeColor.black,
