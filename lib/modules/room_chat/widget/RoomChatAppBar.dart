@@ -19,9 +19,9 @@ class RoomChatAppBar extends GetView<RoomChatController>
       backgroundColor: Colors.white,
       scrolledUnderElevation: 0.0,
       leadingWidth: 35,
-      titleSpacing: 25,
+      titleSpacing: 5,
       leading: Padding(
-        padding: EdgeInsets.only(left: 20),
+        padding: EdgeInsets.only(left: 4),
         child: IconButton(
           onPressed: () => Get.back(),
           icon: const Icon(Icons.arrow_back_ios),
@@ -185,39 +185,69 @@ class RoomChatAppBar extends GetView<RoomChatController>
         ],
       ),
       actions: [
-        IconButton(onPressed: () {}, icon: const Icon(Octicons.reply)),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              visualDensity: VisualDensity.compact,
+              onPressed: () {},
+              icon: const Icon(Octicons.reply, size: 20),
+            ),
 
-        IconButton(
-          onPressed: () => controller.starSelectedMessages(),
-          icon: const Icon(AntDesign.staro),
-        ),
+            IconButton(
+              
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              visualDensity: VisualDensity.compact,
+              onPressed: () => controller.starSelectedMessages(),
+              icon: Icon(FontAwesome5Regular.star, size: 20,),
+            ),
 
-        IconButton(
-          onPressed: () => controller.pinSelectedMessages(),
-          icon: Transform.rotate(angle: 1.5, child: Icon(Octicons.pin)),
-        ),
+            IconButton(
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              visualDensity: VisualDensity.compact,
+              onPressed: () => controller.pinSelectedMessages(),
+              icon: Transform.rotate(
+                angle: 1.5,
+                child: Icon(Octicons.pin, size: 20),
+              ),
+            ),
 
-        IconButton(
-          onPressed: () => controller.copySelectedMessagesText(),
-          icon: const Icon(Icons.copy),
-        ),
-        Obx(() {
-          // Hanya tampilkan jika 1 pesan teks milik kita yang dipilih
-          if (controller.selectedMessages.length == 1 &&
-              controller.selectedMessages.first.isSender &&
-              (controller.selectedMessages.first.type == MessageType.text ||
-                  controller.selectedMessages.first.type ==
-                      MessageType.image)) {
-            return IconButton(
-              onPressed: () => controller.setEditMessage(),
-              icon: const Icon(Octicons.pencil),
-            );
-          }
-          return const SizedBox.shrink(); // Jika tidak, sembunyikan
-        }),
-        IconButton(
-          onPressed: () => controller.showDeleteConfirmationDialog(),
-          icon: const Icon(FontAwesome5Regular.trash_alt, size: 20),
+            IconButton(
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              visualDensity: VisualDensity.compact,
+              onPressed: () => controller.copySelectedMessagesText(),
+              icon: const Icon(Icons.copy, size: 20),
+            ),
+            Obx(() {
+              // Hanya tampilkan jika 1 pesan teks milik kita yang dipilih
+              if (controller.selectedMessages.length == 1 &&
+                  controller.selectedMessages.first.isSender &&
+                  (controller.selectedMessages.first.type == MessageType.text ||
+                      controller.selectedMessages.first.type ==
+                          MessageType.image)) {
+                return IconButton(
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  visualDensity: VisualDensity.compact,
+                  onPressed: () => controller.setEditMessage(),
+                  icon: const Icon(Octicons.pencil, size: 20),
+                );
+              }
+              return const SizedBox.shrink(); // Jika tidak, sembunyikan
+            }),
+            IconButton(
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              visualDensity: VisualDensity.compact,
+              onPressed: () => controller.showDeleteConfirmationDialog(),
+              icon: const Icon(FontAwesome5Regular.trash_alt, size: 20),
+            ),
+          ],
         ),
       ],
     );
