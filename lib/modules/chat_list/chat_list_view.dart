@@ -124,6 +124,7 @@ class ChatListView extends GetView<ChatListController> {
                                       "id": chat.id,
                                       "name": chat.name,
                                       "isGroup": chat.isGroup,
+                                      "isOnline": 0,
                                       "members":
                                           "Pak Ketua, Pimpinan B, Admin A...",
                                     },

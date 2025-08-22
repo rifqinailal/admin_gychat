@@ -2,6 +2,7 @@
 
 import 'package:admin_gychat/models/message_model.dart';
 import 'package:admin_gychat/routes/app_routes.dart';
+import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:get/get.dart';
@@ -18,21 +19,45 @@ class RoomChatAppBar extends GetView<RoomChatController>
       backgroundColor: Colors.white,
       scrolledUnderElevation: 0.0,
       leadingWidth: 35,
-      titleSpacing: 0,
-      leading: IconButton(
-        onPressed: () => Get.back(),
-        icon: const Icon(Icons.arrow_back_ios),
+      titleSpacing: 25,
+      leading: Padding(
+        padding: EdgeInsets.only(left: 20),
+        child: IconButton(
+          onPressed: () => Get.back(),
+          icon: const Icon(Icons.arrow_back_ios),
+        ),
       ),
       title: InkWell(
         onTap: () {
           Get.toNamed(AppRoutes.DetailGrup);
         },
         child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const CircleAvatar(
-              backgroundImage: NetworkImage(
-                "https://i.pravatar.cc/150?u=a042581f4e29026704d",
-              ),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const CircleAvatar(
+                  radius: 20,
+                  backgroundImage: NetworkImage(
+                    "https://i.pravatar.cc/150?u=a042581f4e29026704d",
+                  ),
+                ),
+                if (controller.chatRoomInfo['isOnline'] == 0)
+                  Positioned(
+                    bottom: -2,
+                    right: -2,
+                    child: Container(
+                      width: 15,
+                      height: 15,
+                      decoration: BoxDecoration(
+                        color: ThemeColor.yelow,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -53,6 +78,19 @@ class RoomChatAppBar extends GetView<RoomChatController>
                       return Text(
                         controller.chatRoomInfo['members'] ??
                             'Tidak ada member',
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  }),
+                  Obx(() {
+                    if (controller.chatRoomInfo['isGroup'] == false) {
+                      return Text(
+                        'Online',
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 12,
@@ -100,17 +138,29 @@ class RoomChatAppBar extends GetView<RoomChatController>
     return AppBar(
       backgroundColor: Colors.white,
       scrolledUnderElevation: 0.0,
+      leadingWidth: 65,
+      titleSpacing: -20,
       leading: IconButton(
         onPressed: () => controller.toggleSearchMode(),
         icon: const Icon(Icons.arrow_back_ios),
       ),
-      title: TextField(
-        controller: controller.searchController,
-        decoration: const InputDecoration(
-          hintText: 'Search...',
-          border: InputBorder.none,
+      title: ConstrainedBox(
+        constraints: BoxConstraints(minWidth: 350),
+        child: IntrinsicWidth(
+          child: TextField(
+            controller: controller.searchController,
+            decoration: InputDecoration(
+              isDense: true,
+              hintText: 'Search...           ',
+              border: InputBorder.none,
+              contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Colors.black),
+              ),
+            ),
+            onChanged: (value) => controller.updateSearchQuery(value),
+          ),
         ),
-        onChanged: (value) => controller.updateSearchQuery(value),
       ),
     );
   }

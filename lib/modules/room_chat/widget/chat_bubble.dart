@@ -5,6 +5,7 @@ import 'package:admin_gychat/models/message_model.dart';
 import 'package:admin_gychat/modules/room_chat/room_chat_controller.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
@@ -56,9 +57,14 @@ class ChatBubble extends StatelessWidget {
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
+      
       child: Container(
+        margin: EdgeInsets.only(bottom: 7),
         padding: const EdgeInsets.all(8),
-        color: ThemeColor.black.withOpacity(0.05),
+       color:
+                    isSender
+                        ?  Color(0xFF1A2C79)
+                        :  Color(0xFFEAE8FF),
         child: IntrinsicHeight(
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -88,8 +94,8 @@ class ChatBubble extends StatelessWidget {
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontWeight: FontWeight.w300,
-                      fontSize: 12,
+                      fontWeight: FontWeight.normal,
+                      fontSize: 13,
                       color: isSender ? Colors.white70 : Colors.black54,
                     ),
                   ),
@@ -189,7 +195,7 @@ class ChatBubble extends StatelessWidget {
       Color iconColor = isSender ? Colors.white70 : Colors.black54;
 
       return Padding(
-        padding: const EdgeInsets.only(top: 4.0, left: 8.0, right: 8.0),
+        padding: const EdgeInsets.only( left: 2, right: 2),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [Icon(statusIcon, size: 14, color: iconColor)],
@@ -250,9 +256,6 @@ class ChatBubble extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ======================================================
-            // BUNGKUS ClipRRect DENGAN GestureDetector
-            // ======================================================
             GestureDetector(
               onTap: () {
                 // Panggil fungsi di controller saat gambar di-tap
@@ -268,11 +271,9 @@ class ChatBubble extends StatelessWidget {
                 ),
               ),
             ),
-
-            // ======================================================
             if (text != null && text!.isNotEmpty)
               Padding(
-                padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                padding: const EdgeInsets.fromLTRB(10, 3, 10, 3),
                 child: _buildHighlightedText(),
               ),
           ],
@@ -313,7 +314,7 @@ class ChatBubble extends StatelessWidget {
                       padding:
                           type == MessageType.image
                               ? const EdgeInsets.all(3)
-                              : const EdgeInsets.all(12),
+                              : const EdgeInsets.all(10),
                       constraints: BoxConstraints(
                         maxWidth: MediaQuery.of(context).size.width * 0.75,
                       ),
@@ -338,7 +339,7 @@ class ChatBubble extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment:
                             isSender
-                                ? CrossAxisAlignment.end
+                                ? CrossAxisAlignment.start
                                 : CrossAxisAlignment.start,
                         children: [
                           if (senderName != null && !isSender)
@@ -361,9 +362,14 @@ class ChatBubble extends StatelessWidget {
                                       : const EdgeInsets.fromLTRB(8, 0, 8, 8),
                               child: _buildReplyPreview(),
                             ),
-                          SizedBox(height: 5),
-                          buildMessageContent(),
-                          buildStatusRow(),
+                          SizedBox(height: 0),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              buildStatusRow(),
+                              Flexible(child: buildMessageContent()),
+                            ],
+                          ),
                         ],
                       ),
                     ),
