@@ -3,6 +3,7 @@
 enum MessageType { text, image, document }
 
 class MessageModel {
+  final int messageId;
   final String senderId;
   final String? text;
   final DateTime timestamp;
@@ -18,6 +19,7 @@ class MessageModel {
   final bool isDeleted;
 
   MessageModel({
+    required this.messageId,
     required this.senderId, 
     this.text,
     required this.timestamp,
@@ -42,6 +44,7 @@ class MessageModel {
 
   MessageModel copyWith({String? text,bool? isStarred, bool? isPinned,bool? isDeleted, }) {
     return MessageModel(
+      messageId: messageId,
       senderId: senderId,
       text: text ?? this.text, 
       timestamp: timestamp,
@@ -59,6 +62,7 @@ class MessageModel {
   }
   Map<String, dynamic> toJson() {
     return {
+      'messageId': messageId,
       'senderId': senderId,
       'text': text,
       'timestamp': timestamp.toIso8601String(),
@@ -77,6 +81,7 @@ class MessageModel {
 
   factory MessageModel.fromJson(Map<String, dynamic> json) {
     return MessageModel(
+      messageId: json['messageId'], 
       senderId: json['senderId'],
       text: json['text'],
       timestamp: DateTime.parse(json['timestamp']),

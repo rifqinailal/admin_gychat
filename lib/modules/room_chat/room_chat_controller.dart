@@ -94,21 +94,29 @@ class RoomChatController extends GetxController {
 
   // FUNGSI BARU: Untuk menyimpan pesan ke local storage
   void saveMessagesToStorage() {
-    // 1. Ubah list `MessageModel` menjadi `List<Map<String, dynamic>>`
     List<Map<String, dynamic>> messagesJson =
         messages.map((msg) => msg.toJson()).toList();
-    // 2. Simpan ke GetStorage dengan key yang sudah kita tentukan
     _box.write(_boxKey, messagesJson);
-    print("Messages for room ${_boxKey} saved!"); // Untuk debugging
+
+    // ======================================================
+    // PENAMBAHAN BARU: SIMPAN ID PESAN YANG DI-PIN
+    // ======================================================
+    if (pinnedMessage.value != null) {
+      // Kita simpan ID-nya saja, bukan seluruh objek pesan.
+      _box.write('pinnedMessageId', pinnedMessage.value!.messageId);
+    } else {
+      // Jika tidak ada yang di-pin, hapus key-nya dari storage.
+      _box.remove('pinnedMessageId');
+    }
+    // ======================================================
+
+    print("Messages and pin status for room ${_boxKey} saved!");
   }
 
   // FUNGSI BARU: Untuk membaca pesan dari local storage
   void loadMessagesFromStorage() {
-    // 1. Baca data dari GetStorage
     var messagesJson = _box.read<List>(_boxKey);
-    // 2. Cek apakah ada data tersimpan
     if (messagesJson != null) {
-      // Jika ada, ubah kembali dari `List<Map>` menjadi `List<MessageModel>`
       messages.value =
           messagesJson
               .map(
@@ -116,9 +124,27 @@ class RoomChatController extends GetxController {
                     MessageModel.fromJson(Map<String, dynamic>.from(json)),
               )
               .toList();
-      print("Messages for room ${_boxKey} loaded!"); // Untuk debugging
+
+      // ======================================================
+      // PENAMBAHAN BARU: BACA DAN SET PESAN YANG DI-PIN
+      // ======================================================
+      // 1. Baca ID yang tersimpan.
+      var pinnedId = _box.read<int>('pinnedMessageId');
+      if (pinnedId != null) {
+        // 2. Cari pesan di dalam daftar `messages` yang ID-nya cocok.
+        try {
+          pinnedMessage.value = messages.firstWhere(
+            (msg) => msg.messageId == pinnedId,
+          );
+        } catch (e) {
+          // Jika pesan tidak ditemukan (mungkin terhapus), biarkan null.
+          pinnedMessage.value = null;
+        }
+      }
+      // ======================================================
+
+      print("Messages and pin status for room ${_boxKey} loaded!");
     } else {
-      // Jika tidak ada (pertama kali buka), panggil data dummy
       fetchMessages();
     }
   }
@@ -204,6 +230,7 @@ class RoomChatController extends GetxController {
         final PlatformFile file = result.files.first;
 
         final newMessage = MessageModel(
+          messageId: DateTime.now().millisecondsSinceEpoch,
           senderId: currentUserId,
           senderName: "Anda",
           timestamp: DateTime.now(),
@@ -292,6 +319,7 @@ class RoomChatController extends GetxController {
                           final imagePath = pickedFile.path;
                           final caption = captionController.text.trim();
                           final newMessage = MessageModel(
+                            messageId: DateTime.now().millisecondsSinceEpoch,
                             senderId: currentUserId,
                             senderName: "Anda",
                             timestamp: DateTime.now(),
@@ -387,6 +415,7 @@ class RoomChatController extends GetxController {
   void fetchMessages() {
     var dummyMessages = [
       MessageModel(
+        messageId: 6,
         senderId: "pimpinan_A",
         senderName: "Pimpinan A",
         text: "the leader added an answer",
@@ -395,6 +424,7 @@ class RoomChatController extends GetxController {
         type: MessageType.text,
       ),
       MessageModel(
+        messageId: 7,
         senderId: "user_02",
         senderName: "Admin A",
         text: "Thank you",
@@ -404,6 +434,7 @@ class RoomChatController extends GetxController {
         repliedMessage: {"name": "Anda", "text": "Admin message"},
       ),
       MessageModel(
+        messageId: 8,
         senderId: currentUserId,
         senderName: "Anda",
         text: "Admin message",
@@ -444,6 +475,7 @@ class RoomChatController extends GetxController {
               }
               : null;
       final newMessage = MessageModel(
+      messageId: DateTime.now().millisecondsSinceEpoch,
         senderId: currentUserId,
         senderName: "Anda", // BARU: Tambahkan nama pengirim
         text: text,

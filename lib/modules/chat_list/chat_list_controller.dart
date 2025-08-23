@@ -158,6 +158,7 @@ class ChatListController extends GetxController {
         unreadCount: 2,
         messages:[ 
           MessageModel(
+            messageId: 1,
             senderId: "user_01",
             senderName: "Jeremy Owen",
             text: "Langsung tanyakan ke indra aja",
@@ -166,6 +167,7 @@ class ChatListController extends GetxController {
             type: MessageType.text,
           ),
           MessageModel(
+            messageId: 2,
             senderId: "admin_01",
             senderName: "Anda",
             text: "Oke, siap.",
@@ -182,6 +184,7 @@ class ChatListController extends GetxController {
         unreadCount: 5,
         messages: [
           MessageModel(
+            messageId: 3,
             senderId: "user_02",
             senderName: "Pimpinan A",
             text: "Tolong segera diselesaikan ya.",
@@ -198,6 +201,7 @@ class ChatListController extends GetxController {
         isArchived: true,
         messages: [
           MessageModel(
+            messageId: 4,
             senderId: "user_03",
             senderName: "Indra Yulianto",
             text: "Laporan final sudah saya kirim.",
@@ -214,6 +218,7 @@ class ChatListController extends GetxController {
         unreadCount: 0,
         messages: [
           MessageModel(
+            messageId: 5,
             senderId: "user_04",
             senderName: "Agas Indransyah",
             text: "mengetik.....",

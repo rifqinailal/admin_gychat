@@ -265,44 +265,48 @@ class ChatBubble extends StatelessWidget {
           children: [
             GestureDetector(
               onTap: () {
-                // Panggil fungsi di controller saat gambar di-tap
-                // Kita perlu `Get.find()` untuk mengakses controller dari dalam widget ini
                 Get.find<RoomChatController>().showImageFullScreen(imagePath!);
               },
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(15),
                 child: Image.file(
                   File(imagePath!),
-                  width: MediaQuery.of(context).size.width * 0.6,
+                  width: MediaQuery.of(context).size.width * 0.7,
                   fit: BoxFit.cover,
                 ),
               ),
             ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(10, 3, 10, 3),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (isSender) buildStatusRow(),
-                    if (text != null && text!.isNotEmpty) 
-                    _buildHighlightedText(),
-                     if (!isSender) buildStatusRow(),
-                  ],
-                ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 3, 10, 3),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  if (isSender) buildStatusRow(),
+                  if (text != null && text!.isNotEmpty) Flexible(
+        child: _buildHighlightedText(),
+      ),
+                  if (!isSender) buildStatusRow(),
+                ],
               ),
+            ),
           ],
         );
       }
 
-      return Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (isSender) buildStatusRow(),
-          _buildHighlightedText(),
-          if (!isSender) buildStatusRow(),
-        ],
-      );
-    }
+     return Row(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.end, 
+    children: [
+      if (isSender) buildStatusRow(),
+      Flexible(
+        child: _buildHighlightedText(),
+      ),
+      if (!isSender) buildStatusRow(),
+    ],
+  );
+}
 
     return GestureDetector(
       onTap: onTap,
@@ -337,7 +341,7 @@ class ChatBubble extends StatelessWidget {
                               ? const EdgeInsets.all(6)
                               : const EdgeInsets.all(10),
                       constraints: BoxConstraints(
-                        maxWidth: MediaQuery.of(context).size.width * 0.75,
+                        maxWidth: MediaQuery.of(context).size.width * 0.72,
                       ),
                       decoration: BoxDecoration(
                         color:
@@ -383,14 +387,8 @@ class ChatBubble extends StatelessWidget {
                                       : const EdgeInsets.fromLTRB(8, 0, 8, 8),
                               child: _buildReplyPreview(),
                             ),
-                          SizedBox(height: 0),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              //buildStatusRow(),
-                              Flexible(child: buildMessageContent()),
-                            ],
-                          ),
+
+                          buildMessageContent(),
                         ],
                       ),
                     ),

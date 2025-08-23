@@ -234,6 +234,8 @@ class MessageInputBar extends GetView<RoomChatController> {
           Expanded(
             child: TextField(
               controller: controller.messageController,
+              maxLines: 6,
+              minLines: 1,
               decoration: InputDecoration(
                 hintText: 'write down the answer',
                 hintStyle: TextStyle(color: ThemeColor.primary),
