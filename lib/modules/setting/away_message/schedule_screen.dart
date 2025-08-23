@@ -14,12 +14,12 @@ class ScheduleScreen extends StatelessWidget {
     final AwayController controller = Get.find<AwayController>();
 
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 240, 240, 240),
+      backgroundColor: ThemeColor.lightGrey1,
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 240, 240, 240),
+        backgroundColor: ThemeColor.lightGrey1,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios, color: ThemeColor.black),
           onPressed: () {
             // Pastikan picker tertutup saat kembali
             controller.activePicker.value = null;
@@ -28,7 +28,7 @@ class ScheduleScreen extends StatelessWidget {
         ),
         title: const Text(
           'Away Message',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: TextStyle(fontFamily: 'Poppins', color: ThemeColor.black, fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
       ),
@@ -41,7 +41,7 @@ class ScheduleScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(vertical: 8.0),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: ThemeColor.white,
                   borderRadius: BorderRadius.circular(12.0),
                 ),
                 child: Column(
@@ -58,7 +58,7 @@ class ScheduleScreen extends StatelessWidget {
                 const SizedBox(height: 20),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: ThemeColor.white,
                     borderRadius: BorderRadius.circular(12.0),
                   ),
                   child: Column(
@@ -89,8 +89,8 @@ class ScheduleScreen extends StatelessWidget {
 
   Widget _buildScheduleOptionTile(AwayController controller, String title, String subtitle, ScheduleOption value) {
     return ListTile(
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
-      subtitle: Text(subtitle, style: TextStyle(color: Colors.grey[600])),
+      title: Text(title, style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
+      subtitle: Text(subtitle, style: TextStyle(fontFamily: 'Poppins', color: Colors.grey[600])),
       trailing: controller.scheduleOption.value == value
           ? const Icon(Icons.check, color:  ThemeColor.primary)
           : null,
@@ -103,15 +103,14 @@ class ScheduleScreen extends StatelessWidget {
       title: Text(label),
       trailing: Text(
         controller.formatDateTime(timeValue.value),
-        style: const TextStyle(color: Colors.grey),
+        style: const TextStyle(fontFamily: 'Poppins', color: Colors.grey),
       ),
       // Mengubah cara kerja onTap
       onTap: () => controller.openPicker(label == 'Start Time' ? 'start' : 'end'),
     );
   }
 
-  // --- WIDGET PICKER KUSTOM UTAMA ---
-  Widget _buildCustomPicker(AwayController controller) {
+  Widget _buildCustomPicker(AwayController controller) { 
     return Container(
       padding: const EdgeInsets.all(8.0),
       child: Column(
@@ -135,7 +134,7 @@ class ScheduleScreen extends StatelessWidget {
                   borderRadius: BorderRadius.circular(8)
                 )
               ),
-              child: const Text('Save', style: TextStyle(color: Colors.white)),
+              child: const Text('Save', style: TextStyle(fontFamily: 'Poppins', color: ThemeColor.white)),
             ),
           )
         ],
@@ -160,6 +159,7 @@ class ScheduleScreen extends StatelessWidget {
                 child: Text(
                   DateFormat('d MMM yyyy').format(controller.tempSelectedDate.value),
                   style: TextStyle(
+                    fontFamily: 'Poppins',
                     color: controller.isCalendarView.value ? ThemeColor.primary : Colors.grey,
                     fontWeight: FontWeight.bold
                   ),
@@ -183,6 +183,7 @@ class ScheduleScreen extends StatelessWidget {
                 child: Text(
                   DateFormat('HH:mm').format(controller.tempSelectedDate.value),
                   style: TextStyle(
+                    fontFamily: 'Poppins',
                     color: !controller.isCalendarView.value ? ThemeColor.primary : Colors.grey,
                     fontWeight: FontWeight.bold
                   ),
@@ -247,11 +248,11 @@ class ScheduleScreen extends StatelessWidget {
       headerStyle: const HeaderStyle(
         formatButtonVisible: false,
         titleCentered: true,
-        titleTextStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        titleTextStyle: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold, fontSize: 16),
       ),
       calendarStyle: CalendarStyle(
         // Gaya untuk hari yang tidak bisa dipilih
-        disabledTextStyle: TextStyle(color: Colors.grey.shade400),
+        disabledTextStyle: TextStyle(fontFamily: 'Poppins', color: Colors.grey.shade400),
         selectedDecoration: const BoxDecoration(
           color:  ThemeColor.primary,
           shape: BoxShape.circle,
@@ -280,7 +281,7 @@ class ScheduleScreen extends StatelessWidget {
               controller.tempSelectedDate.value = DateTime(current.year, current.month, current.day, hour, current.minute);
             }
           ),
-          const Text(":", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          const Text(":", style: TextStyle(fontFamily: 'Poppins', fontSize: 24, fontWeight: FontWeight.bold)),
           
           _timeWheel(
             itemCount: 60,
@@ -314,7 +315,7 @@ class ScheduleScreen extends StatelessWidget {
             return Center(
               child: Text(
                 isMinute ? index.toString().padLeft(2, '0') : index.toString(),
-                style: const TextStyle(fontSize: 20),
+                style: const TextStyle(fontFamily: 'Poppins', fontSize: 20),
               ),
             );
           },
