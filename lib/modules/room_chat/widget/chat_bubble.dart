@@ -151,8 +151,8 @@ class ChatBubble extends StatelessWidget {
       spans.add(
         TextSpan(
           text: text.substring(match.start, match.end),
-          style: const TextStyle(
-            backgroundColor: ThemeColor.yelow, // Warna highlight
+          style: TextStyle(
+            backgroundColor: Color(0xFF2738A5).withOpacity(0.7), // Warna highlight
             color: ThemeColor.black, // Warna teks di dalam highlight
           ),
         ),
