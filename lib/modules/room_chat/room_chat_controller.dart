@@ -53,7 +53,7 @@ class RoomChatController extends GetxController {
     searchController = TextEditingController();
     quickController = Get.find<QuickController>();
     messageController.addListener(_onTextChanged);
-     if (Get.arguments != null) {
+    if (Get.arguments != null) {
       chatRoomInfo.value = Get.arguments as Map<String, dynamic>;
     }
     final roomId = Get.arguments?['id'] ?? 'default_room';
@@ -61,9 +61,13 @@ class RoomChatController extends GetxController {
     loadMessagesFromStorage();
     // `debounce` digunakan agar penyimpanan tidak terjadi pada setiap perubahan kecil,
     // tapi hanya setelah ada jeda 1 detik. Ini sangat efisien.
-    debounce(messages, (_) => saveMessagesToStorage(), time: const Duration(seconds: 1));
-   
-   // fetchMessages();
+    debounce(
+      messages,
+      (_) => saveMessagesToStorage(),
+      time: const Duration(seconds: 1),
+    );
+
+    // fetchMessages();
   }
 
   @override
@@ -91,7 +95,8 @@ class RoomChatController extends GetxController {
   // FUNGSI BARU: Untuk menyimpan pesan ke local storage
   void saveMessagesToStorage() {
     // 1. Ubah list `MessageModel` menjadi `List<Map<String, dynamic>>`
-    List<Map<String, dynamic>> messagesJson = messages.map((msg) => msg.toJson()).toList();
+    List<Map<String, dynamic>> messagesJson =
+        messages.map((msg) => msg.toJson()).toList();
     // 2. Simpan ke GetStorage dengan key yang sudah kita tentukan
     _box.write(_boxKey, messagesJson);
     print("Messages for room ${_boxKey} saved!"); // Untuk debugging
@@ -104,7 +109,13 @@ class RoomChatController extends GetxController {
     // 2. Cek apakah ada data tersimpan
     if (messagesJson != null) {
       // Jika ada, ubah kembali dari `List<Map>` menjadi `List<MessageModel>`
-      messages.value = messagesJson.map((json) => MessageModel.fromJson(Map<String, dynamic>.from(json))).toList();
+      messages.value =
+          messagesJson
+              .map(
+                (json) =>
+                    MessageModel.fromJson(Map<String, dynamic>.from(json)),
+              )
+              .toList();
       print("Messages for room ${_boxKey} loaded!"); // Untuk debugging
     } else {
       // Jika tidak ada (pertama kali buka), panggil data dummy
@@ -126,7 +137,17 @@ class RoomChatController extends GetxController {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              trailing: const Icon(Icons.photo_library,color: Colors.blueAccent,),
+              leading: SizedBox.shrink(),
+              trailing: Icon(Icons.close, color: Colors.black),
+              onTap: () {
+                Get.back();
+              },
+            ),
+            ListTile(
+              trailing: const Icon(
+                Icons.photo_library,
+                color: Colors.blueAccent,
+              ),
               leading: const Text(
                 'Choose images',
                 style: TextStyle(fontSize: 17, color: Colors.black),
@@ -138,7 +159,7 @@ class RoomChatController extends GetxController {
             ),
             const Divider(height: 1, thickness: 1),
             ListTile(
-              trailing: const Icon(Icons.insert_drive_file,color: Colors.red,),
+              trailing: const Icon(Icons.insert_drive_file, color: Colors.red),
               leading: const Text(
                 'Choose dokumen',
                 style: TextStyle(fontSize: 17, color: Colors.black),
@@ -148,7 +169,8 @@ class RoomChatController extends GetxController {
                 _sendDocument();
               },
             ),
-             const Divider(height: 1, thickness: 1),
+            const Divider(height: 1, thickness: 1),
+            SizedBox(height: 35),
           ],
         ),
       ),

@@ -110,7 +110,7 @@ class MessageInputBar extends GetView<RoomChatController> {
                   Text(
                     message.senderName,
                     style: const TextStyle(
-                      color: Color(0xFF1D2C86),
+                     color: ThemeColor.primary,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -220,7 +220,7 @@ class MessageInputBar extends GetView<RoomChatController> {
   }
  Widget _buildMessageInputBar() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 12),
       color: Colors.white,
       child: Row(
         children: [
@@ -236,6 +236,7 @@ class MessageInputBar extends GetView<RoomChatController> {
               controller: controller.messageController,
               decoration: InputDecoration(
                 hintText: 'write down the answer',
+                hintStyle: TextStyle(color: ThemeColor.primary),
                 filled: true,
                 fillColor: Colors.white,
                 contentPadding: const EdgeInsets.symmetric(
@@ -246,14 +247,14 @@ class MessageInputBar extends GetView<RoomChatController> {
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),
                   borderSide: const BorderSide(
-                    color: Color(0xFF1D2C86),
+                   color: ThemeColor.primary,
                     width: 2,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),
                   borderSide: const BorderSide(
-                    color: Color(0xFF1D2C86),
+                   color: ThemeColor.primary,
                     width: 2,
                   ),
                 ),
@@ -262,7 +263,7 @@ class MessageInputBar extends GetView<RoomChatController> {
                   onPressed: () => controller.takePicture(),
                   icon: const Icon(
                     Icons.camera_alt_outlined,
-                    color: Color(0xFF1D2C86),
+                   color: ThemeColor.primary,
                   ),
                 ),
               ),

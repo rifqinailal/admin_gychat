@@ -191,7 +191,7 @@ class ChatBubble extends StatelessWidget {
       Color iconColor = isSender ? Colors.white70 : Colors.black54;
 
       return Padding(
-        padding: const EdgeInsets.only(right: 6),
+        padding: const EdgeInsets.only(right: 6, left: 3),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [Icon(statusIcon, size: 14, color: iconColor)],
@@ -222,36 +222,39 @@ class ChatBubble extends StatelessWidget {
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            buildStatusRow(),
-            Flexible(child: Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: ThemeColor.lightGrey1,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.insert_drive_file_outlined,
-                    color: ThemeColor.primary,
-                    size: 36,
-                  ),
-                  const SizedBox(width: 12),
-                  Flexible(
-                    child: Text(
-                      documentName!,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: ThemeColor.primary,
-                        fontWeight: FontWeight.w600,
+            if (isSender) buildStatusRow(),
+            Flexible(
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: ThemeColor.lightGrey1,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.insert_drive_file_outlined,
+                      color: ThemeColor.primary,
+                      size: 36,
+                    ),
+                    const SizedBox(width: 12),
+                    Flexible(
+                      child: Text(
+                        documentName!,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          color: ThemeColor.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),)
+            ),
+            if (!isSender) buildStatusRow(),
           ],
         );
       }
@@ -275,12 +278,16 @@ class ChatBubble extends StatelessWidget {
                 ),
               ),
             ),
-            if (text != null && text!.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.fromLTRB(10, 3, 10, 3),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
-                  children: [buildStatusRow(), _buildHighlightedText()],
+                  children: [
+                    if (isSender) buildStatusRow(),
+                    if (text != null && text!.isNotEmpty) 
+                    _buildHighlightedText(),
+                     if (!isSender) buildStatusRow(),
+                  ],
                 ),
               ),
           ],
@@ -289,7 +296,11 @@ class ChatBubble extends StatelessWidget {
 
       return Row(
         mainAxisSize: MainAxisSize.min,
-        children: [buildStatusRow(), _buildHighlightedText()],
+        children: [
+          if (isSender) buildStatusRow(),
+          _buildHighlightedText(),
+          if (!isSender) buildStatusRow(),
+        ],
       );
     }
 
@@ -323,7 +334,7 @@ class ChatBubble extends StatelessWidget {
                     Container(
                       padding:
                           type == MessageType.image
-                              ? const EdgeInsets.all(3)
+                              ? const EdgeInsets.all(6)
                               : const EdgeInsets.all(10),
                       constraints: BoxConstraints(
                         maxWidth: MediaQuery.of(context).size.width * 0.75,

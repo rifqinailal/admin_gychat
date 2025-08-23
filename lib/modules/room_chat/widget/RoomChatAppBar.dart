@@ -123,10 +123,27 @@ class RoomChatAppBar extends GetView<RoomChatController>
           },
           itemBuilder:
               (context) => [
-                const PopupMenuItem(value: 'search', child: Text('Search')),
+                const PopupMenuItem(
+                  value: 'search',
+                  child: Text(
+                    'Search',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.normal,
+                      color: Color(0xFF1D2C86),
+                    ),
+                  ),
+                ),
                 const PopupMenuItem(
                   value: 'starred',
-                  child: Text('Pesan Berbintang'),
+                  child: Text(
+                    'Pesan Berbintang',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.normal,
+                      color: Color(0xFF1D2C86),
+                    ),
+                  ),
                 ),
               ],
         ),
@@ -197,12 +214,11 @@ class RoomChatAppBar extends GetView<RoomChatController>
             ),
 
             IconButton(
-              
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(),
               visualDensity: VisualDensity.compact,
               onPressed: () => controller.starSelectedMessages(),
-              icon: Icon(FontAwesome5Regular.star, size: 20,),
+              icon: Icon(FontAwesome5Regular.star, size: 20),
             ),
 
             IconButton(
