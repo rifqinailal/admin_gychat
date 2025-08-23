@@ -1,4 +1,3 @@
-// lib/app/modules/chat_list/chat_list_view.dart
 import 'package:admin_gychat/models/chat_model.dart';
 import 'package:admin_gychat/routes/app_routes.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
@@ -6,8 +5,8 @@ import 'package:admin_gychat/shared/widgets/chat_header.dart';
 import 'package:admin_gychat/shared/widgets/chat_list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'chat_list_controller.dart';
 
 enum ChatListType { all, unread, group }
@@ -47,7 +46,6 @@ class ChatListView extends GetView<ChatListController> {
                 return _buildSearchResults();
               } else {
                 return Column(
-                  
                   children: [
                     Padding(
                       padding: const EdgeInsets.symmetric(
@@ -64,7 +62,6 @@ class ChatListView extends GetView<ChatListController> {
                               'assets/icons/Arhive_load_duotone_line.svg',
                               width: 20,
                               height: 20,
-                              // Atur warna untuk ikon tidak aktif
                               colorFilter: const ColorFilter.mode(
                                 Colors.grey,
                                 BlendMode.srcIn,
@@ -95,7 +92,7 @@ class ChatListView extends GetView<ChatListController> {
                     // Chat List
                     Expanded(
                       child: ListView.builder(
-                        padding: EdgeInsets.zero, 
+                        padding: EdgeInsets.zero,
                         itemCount: chatList.length,
                         itemBuilder: (context, index) {
                           final chat = chatList[index];
@@ -103,16 +100,24 @@ class ChatListView extends GetView<ChatListController> {
                           return Obx(() {
                             final isSelected = controller.selectedChats
                                 .contains(chat);
-
                             return ChatListTile(
-                              isPinned: chat.isPinned,
                               name: chat.name,
-                              lastMessage: "Hi, I have a problem with....",
+                              lastMessage:
+                                  chat.lastMessage ??
+                                  '', 
                               avatarUrl:
-                                  "https://i.pravatar.cc/150?u=${chat.name}",
-                              time: "10.16",
+                                  chat.urlPhoto ??
+                                  "https://i.pravatar.cc/150?u=${chat.roomId}", 
+                              time:
+                                  chat.lastTime != null
+                                      ? DateFormat('HH:mm').format(
+                                        chat.lastTime!,
+                                      ) 
+                                      : '--:--', 
                               unreadCount: chat.unreadCount,
-                              isOnline: chat.name == 'Jeremy Owen',
+                              isPinned: chat.isPinned,
+                              isOnline:
+                                  chat.name == 'Bantuan Teknis', 
                               isSelected: isSelected,
                               onTap: () {
                                 if (controller.isSelectionMode.value) {
@@ -121,10 +126,9 @@ class ChatListView extends GetView<ChatListController> {
                                   Get.toNamed(
                                     AppRoutes.ROOM_CHAT,
                                     arguments: {
-                                      "id": chat.id,
+                                      "id": chat.roomId,
                                       "name": chat.name,
-                                      "isGroup": chat.isGroup,
-                                      "isOnline": 0,
+                                      "isGroup": chat.roomType == 'group',
                                       "members":
                                           "Pak Ketua, Pimpinan B, Admin A...",
                                     },
@@ -171,20 +175,25 @@ class ChatListView extends GetView<ChatListController> {
             ...controller.searchResultChats.map((chat) {
               return ChatListTile(
                 name: chat.name,
-                avatarUrl: "https://i.pravatar.cc/150?u=${chat.id}",
+                avatarUrl: "https://i.pravatar.cc/150?u=${chat.roomId}",
                 unreadCount: chat.unreadCount,
                 isPinned: chat.isPinned,
-                lastMessage: 'assalamualaikum',
-                time: "10.11",
+                lastMessage: chat.lastMessage ?? '',
+                time:
+                    chat.lastTime != null
+                        ? DateFormat('HH:mm').format(
+                          chat.lastTime!,
+                        ) 
+                        : '--:--',
                 isSelected: false,
                 isOnline: false,
                 onTap: () {
                   Get.toNamed(
                     AppRoutes.ROOM_CHAT,
                     arguments: {
-                      "id": chat.id,
+                      "id": chat.roomId,
                       "name": chat.name,
-                      "isGroup": chat.isGroup,
+                      "isGroup": chat.roomType == 'group', 
                       "members": "Pak Ketua, Pimpinan B, Admin A...",
                     },
                   );
@@ -229,9 +238,9 @@ class ChatListView extends GetView<ChatListController> {
                     () => Get.toNamed(
                       AppRoutes.ROOM_CHAT,
                       arguments: {
-                        "id": result.chat.id,
+                        "id": result.chat.roomId,
                         "name": result.chat.name,
-                        "isGroup": result.chat.isGroup,
+                         "isGroup": result.chat.roomType == 'group', 
                         "members": "Pak Ketua, Pimpinan B, Admin A...",
                       },
                     ),

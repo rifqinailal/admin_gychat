@@ -66,15 +66,14 @@ class ChatListTile extends StatelessWidget {
                 ),
                 if (isOnline)
                   Positioned(
-                    bottom: -2,
-                    right: -2,
+                    bottom: 0,
+                    right: 1,
                     child: Container(
-                      width: 15,
-                      height: 15,
+                      width: 10,
+                      height: 10,
                       decoration: BoxDecoration(
                         color: ThemeColor.yelow,
                         shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 2),
                       ),
                     ),
                   ),

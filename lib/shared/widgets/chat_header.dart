@@ -4,6 +4,7 @@ import 'package:admin_gychat/routes/app_routes.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:admin_gychat/shared/widgets/delete_confirmation_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:get/get.dart';
 
@@ -119,20 +120,44 @@ class ChatHeader extends StatelessWidget {
           children: [
             IconButton(
               onPressed: () => controller.archiveSelectedChats(),
-              icon: const Icon(
-                Ionicons.md_archive_outline,
-                size: 30,
-                color: Color(0xFF353435),
+              icon: SvgPicture.asset(
+                'assets/icons/Arhive_load_duotone_line.svg',
+                width: 25,
+                height: 25,
+                // Atur warna untuk ikon tidak aktif
+                colorFilter: const ColorFilter.mode(
+                  Color(0xFF353435),
+                  BlendMode.srcIn,
+                ),
               ),
             ),
             IconButton(
               onPressed: () {
                 controller.pinSelectedChats();
               },
-              icon: Transform.rotate(
-                angle: 1.5,
-                child: Icon(Octicons.pin, color: Color(0xFF353435)),
-              ),
+              icon: Obx(() {
+                // <-- 1. Bungkus Stack dengan Obx
+                // 2. Cek apakah ada chat yang dipilih DAN chat pertama itu sudah di-pin
+                final bool isAlreadyPinned =
+                    controller.selectedChats.isNotEmpty &&
+                    controller.selectedChats.first.isPinned;
+
+                return Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Transform.rotate(
+                      angle: 1.5,
+                      child: const Icon(Octicons.pin, color: Color(0xFF353435)),
+                    ),
+
+                    // 3. Tampilkan garis miring HANYA JIKA isAlreadyPinned bernilai true
+                    if (isAlreadyPinned)
+                      Positioned.fill(
+                        child: CustomPaint(painter: SlashPainter()),
+                      ),
+                  ],
+                );
+              }),
             ),
 
             IconButton(
@@ -187,7 +212,7 @@ class ChatHeader extends StatelessWidget {
             controller: controller.searchController,
             decoration: InputDecoration(
               hintText: 'Search Here',
-              hintStyle: TextStyle(color:  Color(0xFF9A9696)),
+              hintStyle: TextStyle(color: Color(0xFF9A9696)),
               // Buat ikon menjadi dinamis
               prefixIcon: Obx(
                 () =>
@@ -195,24 +220,29 @@ class ChatHeader extends StatelessWidget {
                             .isSearching
                             .value // TANYA: Apakah sedang mencari?
                         // JIKA YA: Tampilkan IconButton untuk kembali/batal
-                        ? IconButton(
-                          icon: const Icon(
-                            Icons.arrow_back_ios,
-                           color:  Color(0xFF9A9696),
+                        ? Padding(
+                          padding: const EdgeInsets.only(left: 25, right: 8),
+                          child: GestureDetector(
+                            onTap: () => controller.clearSearch(),
+                            child: const Icon(
+                              Icons.arrow_back_ios,
+                              size: 22,
+                              color: Color(0xFF9A9696),
+                            ),
                           ),
-                          onPressed: () => controller.clearSearch(),
                         )
                         // JIKA TIDAK: Tampilkan ikon search biasa
                         : Padding(
                           padding: const EdgeInsets.only(
                             left: 25,
-                            right: 1,
+                            right: 8,
                           ), // Ubah sesuai kebutuhan
                           child: Transform.rotate(
                             angle: 1.5,
                             child: const Icon(
-                              Icons.search_rounded,
-                              color:  Color(0xFF9A9696),
+                              Ionicons.ios_search_outline,
+                              size: 22,
+                              color: Color(0xFF9A9696),
                             ),
                           ),
                         ),
@@ -239,4 +269,21 @@ class ChatHeader extends StatelessWidget {
       ],
     );
   }
+}
+
+class SlashPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint =
+        Paint()
+          ..color = const Color(0xFF353435)
+          ..strokeWidth = 1.9
+          ..strokeCap = StrokeCap.round;
+
+    // Garis miring dari kiri atas ke kanan bawah
+    canvas.drawLine(Offset(0, 0), Offset(size.width, size.height), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
