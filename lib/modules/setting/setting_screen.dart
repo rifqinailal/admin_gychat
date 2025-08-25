@@ -62,13 +62,9 @@ class SettingScreen extends GetView<SettingController> {
         child: ListTile(
           leading: CircleAvatar(
             radius: 28,
-            backgroundColor: const Color.fromARGB(255, 243, 243, 243), 
-            backgroundImage:profileCtrl.profileImage.value != null
-            ? FileImage(profileCtrl.profileImage.value!) 
-            : null,
-            child: profileCtrl.profileImage.value == null 
-            ? Icon(Icons.person, size: 40, color: Colors.grey.withOpacity(0.7)) 
-            : null,
+            backgroundColor: ThemeColor.grey4, 
+            backgroundImage:profileCtrl.profileImage.value != null ? FileImage(profileCtrl.profileImage.value!) : null,
+            child: profileCtrl.profileImage.value == null ? Icon(Icons.person, size: 40, color: ThemeColor.grey5) : null,
           ), 
           title: Text(
             profileCtrl.name.value,

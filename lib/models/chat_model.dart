@@ -1,3 +1,4 @@
+// lib/models/chat_model.dart
 import 'package:admin_gychat/models/message_model.dart';
 
 class ChatModel {

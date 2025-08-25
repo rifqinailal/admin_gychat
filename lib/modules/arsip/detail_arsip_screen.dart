@@ -35,6 +35,8 @@ class DetailArsipScreen extends GetView<DetailArsipController> {
                       time: '10.12',
                       unreadCount: chat.unreadCount,
                       isSelected: isSelected,
+                      roomType: chat.roomType, 
+                      
                       onTap: () { 
                         if (controller.selectedArchivedChats.isNotEmpty) {
                           controller.toggleSelection(chat);
@@ -49,8 +51,7 @@ class DetailArsipScreen extends GetView<DetailArsipController> {
                           );
                         }
                       },
-                      onLongPress: () {
-                        
+                      onLongPress: () { 
                         controller.toggleSelection(chat);
                       },
                     );

@@ -71,7 +71,7 @@ class DetailStarScreen extends GetView<DetailStarsController> {
       ),
       title: const Text(
         'Berbintang',
-        style: TextStyle(color: ThemeColor.darkGrey2, fontSize: 18),
+        style: TextStyle(color: ThemeColor.darkGrey2, fontSize: 20),
       ),
       actions: [
         IconButton(

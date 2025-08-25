@@ -179,6 +179,13 @@ class ChatListController extends GetxController {
     _allChats.refresh();
   }
 
+  void addNewChat(ChatModel newChat) {
+    // Menambahkan chat baru di posisi paling atas
+    _allChats.insert(0, newChat);
+    print("Grup baru '${newChat.name}' ditambahkan ke list.");
+    saveChatsToStorage();
+  }
+
   // Dummy data untuk testing
   void fetchChats() {
     var dummyData = [

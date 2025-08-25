@@ -5,6 +5,8 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
+import 'package:admin_gychat/models/chat_model.dart';
+import 'package:admin_gychat/modules/chat_list/chat_list_controller.dart'; 
 
 class GrupBaruController extends GetxController {
   var selectedImagePath = ''.obs;
@@ -17,8 +19,7 @@ class GrupBaruController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    groupNameController.addListener(validateForm);
-    groupDescController.addListener(validateForm);
+    groupNameController.addListener(validateForm); 
   }
 
   @override
@@ -84,7 +85,7 @@ class GrupBaruController extends GetxController {
                 title: 'Delete Photo',
                 icon: Icons.delete_outline,
                 onTap: deleteImage,
-                textColor: Colors.red,
+                textColor: ThemeColor.Red1,
               ),
             ],
           ],
@@ -120,14 +121,14 @@ class GrupBaruController extends GetxController {
             child: IconButton(
               onPressed: () => Get.back(),
               icon: const CircleAvatar(
-                backgroundColor: Colors.black54,
+                backgroundColor: ThemeColor.black,
                 child: Icon(Icons.close, color: ThemeColor.white),
               ),
             ),
           ),
         ],
       ),
-      barrierColor: Colors.black.withOpacity(0.85),
+      barrierColor: ThemeColor.black.withOpacity(0.5),
     );
   }
 
@@ -157,7 +158,7 @@ class GrupBaruController extends GetxController {
         uiSettings: [
           AndroidUiSettings(
             toolbarTitle: 'Crop Image',
-            toolbarColor: Colors.black,
+            toolbarColor: ThemeColor.black,
             toolbarWidgetColor: ThemeColor.white,
             initAspectRatio: CropAspectRatioPreset.original,
             lockAspectRatio: false,
@@ -180,25 +181,60 @@ class GrupBaruController extends GetxController {
   }
 
   void validateForm() {
-    isFormValid.value =
-    groupNameController.text.isNotEmpty &&
-    groupDescController.text.isNotEmpty;
+    isFormValid.value = groupNameController.text.isNotEmpty;
   }
 
   Future<void> createGroup() async {
     if (isFormValid.value) {
+      final chatListController = Get.find<ChatListController>();
+      final newGroupName = groupNameController.text.trim();
+      final isDuplicate = chatListController.allChatsInternal.any((chat) => chat.name.trim() == newGroupName);
+      
+      if (isDuplicate) {
+        Get.snackbar(
+          "Error",
+          "Group by name $newGroupName already available.",
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: ThemeColor.Red1.withOpacity(0.6),
+          colorText: ThemeColor.white,
+          margin: const EdgeInsets.all(12),
+          borderRadius: 10,
+        );
+        return;
+      }
       isLoading.value = true;
       await Future.delayed(const Duration(seconds: 2));
       isLoading.value = false;
-
+      
+      // Buat grup baru
+      final newGroup = ChatModel(
+        roomId: DateTime.now().millisecondsSinceEpoch,
+        roomMemberId: 99,
+        roomType: 'group',
+        name: newGroupName,
+        description: groupDescController.text.isNotEmpty ? groupDescController.text : null,
+        urlPhoto: selectedImagePath.isNotEmpty ? selectedImagePath.value : null,
+        lastMessage: "new group has been created",
+        lastTime: DateTime.now(),
+      );
+      
+      // Tambahkan grup baru ke daftar chat
+      try {
+        chatListController.addNewChat(newGroup);
+      } catch (e) {
+        print("Error: ChatListController tidak ditemukan. Pastikan sudah diinisialisasi di halaman sebelumnya.");
+      }
+      isLoading.value = false;
+      Get.back();
+      
       Get.snackbar(
-        "Berhasil",
-        "Grup '${groupNameController.text}' berhasil dibuat.",
+        "Success",
+        "Group ${groupNameController.text} successfully created.",
         snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.green,
+        backgroundColor: Colors.green.withOpacity(0.6),
         colorText: ThemeColor.white,
         margin: const EdgeInsets.all(12),
-        borderRadius: 8,
+        borderRadius: 10,
       );
     }
   }
