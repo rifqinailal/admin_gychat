@@ -44,7 +44,7 @@ class SettingScreen extends GetView<SettingController> {
               const Spacer(),
               _buildLogoutButton(context, controller),
 
-              const SizedBox(height: 275),
+              const SizedBox(height: 100),
             ],
           ),
         ),

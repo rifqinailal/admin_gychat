@@ -1,33 +1,130 @@
 // lib/modules/setting/quick_replies/quick_controller.dart
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image_cropper/image_cropper.dart'; // <-- Import package baru
+import 'package:image_cropper/image_cropper.dart';
 import 'package:admin_gychat/models/quick_reply_model.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
 import 'edit_quick_reply_screen.dart';
+import 'package:get_storage/get_storage.dart';
 
 class QuickController extends GetxController {
   final shortcutController = TextEditingController();
   final messageController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
 
-  var quickReplies = <QuickReply>[
-    QuickReply(
-      id: '1',
-      shortcut: '01',
-      message: 'this is a quick message',
-      imagePath: 'assets/images/pp2.jpg',
-    ),
-  ].obs;
+  final _box = GetStorage();
+  final _storageKey = 'quickReplies';
 
+  //var quickReplies = <QuickReply>[
+    //QuickReply(
+      //id: '1',
+      //shortcut: '01',
+      //message: 'this is a quick message',
+      //imagePath: 'assets/images/pp2.jpg',
+    //),
+  //].obs;
+
+  var quickReplies = <QuickReply>[].obs;
   var selectedImage = Rx<File?>(null);
+  var shortcutErrorText = Rx<String?>(null);
+  var messageErrorText = Rx<String?>(null);
+  var mediaError = Rx<bool>(false);
+
+  @override
+  void onInit() {
+    super.onInit();
+    _loadRepliesFromStorage();
+  }
+
+  void _loadRepliesFromStorage() {
+    final List<dynamic>? storedReplies = _box.read<List<dynamic>>(_storageKey);
+    if (storedReplies != null) {
+      final replies = storedReplies
+      .map((json) => QuickReply.fromJson(json as Map<String, dynamic>))
+      .toList();
+      quickReplies.assignAll(replies);
+    }
+  }
+  
+  Future<void> _saveRepliesToStorage() async {
+    final List<Map<String, dynamic>> listToSave =
+    quickReplies.map((reply) => reply.toJson()).toList();
+    await _box.write(_storageKey, listToSave);
+  }
+
+  bool validateShortcut({String? currentReplyId}) {
+    final shortcut = shortcutController.text;
+    if (shortcut.isEmpty) {
+      shortcutErrorText.value = 'Shortcut tidak boleh kosong.';
+      return false;
+    }
+  
+    if (shortcut.length > 3) {
+      shortcutErrorText.value = 'Shortcut maksimal 3 digit angka.';
+      return false;
+    }
+
+    // Cek duplikasi shortcut
+    final isDuplicate = quickReplies.any((reply) {
+      return reply.shortcut == shortcut && (currentReplyId == null || reply.id != currentReplyId);
+    });
+
+    if (isDuplicate) {
+      shortcutErrorText.value = 'Shortcut ini sudah digunakan.';
+      return false;
+    }
+    shortcutErrorText.value = null;
+    return true;
+  }
+
+  bool _validateForm({QuickReply? existingReply}) {
+    messageErrorText.value = null;
+    mediaError.value = false;
+    
+    final isShortcutValid = validateShortcut(currentReplyId: existingReply?.id);
+    if (!isShortcutValid) {
+      return false; 
+    }
+    
+    final isMessageFilled = messageController.text.isNotEmpty;
+    
+    bool isMediaAttached = false;
+    if (selectedImage.value != null) {
+      isMediaAttached = selectedImage.value!.path.isNotEmpty;
+    } else if (existingReply != null) {
+      isMediaAttached = (existingReply.imageFile != null || (
+        existingReply.imagePath != null && existingReply.imagePath!.isNotEmpty
+      ));
+    }
+    
+    if (!isMessageFilled && !isMediaAttached) {
+      const errorMsg = 'Harap isi pesan atau lampirkan media.';
+      messageErrorText.value = errorMsg;
+      mediaError.value = true;
+      
+      Get.snackbar(
+        'Gagal Menyimpan',
+        'Minimal harus ada 2 kolom yang terisi (Shortcut + Pesan/Media).',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: ThemeColor.Red1.withOpacity(0.6),
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(12),
+      );
+      return false;
+    }
+    return true;
+  }
 
   void goToAddScreen() {
     shortcutController.clear();
     messageController.clear();
     selectedImage.value = null;
+    shortcutErrorText.value = null;
+    messageErrorText.value = null;
+    mediaError.value = false;
     _showEditScreen();
   }
 
@@ -35,6 +132,9 @@ class QuickController extends GetxController {
     shortcutController.text = reply.shortcut;
     messageController.text = reply.message;
     selectedImage.value = null;
+    shortcutErrorText.value = null;
+    messageErrorText.value = null;
+    mediaError.value = false;
     _showEditScreen(reply: reply);
   }
 
@@ -213,21 +313,32 @@ class QuickController extends GetxController {
   }
 
   void saveNewReply() {
-    if (shortcutController.text.isNotEmpty && messageController.text.isNotEmpty) {
-      final newReply = QuickReply(
-        id: DateTime.now().toString(),
-        shortcut: shortcutController.text,
-        message: messageController.text,
-        imageFile: selectedImage.value,
-      );
-      quickReplies.add(newReply);
-      Get.back();
-    } else {
-      Get.snackbar('Error', 'Shortcut and message cannot be empty.');
-    }
+    if (!_validateForm()) return;
+
+    final newReply = QuickReply(
+      id: DateTime.now().toString(),
+      shortcut: shortcutController.text,
+      message: messageController.text,
+      imageFile: selectedImage.value,
+      imagePath: null,
+    );
+    quickReplies.add(newReply);
+    _saveRepliesToStorage();
+    Get.back();
+
+    Get.snackbar(
+      'Success',
+      'Quick reply has been added successfully.',
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.green.withOpacity(0.6),
+      colorText: Colors.white,
+      margin: const EdgeInsets.all(10),
+    );
   }
 
   void updateReply(QuickReply reply) {
+    if (!_validateForm(existingReply: reply)) return;
+
     int index = quickReplies.indexWhere((r) => r.id == reply.id);
     if (index != -1) {
       final QuickReply itemToUpdate = quickReplies[index];
@@ -245,15 +356,33 @@ class QuickController extends GetxController {
       }
 
       quickReplies[index] = itemToUpdate;
+      _saveRepliesToStorage();
       quickReplies.refresh();
       Get.back();
+      Get.snackbar(
+        'Success',
+        'Quick reply has been updated successfully.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.green.withOpacity(0.6),
+        colorText: Colors.white,
+        margin: const EdgeInsets.all(10),
+      );
     }
   }
   
   void deleteReply(QuickReply reply) {
     quickReplies.removeWhere((r) => r.id == reply.id);
+    _saveRepliesToStorage();
     Get.back();
     Get.back();
+    Get.snackbar(
+      'Success',
+      'Quick reply has been deleted.',
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.green.withOpacity(0.6),
+      colorText: Colors.white,
+      margin: const EdgeInsets.all(10),
+    );
   }
 
   void showDeleteConfirmation(QuickReply reply) {
@@ -317,8 +446,7 @@ class QuickController extends GetxController {
           ],
         ),
       ),
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
+      isScrollControlled: true, 
     );
   }
 

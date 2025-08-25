@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'quick_controller.dart'; // Pastikan path import ini benar
-import 'package:admin_gychat/models/quick_reply_model.dart'; // Pastikan path import ini benar
-import 'dart:io'; // Diperlukan untuk tipe data File
+import 'quick_controller.dart';
+import 'package:admin_gychat/models/quick_reply_model.dart';
+import 'package:admin_gychat/shared/theme/colors.dart';
+import 'dart:io';
 
 class EditQuickReplyScreen extends GetView<QuickController> {
   final QuickReply? reply;
@@ -12,19 +14,19 @@ class EditQuickReplyScreen extends GetView<QuickController> {
   Widget build(BuildContext context) {
     final bool isEditMode = reply != null;
 
-    // Inisialisasi controller hanya jika dalam mode edit dan saat pertama kali build
-    if (isEditMode && controller.shortcutController.text != reply!.shortcut) {
+    if (isEditMode && controller.shortcutController.text != reply!.shortcut) { 
       controller.shortcutController.text = reply?.shortcut ?? '';
       controller.messageController.text = reply?.message ?? '';
-    } else if (!isEditMode) {
-      // Dikosongkan hanya untuk mode tambah baru
-      controller.shortcutController.clear();
-      controller.messageController.clear();
-      controller.selectedImage.value = null;
-    }
+    } else if (!isEditMode && controller.shortcutController.text.isNotEmpty) {}
+    //} else if (!isEditMode) {
+    //controller.shortcutController.clear();
+    //controller.messageController.clear();
+    //controller.selectedImage.value = null;
+    //}
 
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 240, 240, 240),
+      resizeToAvoidBottomInset: false,
+      backgroundColor: ThemeColor.lightGrey1,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 30),
@@ -43,7 +45,7 @@ class EditQuickReplyScreen extends GetView<QuickController> {
                         child: Text(
                           'Cancel',
                           style: TextStyle(
-                            color: Colors.black,
+                            color: ThemeColor.black,
                             fontSize: 17,
                             fontWeight: FontWeight.normal,
                           ),
@@ -53,7 +55,7 @@ class EditQuickReplyScreen extends GetView<QuickController> {
                     Text(
                       isEditMode ? 'Edit Quick Reply' : 'Tambah Quick Reply',
                       style: const TextStyle(
-                        color: Colors.black,
+                        color: ThemeColor.black,
                         fontWeight: FontWeight.bold,
                         fontSize: 17,
                       ),
@@ -72,7 +74,7 @@ class EditQuickReplyScreen extends GetView<QuickController> {
                         child: Text(
                           'Save',
                           style: TextStyle(
-                            color: Colors.black,
+                            color: ThemeColor.black,
                             fontSize: 17,
                             fontWeight: FontWeight.normal,
                           ),
@@ -82,20 +84,52 @@ class EditQuickReplyScreen extends GetView<QuickController> {
                   ],
                 ),
                 const SizedBox(height: 25),
-                _buildTextField(
+                Obx(
+                  () => _buildTextField(
                     label: 'Shortcut',
-                    controller: controller.shortcutController),
+                    controller: controller.shortcutController,
+                    errorText: controller.shortcutErrorText.value,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.digitsOnly,
+                      LengthLimitingTextInputFormatter(3),
+                    ],
+                    // Panggil validasi setiap kali user mengetik
+                    onChanged: (value) => controller.validateShortcut(currentReplyId: reply?.id),
+                  ),
+                ),
                 const SizedBox(height: 16),
-                _buildTextField(
-                    label: 'Message',
-                    controller: controller.messageController,
-                    maxLines: 5),
+                Obx(() => _buildTextField(
+                  label: 'Message',
+                  controller: controller.messageController,
+                  maxLines: 5,
+                  errorText: controller.messageErrorText.value,
+                )),
                 const SizedBox(height: 16),
-                const Text('Attach Media',
-                    style: TextStyle(
-                        color: Colors.black, fontWeight: FontWeight.bold)),
+                const Text(
+                  'Attach Media',
+                  style: TextStyle(
+                    color: ThemeColor.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 _buildMediaAttachment(isEditMode),
+                // [NEW] Tampilkan pesan error di bawah media jika ada
+                Obx(() {
+                  if (controller.mediaError.value &&
+                      controller.messageErrorText.value != null) {
+                    return Padding(
+                      padding: const EdgeInsets.only(left: 16.0, top: 6.0),
+                      child: Text(
+                        controller.messageErrorText.value!,
+                        style: const TextStyle(
+                            color: ThemeColor.Red1, fontSize: 12),
+                      ),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                }),
                 if (isEditMode) ...[
                   const SizedBox(height: 20),
                   SizedBox(
@@ -103,20 +137,24 @@ class EditQuickReplyScreen extends GetView<QuickController> {
                     child: ElevatedButton(
                       onPressed: () => controller.showDeleteConfirmation(reply!),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
+                        backgroundColor: ThemeColor.white,
                         padding: const EdgeInsets.symmetric(vertical: 15),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12)),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         elevation: 0,
                       ),
-                      child: const Text('Delete',
-                          style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.red,
-                              fontWeight: FontWeight.bold)),
+                      child: const Text(
+                        'Delete',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: ThemeColor.Red1,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
-                ]
+                ],
               ],
             ),
           ),
@@ -125,21 +163,34 @@ class EditQuickReplyScreen extends GetView<QuickController> {
     );
   }
 
-  Widget _buildTextField(
-      {required String label,
-      required TextEditingController controller,
-      int maxLines = 1}) {
+  Widget _buildTextField({
+    required String label,
+    required TextEditingController controller,
+    int maxLines = 1,
+    String? errorText,
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+    ValueChanged<String>? onChanged,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: const TextStyle(
-                color: Colors.black, fontWeight: FontWeight.bold)),
+        Text(
+          label,
+          style: const TextStyle(
+            color: ThemeColor.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            color: ThemeColor.white,
+            borderRadius: BorderRadius.circular(25),
+            border: Border.all(
+              color: errorText != null ? Colors.red : Colors.transparent,
+              width: 1.5,
+            ),
             boxShadow: [
               BoxShadow(
                 color: Colors.grey.withOpacity(0.1),
@@ -151,58 +202,67 @@ class EditQuickReplyScreen extends GetView<QuickController> {
           child: TextField(
             controller: controller,
             maxLines: maxLines,
+            keyboardType: keyboardType,
             decoration: InputDecoration(
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 12,
+              ),
               border: InputBorder.none,
               hintText: 'Enter $label',
+              errorText: null,
             ),
           ),
         ),
+        if (errorText != null)
+          Padding(
+            padding: const EdgeInsets.only(left: 16.0, top: 6.0),
+            child: Text(
+              errorText,
+              style: const TextStyle(color: ThemeColor.Red1, fontSize: 12),
+            ),
+          ),
       ],
     );
   }
 
-  /// Membangun bagian lampiran media, menampilkan placeholder atau gambar yang dipilih.
-  Widget _buildMediaAttachment(bool isEditMode) {
-    // --- PERUBAHAN DI SINI ---
-    // Mengubah onTap untuk memanggil fungsi pilihan
+  // Attach Media
+  Widget _buildMediaAttachment(bool isEditMode) { 
     return GestureDetector(
       onTap: () => controller.showImageOptions(reply),
-      child: Obx(() {
+      child: Obx(() { 
         final newPickedImage = controller.selectedImage.value;
         Image? displayImage;
+        final bool hasError = controller.mediaError.value;
 
-        // --- Logika Penampilan Gambar Diperbarui ---
-        if (newPickedImage != null) {
-          // Jika ada gambar baru yang dipilih (atau ditandai hapus)
-          if (newPickedImage.path.isNotEmpty) {
-            // Jika path tidak kosong, tampilkan gambar baru
+        if (newPickedImage != null) { 
+          if (newPickedImage.path.isNotEmpty) { 
             displayImage = Image.file(newPickedImage, fit: BoxFit.cover);
           }
-          // Jika path kosong (tanda hapus), displayImage tetap null, tampilkan placeholder
-        } else if (isEditMode) {
-          // Jika tidak ada interaksi baru, tampilkan gambar lama
+        } else if (isEditMode) { 
           final existingImageFile = reply?.imageFile;
           final existingImagePath = reply?.imagePath;
           if (existingImageFile != null) {
             displayImage = Image.file(existingImageFile, fit: BoxFit.cover);
-          } else if (existingImagePath != null && existingImagePath.isNotEmpty) {
+          } else if (existingImagePath != null &&
+              existingImagePath.isNotEmpty) {
             displayImage = Image.asset(existingImagePath, fit: BoxFit.cover);
           }
         }
 
         if (displayImage != null) {
-          // Jika gambar tersedia, tampilkan dengan gaya baru.
-          return _buildImageDisplay(image: displayImage);
-        } else {
-          // Jika tidak ada gambar, tampilkan placeholder.
+          return _buildImageDisplay(image: displayImage, hasError: hasError);
+        } else { 
           return Container(
             height: 150,
             width: double.infinity,
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              color: ThemeColor.white,
+              borderRadius: BorderRadius.circular(25),
+              border: Border.all(
+                color: hasError ? Colors.red : Colors.transparent,
+                width: 1.5,
+              ),
               boxShadow: [
                 BoxShadow(
                   color: Colors.grey.withOpacity(0.15),
@@ -214,13 +274,20 @@ class EditQuickReplyScreen extends GetView<QuickController> {
             ),
             child: const Center(
               child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.add_photo_alternate_outlined,
-                        size: 40, color: Colors.grey),
-                    SizedBox(height: 8),
-                    Text('Add Media', style: TextStyle(color: Colors.grey)),
-                  ]),
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.add_photo_alternate_outlined,
+                    size: 35,
+                    color: Colors.grey,
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'Add Media',
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                  ),
+                ],
+              ),
             ),
           );
         }
@@ -228,13 +295,16 @@ class EditQuickReplyScreen extends GetView<QuickController> {
     );
   }
 
-  /// Membangun kartu tampilan gambar yang sesuai dengan screenshot.
-  Widget _buildImageDisplay({required Image image}) {
+  Widget _buildImageDisplay({required Image image, required bool hasError}) {
     return Container(
       padding: const EdgeInsets.all(12.0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: ThemeColor.white,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: hasError ? Colors.red : Colors.transparent,
+          width: 1.5,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.grey.withOpacity(0.2),
@@ -247,15 +317,13 @@ class EditQuickReplyScreen extends GetView<QuickController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Container ini membungkus gambar dan memberinya border.
-          Container(
+          Container( 
             decoration: BoxDecoration(
               border: Border.all(color: Colors.grey.shade200, width: 1.5),
               borderRadius: BorderRadius.circular(12),
             ),
             child: ClipRRect(
-              borderRadius:
-                  BorderRadius.circular(10.5), // Agar border tidak terpotong
+              borderRadius: BorderRadius.circular(10.5),
               child: SizedBox(
                 height: 200,
                 width: double.infinity,
@@ -264,17 +332,16 @@ class EditQuickReplyScreen extends GetView<QuickController> {
             ),
           ),
           const SizedBox(height: 12),
-          // Menampilkan teks pesan di bawah gambar.
-          Padding(
+          Padding( 
             padding: const EdgeInsets.symmetric(horizontal: 4.0),
             child: Text(
-                controller.messageController.text, // Dibuat reaktif
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(color: Colors.black87, fontSize: 16),
-              ),
+              controller.messageController.text,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(color: Colors.black87, fontSize: 16),
             ),
-          ],
+          ),
+        ],
       ),
     );
   }

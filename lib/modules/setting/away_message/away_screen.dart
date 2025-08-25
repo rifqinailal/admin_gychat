@@ -28,6 +28,7 @@ class AwayScreen extends GetView<AwayController> {
             fontFamily: 'Poppins',
             color: ThemeColor.black,
             fontWeight: FontWeight.bold,
+            fontSize: 22,
           ),
         ),
         centerTitle: true,
