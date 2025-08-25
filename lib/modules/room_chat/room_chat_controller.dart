@@ -8,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -17,6 +18,8 @@ class RoomChatController extends GetxController {
   late TextEditingController messageController;
   late TextEditingController searchController;
   var messages = <MessageModel>[].obs;
+  late GetStorage _box;
+  String get _boxKey => 'messages_${chatRoomInfo["id"]}';
   final String currentUserId = "admin_01";
   var chatRoomInfo = {}.obs;
   var isSearchMode = false.obs;
@@ -53,11 +56,23 @@ class RoomChatController extends GetxController {
     if (Get.arguments != null) {
       chatRoomInfo.value = Get.arguments as Map<String, dynamic>;
     }
-    fetchMessages();
+    final roomId = Get.arguments?['id'] ?? 'default_room';
+    _box = GetStorage('ChatRoom_$roomId');
+    loadMessagesFromStorage();
+    // `debounce` digunakan agar penyimpanan tidak terjadi pada setiap perubahan kecil,
+    // tapi hanya setelah ada jeda 1 detik. Ini sangat efisien.
+    debounce(
+      messages,
+      (_) => saveMessagesToStorage(),
+      time: const Duration(seconds: 1),
+    );
+
+    // fetchMessages();
   }
 
   @override
   void onClose() {
+    saveMessagesToStorage();
     messageController.removeListener(_onTextChanged);
     messageController.dispose();
     searchController.dispose();
@@ -77,6 +92,63 @@ class RoomChatController extends GetxController {
     }
   }
 
+  // FUNGSI BARU: Untuk menyimpan pesan ke local storage
+  void saveMessagesToStorage() {
+    List<Map<String, dynamic>> messagesJson =
+        messages.map((msg) => msg.toJson()).toList();
+    _box.write(_boxKey, messagesJson);
+
+    // ======================================================
+    // PENAMBAHAN BARU: SIMPAN ID PESAN YANG DI-PIN
+    // ======================================================
+    if (pinnedMessage.value != null) {
+      // Kita simpan ID-nya saja, bukan seluruh objek pesan.
+      _box.write('pinnedMessageId', pinnedMessage.value!.messageId);
+    } else {
+      // Jika tidak ada yang di-pin, hapus key-nya dari storage.
+      _box.remove('pinnedMessageId');
+    }
+    // ======================================================
+
+    print("Messages and pin status for room ${_boxKey} saved!");
+  }
+
+  // FUNGSI BARU: Untuk membaca pesan dari local storage
+  void loadMessagesFromStorage() {
+    var messagesJson = _box.read<List>(_boxKey);
+    if (messagesJson != null) {
+      messages.value =
+          messagesJson
+              .map(
+                (json) =>
+                    MessageModel.fromJson(Map<String, dynamic>.from(json)),
+              )
+              .toList();
+
+      // ======================================================
+      // PENAMBAHAN BARU: BACA DAN SET PESAN YANG DI-PIN
+      // ======================================================
+      // 1. Baca ID yang tersimpan.
+      var pinnedId = _box.read<int>('pinnedMessageId');
+      if (pinnedId != null) {
+        // 2. Cari pesan di dalam daftar `messages` yang ID-nya cocok.
+        try {
+          pinnedMessage.value = messages.firstWhere(
+            (msg) => msg.messageId == pinnedId,
+          );
+        } catch (e) {
+          // Jika pesan tidak ditemukan (mungkin terhapus), biarkan null.
+          pinnedMessage.value = null;
+        }
+      }
+      // ======================================================
+
+      print("Messages and pin status for room ${_boxKey} loaded!");
+    } else {
+      fetchMessages();
+    }
+  }
+
   void showAttachmentOptions() {
     Get.bottomSheet(
       Container(
@@ -91,7 +163,17 @@ class RoomChatController extends GetxController {
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              trailing: const Icon(Icons.photo_library,color: Colors.blueAccent,),
+              leading: SizedBox.shrink(),
+              trailing: Icon(Icons.close, color: Colors.black),
+              onTap: () {
+                Get.back();
+              },
+            ),
+            ListTile(
+              trailing: const Icon(
+                Icons.photo_library,
+                color: Colors.blueAccent,
+              ),
               leading: const Text(
                 'Choose images',
                 style: TextStyle(fontSize: 17, color: Colors.black),
@@ -103,7 +185,7 @@ class RoomChatController extends GetxController {
             ),
             const Divider(height: 1, thickness: 1),
             ListTile(
-              trailing: const Icon(Icons.insert_drive_file,color: Colors.red,),
+              trailing: const Icon(Icons.insert_drive_file, color: Colors.red),
               leading: const Text(
                 'Choose dokumen',
                 style: TextStyle(fontSize: 17, color: Colors.black),
@@ -113,7 +195,8 @@ class RoomChatController extends GetxController {
                 _sendDocument();
               },
             ),
-             const Divider(height: 1, thickness: 1),
+            const Divider(height: 1, thickness: 1),
+            SizedBox(height: 35),
           ],
         ),
       ),
@@ -147,6 +230,7 @@ class RoomChatController extends GetxController {
         final PlatformFile file = result.files.first;
 
         final newMessage = MessageModel(
+          messageId: DateTime.now().millisecondsSinceEpoch,
           senderId: currentUserId,
           senderName: "Anda",
           timestamp: DateTime.now(),
@@ -235,6 +319,7 @@ class RoomChatController extends GetxController {
                           final imagePath = pickedFile.path;
                           final caption = captionController.text.trim();
                           final newMessage = MessageModel(
+                            messageId: DateTime.now().millisecondsSinceEpoch,
                             senderId: currentUserId,
                             senderName: "Anda",
                             timestamp: DateTime.now(),
@@ -330,6 +415,7 @@ class RoomChatController extends GetxController {
   void fetchMessages() {
     var dummyMessages = [
       MessageModel(
+        messageId: 6,
         senderId: "pimpinan_A",
         senderName: "Pimpinan A",
         text: "the leader added an answer",
@@ -338,6 +424,7 @@ class RoomChatController extends GetxController {
         type: MessageType.text,
       ),
       MessageModel(
+        messageId: 7,
         senderId: "user_02",
         senderName: "Admin A",
         text: "Thank you",
@@ -347,6 +434,7 @@ class RoomChatController extends GetxController {
         repliedMessage: {"name": "Anda", "text": "Admin message"},
       ),
       MessageModel(
+        messageId: 8,
         senderId: currentUserId,
         senderName: "Anda",
         text: "Admin message",
@@ -387,6 +475,7 @@ class RoomChatController extends GetxController {
               }
               : null;
       final newMessage = MessageModel(
+      messageId: DateTime.now().millisecondsSinceEpoch,
         senderId: currentUserId,
         senderName: "Anda", // BARU: Tambahkan nama pengirim
         text: text,

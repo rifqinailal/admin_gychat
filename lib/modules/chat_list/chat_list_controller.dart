@@ -4,6 +4,7 @@ import 'package:admin_gychat/models/message_model.dart';
 import 'package:admin_gychat/shared/widgets/pin_confirmation_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 
 class SearchResultMessage {
   final ChatModel chat;
@@ -12,6 +13,8 @@ class SearchResultMessage {
 }
 
 class ChatListController extends GetxController {
+  final _box = GetStorage();
+  final _boxKey = 'all_chats';
   var _allChats = <ChatModel>[].obs;
   var isSelectionMode = false.obs;
   var selectedChats = <ChatModel>{}.obs;
@@ -27,17 +30,22 @@ class ChatListController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    searchController = TextEditingController(); 
+    loadChatsFromStorage();
+    debounce(
+      _allChats,
+      (_) => saveChatsToStorage(),
+      time: const Duration(seconds: 1),
+    );
+    searchController = TextEditingController();
     searchController.addListener(_onSearchChanged);
-    fetchChats();
   }
 
   List<ChatModel> get allChatsInternal => _allChats;
   List<ChatModel> get allChats {
     final chats = _allChats.where((chat) => !chat.isArchived).toList();
-    chats.sort((a, b) { 
-      if (a.isPinned && !b.isPinned) return -1; 
-      if (!a.isPinned && b.isPinned) return 1; 
+    chats.sort((a, b) {
+      if (a.isPinned && !b.isPinned) return -1;
+      if (!a.isPinned && b.isPinned) return 1;
       return 0;
     });
     return chats;
@@ -46,9 +54,31 @@ class ChatListController extends GetxController {
   List<ChatModel> get unreadChats =>
       allChats.where((chat) => chat.unreadCount > 0).toList();
   List<ChatModel> get groupChats =>
-      allChats.where((chat) => chat.isGroup).toList();
+      allChats.where((chat) => chat.roomType == 'group').toList();
 
-  void _onSearchChanged() { 
+  void saveChatsToStorage() {
+    List<Map<String, dynamic>> chatsJson =
+        _allChats.map((chat) => chat.toJson()).toList();
+    _box.write(_boxKey, chatsJson);
+    print("Daftar chat berhasil disimpan ke local storage!");
+  }
+
+  void loadChatsFromStorage() {
+    var chatsJson = _box.read<List>(_boxKey);
+    if (chatsJson != null && chatsJson.isNotEmpty) {
+      _allChats.value =
+          chatsJson
+              .map(
+                (json) => ChatModel.fromJson(Map<String, dynamic>.from(json)),
+              )
+              .toList();
+      print("Daftar chat berhasil dimuat dari local storage!");
+    } else {
+      fetchChats();
+    }
+  }
+
+  void _onSearchChanged() {
     debounce(
       searchQuery,
       (_) => _performSearch(),
@@ -60,7 +90,7 @@ class ChatListController extends GetxController {
   // Pencarian / Search
   void _performSearch() {
     final query = searchQuery.value.toLowerCase();
-    
+
     if (query.isEmpty) {
       isSearching.value = false;
       searchResultChats.clear();
@@ -79,7 +109,7 @@ class ChatListController extends GetxController {
     for (var chat in _allChats) {
       for (var message in chat.messages) {
         if (message.text != null &&
-        message.text!.toLowerCase().contains(query)) {
+            message.text!.toLowerCase().contains(query)) {
           messageResults.add(SearchResultMessage(chat: chat, message: message));
         }
       }
@@ -90,7 +120,7 @@ class ChatListController extends GetxController {
   // Membersihkan hasil pencarian
   void clearSearch() {
     searchController.clear();
-  } 
+  }
 
   // Pin dan Unpin
   void pinSelectedChats() {
@@ -102,7 +132,7 @@ class ChatListController extends GetxController {
     }
     for (var chat in selectedChats) {
       chat.isPinned = !chat.isPinned;
-    } 
+    }
     _allChats.refresh();
     clearSelection();
   }
@@ -153,75 +183,31 @@ class ChatListController extends GetxController {
   void fetchChats() {
     var dummyData = [
       ChatModel(
-        id: 1,
-        name: 'Jeremy Owen',
+        roomId: 10,
+        roomMemberId: 2,
+        roomType: "group",
+        name: "Grup Belajar",
+        lastMessage: "Kapan deadline?",
+        lastTime: DateTime.now(),
         unreadCount: 2,
-        messages:[ 
-          MessageModel(
-            senderId: "user_01",
-            senderName: "Jeremy Owen",
-            text: "Langsung tanyakan ke indra aja",
-            timestamp: DateTime.now(),
-            isSender: false,
-            type: MessageType.text,
-          ),
-          MessageModel(
-            senderId: "admin_01",
-            senderName: "Anda",
-            text: "Oke, siap.",
-            timestamp: DateTime.now(),
-            isSender: true,
-            type: MessageType.text,
-          ),
-        ],
       ),
       ChatModel(
-        id: 2,
-        name: 'Olympiad Bus',
-        isGroup: true,
-        unreadCount: 5,
-        messages: [
-          MessageModel(
-            senderId: "user_02",
-            senderName: "Pimpinan A",
-            text: "Tolong segera diselesaikan ya.",
-            timestamp: DateTime.now(),
-            isSender: false,
-            type: MessageType.text,
-          ),
-        ],
+        roomId: 11,
+        roomMemberId: 3,
+        roomType: "one_to_one",
+        name: "Peserta 1",
+        lastMessage: "Terimakasih Kak",
+        lastTime: DateTime.now().subtract(const Duration(hours: 1)),
+        isPinned: true,
       ),
-      ChatModel(id: 3, name: 'Classtell', unreadCount: 0, messages: []),
       ChatModel(
-        id: 7,
-        name: 'Projek Selesai',
+        roomId: 12,
+        roomMemberId: 4,
+        roomType: "one_to_one",
+        name: "Bantuan Teknis",
+        lastMessage: "Oke, akan kami periksa.",
+        lastTime: DateTime.now().subtract(const Duration(days: 1)),
         isArchived: true,
-        messages: [
-          MessageModel(
-            senderId: "user_03",
-            senderName: "Indra Yulianto",
-            text: "Laporan final sudah saya kirim.",
-            timestamp: DateTime.now(),
-            isSender: false,
-            type: MessageType.text,
-          ),
-        ],
-      ),
-      ChatModel(id: 8, name: 'Indra Yulianto', unreadCount: 0, messages: []),
-      ChatModel(
-        id: 9,
-        name: 'Agas Indransyah',
-        unreadCount: 0,
-        messages: [
-          MessageModel(
-            senderId: "user_04",
-            senderName: "Agas Indransyah",
-            text: "mengetik.....",
-            timestamp: DateTime.now(),
-            isSender: false,
-            type: MessageType.text,
-          ),
-        ],
       ),
     ];
     _allChats.assignAll(dummyData);

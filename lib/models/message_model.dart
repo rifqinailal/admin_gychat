@@ -3,6 +3,7 @@
 enum MessageType { text, image, document }
 
 class MessageModel {
+  final int messageId;
   final String senderId;
   final String? text;
   final DateTime timestamp;
@@ -18,6 +19,7 @@ class MessageModel {
   final bool isDeleted;
 
   MessageModel({
+    required this.messageId,
     required this.senderId, 
     this.text,
     required this.timestamp,
@@ -42,6 +44,7 @@ class MessageModel {
 
   MessageModel copyWith({String? text,bool? isStarred, bool? isPinned,bool? isDeleted, }) {
     return MessageModel(
+      messageId: messageId,
       senderId: senderId,
       text: text ?? this.text, 
       timestamp: timestamp,
@@ -59,37 +62,36 @@ class MessageModel {
   }
   Map<String, dynamic> toJson() {
     return {
+      'messageId': messageId,
       'senderId': senderId,
       'text': text,
-      'timestamp': timestamp.toIso8601String(), // Ubah DateTime menjadi String
+      'timestamp': timestamp.toIso8601String(),
+      'isSender': isSender,
       'senderName': senderName,
       'repliedMessage': repliedMessage,
       'isStarred': isStarred,
       'isPinned': isPinned,
-      'type': type.name, // Ubah enum menjadi String
+      'type': type.name, // Enum diubah jadi String
       'imagePath': imagePath,
-      'isSender': isSender,
       'documentPath': documentPath,
       'documentName': documentName,
       'isDeleted': isDeleted,
     };
   }
 
-  // FACTORY CONSTRUCTOR BARU: Membuat object MessageModel dari Map (JSON)
   factory MessageModel.fromJson(Map<String, dynamic> json) {
     return MessageModel(
+      messageId: json['messageId'], 
       senderId: json['senderId'],
       text: json['text'],
-      timestamp: DateTime.parse(json['timestamp']), // Ubah String menjadi DateTime
+      timestamp: DateTime.parse(json['timestamp']),
+      isSender: json['isSender'],
       senderName: json['senderName'],
-      repliedMessage: json['repliedMessage'] != null
-          ? Map<String, String>.from(json['repliedMessage'])
-          : null,
+      repliedMessage: json['repliedMessage'] != null ? Map<String, String>.from(json['repliedMessage']) : null,
       isStarred: json['isStarred'] ?? false,
       isPinned: json['isPinned'] ?? false,
-      type: MessageType.values.firstWhere((e) => e.name == json['type']), // Ubah String menjadi enum
+      type: MessageType.values.firstWhere((e) => e.name == json['type']), // String diubah jadi enum
       imagePath: json['imagePath'],
-      isSender: json['isSender'],
       documentPath: json['documentPath'],
       documentName: json['documentName'],
       isDeleted: json['isDeleted'] ?? false,

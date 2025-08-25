@@ -23,7 +23,7 @@ class ChatListTile extends StatelessWidget {
     required this.time,
     required this.unreadCount,
     this.isPinned = false,
-    this.isOnline = false, 
+    this.isOnline = false,
     required this.isSelected,
     required this.onTap,
     required this.onLongPress,
@@ -31,109 +31,127 @@ class ChatListTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-     return GestureDetector(
+    return GestureDetector(
       onTap: onTap,
       onLongPress: onLongPress,
       child: Container(
-      margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
-      padding: const EdgeInsets.symmetric(horizontal: 10,vertical: 3),
-      decoration: BoxDecoration(
-        color: isSelected ? ThemeColor.secondary.withOpacity(0.3) : Colors.transparent,
-        border: Border.all(
-  color: isSelected
-      ? ThemeColor.primary
-      : (unreadCount > 0
-          ? const Color.fromARGB(255, 229, 226, 226)
-          // TAMBAHKAN BAGIAN INI: : nilai_jika_salah
-          : Colors.grey.shade300), 
-  width: 1,
-),
-      ),
-      child: Row(
-        children: [
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              const CircleAvatar(
-                radius: 20,
-                backgroundImage: NetworkImage(
-                  "https://i.pravatar.cc/150?u=a042581f4e29026704d",
-                ),
-              ),
-              if (isOnline)
-                Positioned(
-                  bottom: -2,
-                  right: -2,
-                  child: Container(
-                    width: 15,
-                    height: 15,
-                    decoration: BoxDecoration(
-                      color: ThemeColor.yelow,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
+        margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+        decoration: BoxDecoration(
+          color:
+              isSelected
+                  ? ThemeColor.secondary.withOpacity(0.3)
+                  : Colors.transparent,
+          border: Border.all(
+            color:
+                isSelected
+                    ? ThemeColor.primary
+                    : (unreadCount > 0
+                        ? const Color.fromARGB(255, 229, 226, 226)
+                        // TAMBAHKAN BAGIAN INI: : nilai_jika_salah
+                        : Colors.grey.shade300),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                const CircleAvatar(
+                  radius: 20,
+                  backgroundImage: NetworkImage(
+                    "https://i.pravatar.cc/150?u=a042581f4e29026704d",
                   ),
                 ),
-            ],
-          ),
-          const SizedBox(width: 16),
-          // `Expanded` akan "memaksa" anaknya (Column) untuk mengisi semua
-          // ruang horizontal yang tersisa di dalam Row. Ini sangat penting!
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+                if (isOnline)
+                  Positioned(
+                    bottom: 0,
+                    right: 1,
+                    child: Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: ThemeColor.yelow,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    lastMessage,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: ThemeColor.gray,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  name,
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.black),
+                  time,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w400,
+                    color: ThemeColor.gray,
+                  ),
                 ),
-                const SizedBox(height: 1),
-                Text(
-                  lastMessage,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: ThemeColor.gray),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    if (isPinned)
+                      Transform.rotate(
+                        angle: 1.5, // dalam radian,
+                        child: Icon(
+                          Octicons.pin,
+                          size: 18,
+                          color: ThemeColor.gray,
+                        ),
+                      ),
+                    SizedBox(width: 5),
+                    if (unreadCount > 0)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 6,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: ThemeColor.primary,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          unreadCount.toString(),
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                  ],
                 ),
               ],
             ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                time,
-                style: TextStyle(fontSize: 14,  fontWeight: FontWeight.w400, color: ThemeColor.gray),
-              ),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  if (isPinned)
-                    Transform.rotate(
-                      angle: 1.5, // dalam radian,
-                      child: Icon(Octicons.pin, size: 18, color: ThemeColor.gray),
-                    ),
-                    SizedBox(width: 5,),
-                  if (unreadCount > 0)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: ThemeColor.primary,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        unreadCount.toString(),
-                        style: TextStyle(color: Colors.white),
-                      ),
-                    ),
-                ],
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
-    )
-     );
+    );
   }
 }

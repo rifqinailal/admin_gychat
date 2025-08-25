@@ -29,7 +29,7 @@ class DetailArsipScreen extends GetView<DetailArsipController> {
                   return Obx(() { 
                     final isSelected = controller.selectedArchivedChats.contains(chat);
                     return ChatListTile(
-                      avatarUrl: "https://i.pravatar.cc/150?u=${chat.id}",
+                      avatarUrl: "https://i.pravatar.cc/150?u=${chat.roomId}",
                       name: chat.name,
                       lastMessage: chat.name,
                       time: '10.12',
@@ -42,9 +42,9 @@ class DetailArsipScreen extends GetView<DetailArsipController> {
                           Get.toNamed(
                             AppRoutes.ROOM_CHAT,
                             arguments: {
-                              "id": chat.id,
+                              "id": chat.roomId,
                               "name": chat.name,
-                              "isGroup": chat.isGroup,
+                               "isGroup": chat.roomType == 'group', 
                             },
                           );
                         }
