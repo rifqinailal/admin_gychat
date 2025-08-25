@@ -159,7 +159,7 @@ class ChatListView extends GetView<ChatListController> {
               ),
             ),
             SizedBox(height: 10),
-            ...controller.searchResultChats.map((chat) {
+            ...controller.searchResultChats.map((chat) { 
               return ChatListTile(
                 name: chat.name,
                 avatarUrl: chat.urlPhoto,

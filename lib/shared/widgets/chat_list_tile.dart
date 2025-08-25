@@ -130,7 +130,7 @@ class ChatListTile extends StatelessWidget {
                       ),
                     SizedBox(width: isPinned ? 5 : 0),
                     if (unreadCount > 0)
-                      Container(
+                      Container( 
                         padding: const EdgeInsets.symmetric(
                           horizontal: 6,
                           vertical: 2,

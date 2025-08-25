@@ -120,7 +120,7 @@ class GrupBaruController extends GetxController {
             right: 20,
             child: IconButton(
               onPressed: () => Get.back(),
-              icon: const CircleAvatar(
+              icon: const CircleAvatar( 
                 backgroundColor: ThemeColor.black,
                 child: Icon(Icons.close, color: ThemeColor.white),
               ),

@@ -75,7 +75,7 @@ class GrupBaruScreen extends GetView<GrupBaruController> {
               ],
             ),
             const SizedBox(height: 100),
-            Obx(() {
+            Obx(() { 
               if (controller.isLoading.value) {
                 return _buildLoadingIndicator();
               } else {
@@ -91,8 +91,7 @@ class GrupBaruScreen extends GetView<GrupBaruController> {
           ],
         ),
       ),
-    );
-    
+    ); 
   }
   
   Widget _buildTextField({

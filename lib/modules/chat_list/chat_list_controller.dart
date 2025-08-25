@@ -184,7 +184,7 @@ class ChatListController extends GetxController {
     _allChats.insert(0, newChat);
     print("Grup baru '${newChat.name}' ditambahkan ke list.");
     saveChatsToStorage();
-  }
+  } 
 
   // Dummy data untuk testing
   void fetchChats() {
