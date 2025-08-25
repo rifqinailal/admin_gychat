@@ -19,6 +19,7 @@ class EditMessageScreen extends StatelessWidget {
         maxHeight: MediaQuery.of(context).size.height * 0.9,
       ),
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         backgroundColor: ThemeColor.white,
         body: SafeArea(
           child: Padding(
