@@ -3,7 +3,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
-import 'package:admin_gychat/routes/app_routes.dart'; 
+import 'package:admin_gychat/routes/app_routes.dart';
+//import 'package:get/get_connect/http/src/utils/utils.dart';
+import 'edit_message_screen.dart'; 
 import 'away_controller.dart';
 
 class AwayScreen extends GetView<AwayController> {
@@ -12,40 +14,59 @@ class AwayScreen extends GetView<AwayController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 240, 240, 240),
+      backgroundColor: ThemeColor.lightGrey1,
       appBar: AppBar(
-        backgroundColor: const Color.fromARGB(255, 240, 240, 240),
+        backgroundColor: ThemeColor.lightGrey1,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black),
+          icon: const Icon(Icons.arrow_back_ios, color: ThemeColor.black),
           onPressed: () => Get.back(),
         ),
         title: const Text(
           'Away Message',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            color: ThemeColor.black,
+            fontWeight: FontWeight.bold,
+            fontSize: 22,
+          ),
         ),
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: Column(
-            children: [
-              _buildCard([_buildToggleSwitch()]),
-              const SizedBox(height: 20),
-              Obx(() {
-                if (controller.isAwayEnabled.value) {
-                  return _buildCard([
-                    _buildScheduleTile(),
-                    const Divider(height: 1, indent: 16, endIndent: 16),
-                    _buildMessageTile(),
-                  ]);
-                } else {
-                  return const SizedBox.shrink();
-                }
-              }),
-            ],
-          ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 22.0, vertical: 12.0),
+        child: Column(
+          children: [
+            _buildCard([_buildToggleSwitch()]),
+            const SizedBox(height: 20),
+            Obx(() {
+              if (controller.isAwayEnabled.value) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Card untuk Schedule
+                    _buildCard([_buildScheduleTile()]),
+                    const SizedBox(height: 20),
+                    const Padding(
+                      padding: EdgeInsets.only(left: 15.0, bottom: 8.0),
+                      child: Text(
+                        'Message',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          color: ThemeColor.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                    _buildMessageCard(),
+                  ],
+                );
+              } else {
+                return const SizedBox.shrink();
+              }
+            }),
+          ],
         ),
       ),
     );
@@ -54,18 +75,24 @@ class AwayScreen extends GetView<AwayController> {
   Widget _buildCard(List<Widget> children) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.0),
+        color: ThemeColor.white,
+        borderRadius: BorderRadius.circular(25.0),
+        border: Border.all(color: ThemeColor.white, width: 0.5),
       ),
-      child: Column(
-        children: children,
-      ),
+      child: Column(children: children),
     );
   }
 
   Widget _buildToggleSwitch() {
     return ListTile(
-      title: const Text('Send Away Message'),
+      title: const Text(
+        'Send Away Message',
+        style: TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 16,
+          fontWeight: FontWeight.normal,
+        ),
+      ),
       trailing: Obx(
         () => CupertinoSwitch(
           value: controller.isAwayEnabled.value,
@@ -75,119 +102,87 @@ class AwayScreen extends GetView<AwayController> {
       ),
     );
   }
-  
-  // Halaman Schedule
+
   Widget _buildScheduleTile() {
     return ListTile(
-      title: const Text('Schedule'),
+      title: const Text(
+        'Schedule',
+        style: TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 16,
+          fontWeight: FontWeight.normal,
+        ),
+      ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Obx(() => Text(
-            controller.scheduleOption.value == ScheduleOption.always 
-            ? 'Always Send' 
-            : 'Custom Schedule',
-            style: const TextStyle(color: Colors.grey),
-          )),
-          const SizedBox(width: 8),
-          const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+          Obx(
+            () => Text(
+              controller.scheduleOption.value == ScheduleOption.always
+                  ? 'Always Send'
+                  : 'Custom Schedule',
+              style: const TextStyle(
+                fontFamily: 'Poppins',
+                color: Colors.grey,
+                fontSize: 15,
+                fontWeight: FontWeight.normal,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
         ],
       ),
       onTap: () => Get.toNamed(AppRoutes.Schedule),
     );
   }
-  
-  
-  Widget _buildMessageTile() {
-    return ListTile(
-      title: const Text('Message'),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Obx(() => Text(
-            controller.message.value,
-            style: const TextStyle(color: Colors.grey),
-          )),
-          const SizedBox(width: 8),
-          const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
-        ],
-      ),
-      
-      onTap: () => controller.showMessageEditPopup(),
-    );
-  }
-}
 
-// Mengedit Message
-class EditMessageScreen extends StatelessWidget {
-  const EditMessageScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final AwayController controller = Get.find<AwayController>();
-
-    return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 240, 240, 240),
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: const Color.fromARGB(255, 240, 240, 240),
-        elevation: 0,
-        leadingWidth: 80,
-        leading: TextButton(
-          onPressed: () => Get.back(),
-          child: const Text(
-            'Cancel',
-            style: TextStyle(color: Colors.black, fontSize: 16, fontWeight: FontWeight.normal),
-          ),
-        ),
-        title: const Text(
-          'Edit Away Message',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-        actions: [
-          TextButton(
-            onPressed: () {
-              controller.message.value = controller.messageEditController.text;
-              Get.back();
-            },
-            child: const Text(
-              'Save',
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.normal,
-                fontSize: 16,
-              ),
+  Widget _buildMessageCard() {
+    return GestureDetector(
+      // Mengubah onTap untuk menampilkan bottom sheet
+      onTap: () {
+        Get.bottomSheet(
+          const EditMessageScreen(), // Panggil screen baru kita
+          // Styling agar sudutnya melengkung
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(20.0),
+              topRight: Radius.circular(20.0),
             ),
           ),
-          const SizedBox(width: 8),
-        ],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12.0),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: TextField(
-              controller: controller.messageEditController,
-              autofocus: true,
-              maxLines: null,
-              minLines: 5,
-              keyboardType: TextInputType.multiline,
-              style: const TextStyle(fontSize: 16),
-              decoration: const InputDecoration(
-                border: InputBorder.none,
-                hintText: 'Enter your message',
+          clipBehavior: Clip.antiAliasWithSaveLayer,
+          isScrollControlled: true, // Agar tidak tertutup keyboard
+        );
+      },
+      child: Container(
+        height: 150,
+        padding: const EdgeInsets.fromLTRB(24, 20, 20, 20),
+        decoration: BoxDecoration(
+          color: ThemeColor.white,
+          borderRadius: BorderRadius.circular(25.0),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Align(
+                alignment: Alignment.topLeft,
+                child: Obx(
+                  () => Text(
+                    controller.message.value,
+                    style: const TextStyle(
+                      fontFamily: 'Poppins',
+                      color: ThemeColor.black,
+                      fontSize: 16,
+                      fontWeight: FontWeight.normal,
+                    ),
+                  ),
+                ),
               ),
             ),
-          ),
+            const SizedBox(width: 10),
+            const Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey),
+          ],
         ),
       ),
     );

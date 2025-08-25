@@ -9,6 +9,7 @@ abstract class AppRoutes {
   static const EditQuickReply = '/edit-quick-reply';
   static const AwayMessage = '/away-message';
   static const Schedule = '/schedule';
+  static const EditMessage = '/edit-message';
   static const ForgotPassword = '/forgot-password';
   static const DetailArsip = '/detail-arsip';
   static const ROOM_CHAT = '/room_chat';

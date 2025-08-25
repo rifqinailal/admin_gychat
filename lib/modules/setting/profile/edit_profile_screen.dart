@@ -1,15 +1,18 @@
 // lib/modules/setting/profile/edit_profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:admin_gychat/shared/theme/colors.dart';
 
 class EditProfileScreen extends StatelessWidget {
   final String title;
   final String initialValue;
+  final Function(String) onSave;
 
   const EditProfileScreen({
     super.key,
     required this.title,
     required this.initialValue,
+    required this.onSave,
   });
 
   @override
@@ -20,7 +23,7 @@ class EditProfileScreen extends StatelessWidget {
       height: 700,
       child: Scaffold( 
       
-      backgroundColor: Colors.white,
+      backgroundColor: ThemeColor.white,
       
       body: SafeArea(
         
@@ -41,7 +44,8 @@ class EditProfileScreen extends StatelessWidget {
                         child: Text(
                           'Cancel',
                           style: TextStyle(
-                            color: Colors.black,
+                            fontFamily: 'Poppins',
+                            color: ThemeColor.black,
                             fontSize: 17,
                             fontWeight: FontWeight.normal,
                           ),
@@ -51,20 +55,22 @@ class EditProfileScreen extends StatelessWidget {
                     Text(
                       title,
                       style: const TextStyle(
-                        color: Colors.black,
+                        fontFamily: 'Poppins',
+                        color: ThemeColor.black,
                         fontWeight: FontWeight.bold,
                         fontSize: 17,
                       ),
                     ),
                     InkWell(
-                      onTap: () => Get.back(result: textController.text),
+                      onTap: () => onSave(textController.text),
                       borderRadius: BorderRadius.circular(8),
                       child: const Padding(
                         padding: EdgeInsets.all(8.0),
                         child: Text(
                           'Save',
                           style: TextStyle(
-                            color: Colors.black,
+                            fontFamily: 'Poppins',
+                            color: ThemeColor.black,
                             fontSize: 17,
                             fontWeight: FontWeight.normal,
                           ),
@@ -82,15 +88,16 @@ class EditProfileScreen extends StatelessWidget {
                   keyboardType: TextInputType.multiline,
                   decoration: InputDecoration(
                     filled: true,
-                    fillColor: const Color(0xFFF2F2F7),
+                    fillColor: ThemeColor.grey3,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding:
-                        const EdgeInsets.symmetric(vertical: 30, horizontal: 30),
+                    contentPadding: const EdgeInsets.symmetric(
+                      vertical: 30, horizontal: 30
+                    ),
                   ),
-                  style: const TextStyle(fontSize: 16),
+                  style: const TextStyle(fontFamily: 'Poppins', fontSize: 16),
                 ),
               ],
             ),

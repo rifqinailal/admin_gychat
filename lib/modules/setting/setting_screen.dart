@@ -14,7 +14,6 @@ class SettingScreen extends GetView<SettingController> {
   @override
   Widget build(BuildContext context) { 
     final profileController = Get.find<ProfileController>();
-
     return Scaffold(
       backgroundColor: ThemeColor.lightGrey1,
       body: SafeArea(
@@ -30,16 +29,14 @@ class SettingScreen extends GetView<SettingController> {
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                   color: ThemeColor.blue1,
-                  
+                  fontFamily: 'Poppins',
                 ),
               ),
 
               const SizedBox(height: 25),
-              GetBuilder<ProfileController>(
-                builder: (profileCtrl) {
-                  return _buildProfileCard(profileCtrl);
-                },
-              ),
+              Obx(() {
+                return _buildProfileCard(profileController);
+              }),
 
               const SizedBox(height: 20),
               _buildOptionsCard(),
@@ -47,7 +44,7 @@ class SettingScreen extends GetView<SettingController> {
               const Spacer(),
               _buildLogoutButton(context, controller),
 
-              const SizedBox(height: 275),
+              const SizedBox(height: 270),
             ],
           ),
         ),
@@ -65,24 +62,25 @@ class SettingScreen extends GetView<SettingController> {
         child: ListTile(
           leading: CircleAvatar(
             radius: 28,
-            backgroundColor: Colors.grey[200],
-            // Tampilkan gambar profil dari controller
-            backgroundImage: profileCtrl.profileImage.value != null
-                ? FileImage(profileCtrl.profileImage.value! as File)
-                : const AssetImage('assets/images/gypem_logo.png')
-                    as ImageProvider,
-          ),
-          // Tampilkan nama dan bio dari controller
+            backgroundColor: const Color.fromARGB(255, 243, 243, 243), 
+            backgroundImage:profileCtrl.profileImage.value != null
+            ? FileImage(profileCtrl.profileImage.value!) 
+            : null,
+            child: profileCtrl.profileImage.value == null 
+            ? Icon(Icons.person, size: 40, color: Colors.grey.withOpacity(0.7)) 
+            : null,
+          ), 
           title: Text(
-            profileCtrl.nameController.text,
-            style: const TextStyle(fontWeight: FontWeight.bold, color: ThemeColor.black),
+            profileCtrl.name.value,
+            style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold, color: ThemeColor.black),
           ),
           subtitle: Text(
-            profileCtrl.aboutController.text,
+            profileCtrl.about.value,
             style: const TextStyle(
-                color: ThemeColor.black,
-                fontSize: 14,
-                fontWeight: FontWeight.normal),
+              fontFamily: 'Poppins',
+              color: ThemeColor.black,
+              fontSize: 14,
+              fontWeight: FontWeight.normal),
           ),
           trailing: const Icon(Icons.chevron_right, color: ThemeColor.black),
           onTap: () {
@@ -102,7 +100,7 @@ class SettingScreen extends GetView<SettingController> {
         children: [
           ListTile(
             leading: const Icon(Icons.dark_mode_outlined, color: ThemeColor.black),
-            title: const Text('Away Message', style: TextStyle(fontWeight: FontWeight.bold)),
+            title: const Text('Away Message', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
             subtitle: const Text('Reply automatically when you are away'),
             trailing: const Icon(Icons.chevron_right, color: ThemeColor.black),
             onTap: () {
@@ -112,7 +110,7 @@ class SettingScreen extends GetView<SettingController> {
           ),
           ListTile(
             leading: const Icon(Icons.flash_on, color: ThemeColor.black),
-            title: const Text('Quick Replies', style: TextStyle(fontWeight: FontWeight.bold)),
+            title: const Text('Quick Replies', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
             subtitle: const Text('Reuse frequent message'),
             trailing: const Icon(Icons.chevron_right, color: ThemeColor.black),
             onTap: () {
@@ -142,6 +140,7 @@ class SettingScreen extends GetView<SettingController> {
         child: const Text(
           'Logout',
           style: TextStyle(
+            fontFamily: 'Poppins',
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: ThemeColor.white,

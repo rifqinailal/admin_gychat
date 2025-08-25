@@ -42,6 +42,7 @@ class SettingController extends GetxController {
                         'Log Out',
                         textAlign: TextAlign.center,
                         style: TextStyle(
+                          fontFamily: 'Poppins',
                           color: ThemeColor.Red1,
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -70,6 +71,7 @@ class SettingController extends GetxController {
                 child: const Text(
                   'Cancel',
                   style: TextStyle(
+                    fontFamily: 'Poppins',
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: ThemeColor.white,

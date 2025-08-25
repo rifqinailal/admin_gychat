@@ -15,7 +15,7 @@ class ProfileScreen extends GetView<ProfileController> {
       appBar: AppBar(
         title: const Text(
           'Profile',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.bold, fontSize: 22),
         ),
         centerTitle: true,
         backgroundColor: ThemeColor.lightGrey1,
@@ -34,33 +34,104 @@ class ProfileScreen extends GetView<ProfileController> {
             children: [
               Center(child: _buildProfileImage()),
               const SizedBox(height: 40),
-              GetBuilder<ProfileController>( 
-                builder: (_) {
+              Obx(() {
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _buildProfileField(
                         label: 'Name',
-                        value: controller.nameController.text,
-                        onTap: () => _navigateToEditScreen(
-                          title: 'Edit Name',
-                          initialValue: controller.nameController.text,
-                          onSave: (newValue) {
-                            controller.nameController.text = newValue;
-                          },
-                        ),
+                        value: controller.name.value,
+                        onTap: () {
+                          Get.bottomSheet(
+                            EditProfileScreen(
+                              title: 'Edit Name',
+                              initialValue: controller.name.value,
+                              onSave: (newValue) {
+                                if (newValue.trim().isEmpty) {
+                                  Get.snackbar(
+                                    'Error',
+                                    'Name cannot be empty.',
+                                    snackPosition: SnackPosition.TOP,
+                                    backgroundColor: ThemeColor.Red1.withOpacity(0.6),
+                                    colorText: ThemeColor.white,
+                                    margin: const EdgeInsets.all(18),
+                                  );
+                                  return;
+                                }
+                                controller.name.value = newValue;
+                                controller.saveProfile();
+                                //controller.update();
+
+                                Get.back();
+
+                                Get.snackbar(
+                                  'Success',
+                                  'Name has been updated.',
+                                  snackPosition: SnackPosition.TOP,
+                                  backgroundColor: ThemeColor.primary.withOpacity(0.6),
+                                  colorText: ThemeColor.white,
+                                  margin: const EdgeInsets.all(18),
+                                );
+                              },
+                            ),
+                            shape: const RoundedRectangleBorder(
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(20.0),
+                                topRight: Radius.circular(20.0),
+                              ),
+                            ),
+                            clipBehavior: Clip.antiAliasWithSaveLayer,
+                            isScrollControlled: true,
+                          );
+                        },
                       ),
                       const SizedBox(height: 24),
                       _buildProfileField(
                         label: 'Bio',
-                        value: controller.aboutController.text,
-                        onTap: () => _navigateToEditScreen(
-                          title: 'Edit Bio',
-                          initialValue: controller.aboutController.text,
-                          onSave: (newValue) {
-                            controller.aboutController.text = newValue;
-                          },
-                        ),
+                        value: controller.about.value,
+                        onTap: () {
+                          if (controller.name.value.trim().isEmpty) {
+                            Get.snackbar(
+                              'Info',
+                              'Please enter your name before editing the bio.',
+                              snackPosition: SnackPosition.TOP,
+                              backgroundColor: ThemeColor.blue1.withOpacity(0.6),
+                              colorText: ThemeColor.white,
+                              margin: const EdgeInsets.all(18),
+                            );
+                          } else {
+                            Get.bottomSheet(
+                              EditProfileScreen(
+                                title: 'Edit Bio',
+                                initialValue: controller.about.value,
+                                onSave: (newValue) {
+                                  controller.about.value = newValue;
+                                  controller.saveProfile();
+                                  //controller.update();
+
+                                  Get.back();
+
+                                  Get.snackbar(
+                                    'Success',
+                                    'Bio has been updated.',
+                                    snackPosition: SnackPosition.TOP,
+                                    backgroundColor: ThemeColor.primary.withOpacity(0.6),
+                                    colorText: ThemeColor.white,
+                                    margin: const EdgeInsets.all(18),
+                                  );
+                                },
+                              ),
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.only(
+                                  topLeft: Radius.circular(20.0),
+                                  topRight: Radius.circular(20.0),
+                                ),
+                              ),
+                              clipBehavior: Clip.antiAliasWithSaveLayer,
+                              isScrollControlled: true,
+                            );
+                          }
+                        },
                       ),
                     ],
                   );
@@ -72,64 +143,31 @@ class ProfileScreen extends GetView<ProfileController> {
       ),
     );
   }
-  
-  Future<void> _navigateToEditScreen({
-    required String title,
-    required String initialValue,
-    required Function(String) onSave,
-  }) async { 
-    final result = await Get.bottomSheet(
-      EditProfileScreen(
-        title: title,
-        initialValue: initialValue,
-      ),
-      
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20.0),
-          topRight: Radius.circular(20.0),
-        ),
-      ),
-
-      clipBehavior: Clip.antiAliasWithSaveLayer,
-      
-      isScrollControlled: true,
-    );
-    
-    if (result != null && result is String) {
-      onSave(result);
-      controller.update();
-      controller.saveProfile();
-    }
-  }
 
   // Menampilkan gambar profil dan tombol edit
   Widget _buildProfileImage() {
     return Column(
       children: [
         GestureDetector(
-          onTap: () {
-            // Jika sudah ada gambar, tampilkan full screen.
+          onTap: () { 
             if (controller.profileImage.value != null) {
               controller.viewProfileImage();
-            } else {
-              // Jika tidak ada gambar, langsung buka opsi pilih foto.
+            } else { 
               _showPhotoOptions();
             }
           },
           child: Obx(() {
             return CircleAvatar(
-              radius: 50,
-              backgroundColor: Colors.grey[200],
+              radius: 60,
+              backgroundColor: const Color.fromARGB(255, 231, 231, 231),
               backgroundImage: controller.profileImage.value != null
                   ? FileImage(controller.profileImage.value!)
-                  : const AssetImage('assets/images/default_avatar.png')
-                      as ImageProvider,
+                  : null,
               child: controller.profileImage.value == null
                   ? Icon(
                       Icons.person,
                       size: 60,
-                      color: Colors.grey[400],
+                      color: Colors.grey.withOpacity(0.7),
                     )
                   : null,
             );
@@ -147,16 +185,17 @@ class ProfileScreen extends GetView<ProfileController> {
           child: const Text(
             'Edit',
             style: TextStyle(
+              fontFamily: 'Poppins',
               color: ThemeColor.yelow,
               fontSize: 16,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),
       ],
     );
   }
-  
+
   Widget _buildProfileField({
     required String label,
     required String value,
@@ -170,8 +209,9 @@ class ProfileScreen extends GetView<ProfileController> {
           child: Text(
             label,
             style: const TextStyle(
+              fontFamily: 'Poppins',
               fontSize: 16,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.bold,
               color: ThemeColor.black,
             ),
           ),
@@ -179,16 +219,16 @@ class ProfileScreen extends GetView<ProfileController> {
         const SizedBox(height: 8),
         Material(
           color: ThemeColor.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(20),
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(20),
             child: Container(
               padding:
                   const EdgeInsets.symmetric(horizontal: 16.0, vertical: 15.0),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: Colors.grey.shade200),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: ThemeColor.white),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -197,6 +237,7 @@ class ProfileScreen extends GetView<ProfileController> {
                     child: Text(
                       value,
                       style: const TextStyle(
+                        fontFamily: 'Poppins',
                         fontSize: 16,
                         color: ThemeColor.black,
                       ),
@@ -207,7 +248,7 @@ class ProfileScreen extends GetView<ProfileController> {
                   const Icon(
                     Icons.arrow_forward_ios,
                     size: 16,
-                    color: Colors.grey,
+                    color: ThemeColor.black,
                   ),
                 ],
               ),
@@ -221,7 +262,7 @@ class ProfileScreen extends GetView<ProfileController> {
   // Menampilkan opsi mengubah foto profil.
   void _showPhotoOptions() {
     Get.bottomSheet(
-      Container( 
+      Container(
         padding: const EdgeInsets.fromLTRB(12, 12, 12, 34),
         decoration: const BoxDecoration(
           color: Color(0xFFF0F0F0),
@@ -274,8 +315,8 @@ class ProfileScreen extends GetView<ProfileController> {
                       _buildBottomSheetOption(
                         text: 'Delete Photo',
                         icon: Icons.delete_outline,
-                        textColor: const Color(0xFFE53935),
-                        iconColor: const Color(0xFFE53935),
+                        textColor: ThemeColor.Red1,
+                        iconColor: ThemeColor.Red1,
                         onTap: () {
                           Get.back();
                           _showEditPhotoSheet();
@@ -289,11 +330,11 @@ class ProfileScreen extends GetView<ProfileController> {
           ],
         ),
       ),
-      backgroundColor: Colors.transparent,
+      backgroundColor: ThemeColor.black.withOpacity(0.3),
       isScrollControlled: true,
     );
   }
-  
+
   Widget _buildBottomSheetOption({
     required String text,
     required IconData icon,
@@ -314,6 +355,7 @@ class ProfileScreen extends GetView<ProfileController> {
               Text(
                 text,
                 style: TextStyle(
+                  fontFamily: 'Poppins',
                   fontSize: 17,
                   color: textColor,
                 ),
@@ -354,6 +396,7 @@ class ProfileScreen extends GetView<ProfileController> {
                 child: const Text(
                   'Delete Photo',
                   style: TextStyle(
+                    fontFamily: 'Poppins',
                     fontSize: 17,
                     fontWeight: FontWeight.w600,
                   ),
@@ -378,6 +421,7 @@ class ProfileScreen extends GetView<ProfileController> {
                 child: const Text(
                   'Cancel',
                   style: TextStyle(
+                    fontFamily: 'Poppins',
                     fontSize: 17,
                     fontWeight: FontWeight.w600,
                   ),
@@ -386,9 +430,7 @@ class ProfileScreen extends GetView<ProfileController> {
             ),
           ],
         ),
-      ), 
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
+      ),
     );
   }
-} 
+}

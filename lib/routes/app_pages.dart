@@ -22,6 +22,7 @@ import 'package:admin_gychat/modules/setting/quick_replies/edit_quick_reply_scre
 import 'package:admin_gychat/modules/setting/away_message/away_binding.dart';
 import 'package:admin_gychat/modules/setting/away_message/away_screen.dart';
 import 'package:admin_gychat/modules/setting/away_message/schedule_screen.dart';
+import 'package:admin_gychat/modules/setting/away_message/edit_message_screen.dart';
 import 'package:admin_gychat/modules/room_chat/room_chat_binding.dart';
 import 'package:admin_gychat/modules/room_chat/room_chat_screen.dart';
 import 'package:get/get.dart';
@@ -99,6 +100,11 @@ class AppPages {
     GetPage(
       name: AppRoutes.Schedule,
       page: () => const ScheduleScreen(),
+    ),
+    // Edit Message
+    GetPage(
+      name: AppRoutes.EditMessage,
+      page: () => const EditMessageScreen(),
     ),
     // Room Chat
     GetPage(
