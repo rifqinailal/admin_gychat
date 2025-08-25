@@ -12,6 +12,16 @@ import 'package:get/get_state_manager/src/simple/get_view.dart';
 class DetailArsipScreen extends GetView<DetailArsipController> {
   const DetailArsipScreen({super.key});
 
+  String _formatChatTime(DateTime? time) {
+    if (time == null) {
+      return '';
+    }
+    // Menggunakan cara manual untuk format HH:mm
+    final hour = time.hour.toString().padLeft(2, '0');
+    final minute = time.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,7 +29,7 @@ class DetailArsipScreen extends GetView<DetailArsipController> {
       appBar: _buildAppBar(),
       body: Column(
         children: [
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Expanded(
             child: Obx(
               () => ListView.builder(
@@ -29,10 +39,10 @@ class DetailArsipScreen extends GetView<DetailArsipController> {
                   return Obx(() { 
                     final isSelected = controller.selectedArchivedChats.contains(chat);
                     return ChatListTile(
-                      avatarUrl: "https://i.pravatar.cc/150?u=${chat.roomId}",
+                      avatarUrl: chat.urlPhoto,
                       name: chat.name,
-                      lastMessage: chat.name,
-                      time: '10.12',
+                      lastMessage: chat.lastMessage ?? '',
+                      time: _formatChatTime(chat.lastTime),
                       unreadCount: chat.unreadCount,
                       isSelected: isSelected,
                       roomType: chat.roomType, 
