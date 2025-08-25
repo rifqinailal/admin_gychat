@@ -92,6 +92,7 @@ class GrupBaruScreen extends GetView<GrupBaruController> {
         ),
       ),
     );
+    
   }
   
   Widget _buildTextField({
