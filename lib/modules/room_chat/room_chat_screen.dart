@@ -7,7 +7,7 @@ import 'package:admin_gychat/modules/room_chat/widget/date_separator.dart';
 import 'package:admin_gychat/modules/room_chat/widget/pinned_message_bar.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'room_chat_controller.dart';
@@ -15,8 +15,8 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 bool isSameDay(DateTime date1, DateTime date2) {
   return date1.year == date2.year &&
-  date1.month == date2.month &&
-  date1.day == date2.day;
+      date1.month == date2.month &&
+      date1.day == date2.day;
 }
 
 String formatDateSeparator(DateTime date) {
@@ -25,7 +25,7 @@ String formatDateSeparator(DateTime date) {
   if (isSameDay(date, now)) return "Today";
   if (isSameDay(date, yesterday)) return "Yesterday";
   return DateFormat('dd MMMM yyyy').format(date);
-} 
+}
 
 class RoomChatScreen extends GetView<RoomChatController> {
   const RoomChatScreen({super.key});
@@ -34,7 +34,7 @@ class RoomChatScreen extends GetView<RoomChatController> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      appBar: RoomChatAppBar(), 
+      appBar: RoomChatAppBar(),
       body: SafeArea(
         child: Container(
           decoration: const BoxDecoration(
@@ -77,7 +77,10 @@ class RoomChatScreen extends GetView<RoomChatController> {
                         final prevMessage =
                             controller.filteredMessages[index + 1];
                         showDateSeparator =
-                            !isSameDay(message.timestamp, prevMessage.timestamp);
+                            !isSameDay(
+                              message.timestamp,
+                              prevMessage.timestamp,
+                            );
                       }
 
                       final bool showTail;
@@ -88,51 +91,36 @@ class RoomChatScreen extends GetView<RoomChatController> {
                             controller.filteredMessages[index - 1];
                         showTail = message.senderId != prevMessage.senderId;
                       }
-                      return Slidable(
-                        key: ValueKey(message.timestamp),
-                        startActionPane: ActionPane(
-                          motion: const StretchMotion(),
-                          dismissible: DismissiblePane(
-                            onDismissed: () {},
-                            confirmDismiss: () async {
-                              Future.delayed(Duration.zero, () {
-                                controller.setReplyMessage(message);
-                              });
-                              return false;
-                            },
-                          ),
-                          children: [
-                            SlidableAction(
-                              onPressed: (context) {
-                                controller.setReplyMessage(message);
-                              },
-                              backgroundColor: Colors.transparent,
-                              foregroundColor: ThemeColor.primary,
-                              icon: Icons.reply,
-                              label: 'Reply',
-                            ),
-                          ],
-                        ),
+                      return _SwipeToReplyWrapper(
+                        message: message,
+                        controller: controller,
                         child: Obx(() {
-                          final isSelected = controller.selectedMessages.contains(
-                            message,
-                          );
-                          final isHighlighted = controller.highlightedMessageId.value == message.messageId;
+                          final isSelected = controller.selectedMessages
+                              .contains(message);
+                          final isHighlighted =
+                              controller.highlightedMessageId.value ==
+                              message.messageId;
                           return Container(
-                            color: isHighlighted ? ThemeColor.primary.withOpacity(0.2) : Colors.transparent,
+                            color:
+                                isHighlighted
+                                    ? ThemeColor.primary.withOpacity(0.2)
+                                    : Colors.transparent,
                             child: Column(
                               children: [
                                 if (showDateSeparator)
-                                DateSeparator(
-                                  text: formatDateSeparator(message.timestamp),
-                                ),
+                                  DateSeparator(
+                                    text: formatDateSeparator(
+                                      message.timestamp,
+                                    ),
+                                  ),
                                 ChatBubble(
                                   text: message.text,
                                   isSender: message.isSender,
                                   timestamp: message.timestamp,
                                   showTail: showTail,
                                   highlightText: controller.searchQuery.value,
-                                  senderName: isGroupChat ? message.senderName : null,
+                                  senderName:
+                                      isGroupChat ? message.senderName : null,
                                   repliedMessage: message.repliedMessage,
                                   isStarred: message.isStarred,
                                   isPinned: message.isPinned,
@@ -141,12 +129,18 @@ class RoomChatScreen extends GetView<RoomChatController> {
                                   imagePath: message.imagePath,
                                   documentName: message.documentName,
                                   isDeleted: message.isDeleted,
-                                  onTap: () { 
-                                    if (controller.isMessageSelectionMode.value) {
-                                      controller.toggleMessageSelection(message);
-                                    } else if (message.type == MessageType.document && message.documentPath != null) {
+                                  onTap: () {
+                                    if (controller
+                                        .isMessageSelectionMode
+                                        .value) {
+                                      controller.toggleMessageSelection(
+                                        message,
+                                      );
+                                    } else if (message.type ==
+                                            MessageType.document &&
+                                        message.documentPath != null) {
                                       controller.openDocument(
-                                        message.documentPath!
+                                        message.documentPath!,
                                       );
                                     }
                                   },
@@ -171,4 +165,118 @@ class RoomChatScreen extends GetView<RoomChatController> {
       ),
     );
   }
-} 
+}
+
+class _SwipeToReplyWrapper extends StatefulWidget {
+  final Widget child;
+  final MessageModel message;
+  final RoomChatController controller;
+
+  const _SwipeToReplyWrapper({
+    required this.child,
+    required this.message,
+    required this.controller,
+  });
+
+  @override
+  State<_SwipeToReplyWrapper> createState() => _SwipeToReplyWrapperState();
+}
+
+class _SwipeToReplyWrapperState extends State<_SwipeToReplyWrapper>
+    with TickerProviderStateMixin {
+  double _offsetX = 0.0;
+  late AnimationController _animationController;
+  bool _hasTriggered = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onPanStart: (details) {
+        _hasTriggered = false;
+        _animationController.stop();
+      },
+      onPanUpdate: (details) {
+        setState(() {
+          final delta = details.delta.dx;
+
+          // Batasi arah geser sesuai pengirim
+          if (widget.message.isSender) {
+            // Pesan dari kita: hanya bisa geser ke kiri
+            if (delta < 0) {
+              _offsetX = (_offsetX + delta).clamp(-50.0, 0.0);
+            }
+          } else {
+            // Pesan dari orang lain: hanya bisa geser ke kanan
+            if (delta > 0) {
+              _offsetX = (_offsetX + delta).clamp(0.0, 50.0);
+            }
+          }
+
+          // Trigger reply jika geser lebih dari 20px
+          if (!_hasTriggered && _offsetX.abs() > 40) {
+            _hasTriggered = true;
+            widget.controller.setReplyMessage(widget.message);
+            // Haptic feedback
+            HapticFeedback.lightImpact();
+          }
+        });
+      },
+      onPanEnd: (details) {
+        // Animasi kembali ke posisi normal
+        _animationController.forward(from: 0.0).then((_) {
+          setState(() {
+            _offsetX = 0.0;
+          });
+        });
+      },
+      child: Stack(
+        children: [
+          // Background reply icon
+          if (_offsetX.abs() > 5)
+            Positioned.fill(
+              child: Container(
+                alignment:
+                    widget.message.isSender
+                        ? Alignment.centerRight
+                        : Alignment.centerLeft,
+                padding: EdgeInsets.only(
+                  right: widget.message.isSender ? 30 : 0,
+                  left: widget.message.isSender ? 0 : 30,
+                ),
+                child: Transform.rotate(
+                  angle:
+                      widget.message.isSender
+                          ? 0
+                          : 3.1416, // rotasi 180 derajat
+                  child: Icon(
+                    Icons.reply,
+                    color: ThemeColor.primary.withOpacity(
+                      (_offsetX.abs() / 50).clamp(0.5, 1.0),
+                    ),
+                    size: 20 + (_offsetX.abs() / 5),
+                  ),
+                ),
+              ),
+            ),
+          // Content dengan transform
+          Transform.translate(offset: Offset(_offsetX, 0), child: widget.child),
+        ],
+      ),
+    );
+  }
+}
