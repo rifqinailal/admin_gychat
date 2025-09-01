@@ -85,7 +85,7 @@ class AwayController extends GetxController {
         'Error',
         'Message cannot be empty.',
         snackPosition: SnackPosition.TOP,
-        backgroundColor: ThemeColor.Red1.withOpacity(0.6),
+        backgroundColor: ThemeColor.Red1.withOpacity(0.8),
         colorText: ThemeColor.white,
       );
       return false;
@@ -99,7 +99,7 @@ class AwayController extends GetxController {
       'Success',
       'Away message has been saved.',
       snackPosition: SnackPosition.TOP,
-      backgroundColor: ThemeColor.primary.withOpacity(0.6),
+      backgroundColor: ThemeColor.primary.withOpacity(0.8),
       colorText: ThemeColor.white,
     );
     return true;
@@ -134,7 +134,7 @@ class AwayController extends GetxController {
           'Invalid Time',
           'Start time cannot be in the past.',
           snackPosition: SnackPosition.TOP,
-          backgroundColor: ThemeColor.Red1.withOpacity(0.6),
+          backgroundColor: ThemeColor.Red1.withOpacity(0.8),
           colorText: ThemeColor.white,
         );
         return;
@@ -164,7 +164,7 @@ class AwayController extends GetxController {
           'Invalid Time',
           'End time must be after the start time.',
           snackPosition: SnackPosition.TOP,
-          backgroundColor: ThemeColor.Red1.withOpacity(0.6),
+          backgroundColor: ThemeColor.Red1.withOpacity(0.8),
           colorText: ThemeColor.white,
         );
         return;
@@ -179,7 +179,7 @@ class AwayController extends GetxController {
       'Success',
       '${pickerType == 'start' ? 'Start time' : 'End time'} has been saved successfully.',
       snackPosition: SnackPosition.TOP,
-      backgroundColor: ThemeColor.primary.withOpacity(0.6),
+      backgroundColor: ThemeColor.primary.withOpacity(0.8),
       colorText: ThemeColor.white,
     );
   }

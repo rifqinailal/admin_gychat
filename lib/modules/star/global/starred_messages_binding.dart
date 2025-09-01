@@ -1,4 +1,4 @@
-// lib/modules/star/room/starred_messages_binding.dart
+// lib/modules/star/global/starred_messages_binding.dart
 import 'package:get/get.dart';
 import 'starred_messages_controller.dart';
 

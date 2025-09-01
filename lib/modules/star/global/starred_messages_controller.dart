@@ -1,4 +1,4 @@
-// lib/modules/star/room/starred_messages_controller.dart
+// lib/modules/star/global/starred_messages_controller.dart
 import 'package:admin_gychat/models/global_starred_message_model.dart';
 import 'package:admin_gychat/models/message_model.dart';
 import 'package:admin_gychat/modules/chat_list/chat_list_controller.dart';
@@ -57,7 +57,8 @@ class StarredMessagesController extends GetxController {
           (json) => MessageModel.fromJson(Map<String, dynamic>.from(json))
           ).toList();
         
-        final starredInRoom = allMessagesInRoom.where((msg) => msg.isStarred);
+        //final starredInRoom = allMessagesInRoom.where((msg) => msg.isStarred);
+        final starredInRoom = allMessagesInRoom.where((msg) => msg.isStarred && !msg.isDeleted);
 
         for (var msg in starredInRoom) {
           starredMessages.add(GlobalStarredMessage(

@@ -61,7 +61,7 @@ class ProfileController extends GetxController {
             'Success',
             'Profile photo updated successfully.',
             snackPosition: SnackPosition.TOP,
-            backgroundColor: ThemeColor.primary.withOpacity(0.6),
+            backgroundColor: ThemeColor.primary.withOpacity(0.8),
             colorText: ThemeColor.white,
             margin: const EdgeInsets.all(18),
           );
@@ -156,7 +156,7 @@ class ProfileController extends GetxController {
         'Success',
         'Profile photo has been deleted.',
         snackPosition: SnackPosition.TOP,
-        backgroundColor: ThemeColor.primary.withOpacity(0.6),
+        backgroundColor: ThemeColor.primary.withOpacity(0.8),
         colorText: ThemeColor.white,
         margin: const EdgeInsets.all(18),
       );

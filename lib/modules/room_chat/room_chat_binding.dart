@@ -1,4 +1,4 @@
-// lib/app/modules/room_chat/room_chat_binding.dart
+// lib/modules/room_chat/room_chat_binding.dart
 import 'package:admin_gychat/modules/setting/quick_replies/quick_controller.dart';
 import 'package:get/get.dart';
 import 'room_chat_controller.dart';

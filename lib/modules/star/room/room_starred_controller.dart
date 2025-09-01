@@ -53,6 +53,7 @@ class RoomStarredController extends GetxController {
           .map((json) => MessageModel.fromJson(Map<String, dynamic>.from(json)))
           .toList();
 
+      //final starred = allMessages.where((msg) => msg.isStarred && !msg.isDeleted).toList();
       final starred = allMessages.where((msg) => msg.isStarred && !msg.isDeleted).toList();
       starred.sort((a, b) => b.timestamp.compareTo(a.timestamp));
       
