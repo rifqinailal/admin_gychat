@@ -13,6 +13,7 @@ class ThemeColor {
   static const primaryBlue50 = Color(0x802738A5); //2738A5 50%
   static const darkGrey1 = Color(0xFF646164); //646164 100%
   static const lightGrey2 = Color(0xFFF2F2F2); //F2F2F2 100%
+  static const lightGrey4 = Color(0xB3F2F2F2); //F2F2F2 70%
   static const mediumGrey2 = Color(0xFF9A9696); //9A9696 100%
   static const lightBlue30 = Color(0x4D5364D0); //5364D0 30%
   static const darkGrey2 = Color(0xFF353435); //353435 100%
