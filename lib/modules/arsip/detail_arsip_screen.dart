@@ -1,6 +1,7 @@
 // lib/modules/arsip/detail_arsip_screen.dart
 import 'package:admin_gychat/modules/arsip/detail_arsip_controller.dart';
 import 'package:admin_gychat/routes/app_routes.dart';
+import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:admin_gychat/shared/widgets/chat_list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
@@ -25,7 +26,7 @@ class DetailArsipScreen extends GetView<DetailArsipController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: ThemeColor.white,
       appBar: _buildAppBar(),
       body: Column(
         children: [
@@ -77,20 +78,20 @@ class DetailArsipScreen extends GetView<DetailArsipController> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: ThemeColor.white,
       scrolledUnderElevation: 0.0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
+        icon: const Icon(Icons.arrow_back_ios_new, color: ThemeColor.darkGrey2),
         onPressed: () => Get.back(),
       ),
-      title: const Text('Diarsipkan', style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.w500)),
+      title: const Text('Diarsipkan', style: TextStyle(color: ThemeColor.darkGrey2, fontSize: 20, fontWeight: FontWeight.normal)),
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 12.0),
           child: Obx(() { 
             if (controller.selectedArchivedChats.isNotEmpty) {
               return IconButton(
-                icon: const Icon(Feather.upload, color: Colors.black),
+                icon: const Icon(Feather.upload, color: ThemeColor.darkGrey2),
                 onPressed: () { 
                   controller.unarchiveChats();
                 },

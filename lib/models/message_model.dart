@@ -17,8 +17,10 @@ class MessageModel {
   final String? documentPath;
   final String? documentName;
   final bool isDeleted;
+  final String chatRoomId; 
 
   MessageModel({
+    required this.chatRoomId, 
     required this.messageId,
     required this.senderId, 
     this.text,
@@ -44,6 +46,7 @@ class MessageModel {
 
   MessageModel copyWith({String? text,bool? isStarred, bool? isPinned,bool? isDeleted, }) {
     return MessageModel(
+      chatRoomId: chatRoomId,
       messageId: messageId,
       senderId: senderId,
       text: text ?? this.text, 
@@ -62,6 +65,7 @@ class MessageModel {
   }
   Map<String, dynamic> toJson() {
     return {
+      'chatRoomId': chatRoomId,
       'messageId': messageId,
       'senderId': senderId,
       'text': text,
@@ -81,6 +85,7 @@ class MessageModel {
 
   factory MessageModel.fromJson(Map<String, dynamic> json) {
     return MessageModel(
+      chatRoomId: json['chatRoomId'] ?? 'unknown_room', 
       messageId: json['messageId'], 
       senderId: json['senderId'],
       text: json['text'],

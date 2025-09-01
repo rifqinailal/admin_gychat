@@ -1,5 +1,5 @@
 // lib/app/modules/room_chat/widgets/room_chat_app_bar.dart
-
+import 'dart:io';
 import 'package:admin_gychat/models/message_model.dart';
 import 'package:admin_gychat/routes/app_routes.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
@@ -15,6 +15,11 @@ class RoomChatAppBar extends GetView<RoomChatController>
 
   // Method-method build AppBar dipindahkan ke sini dari Screen
   AppBar _buildNormalAppBar() {
+
+    final String? photoUrl = controller.chatRoomInfo['url_photo'];
+    final bool hasImage = photoUrl != null && photoUrl.isNotEmpty;
+    final bool isFileImage = hasImage && !photoUrl!.startsWith('http');
+
     return AppBar(
       backgroundColor: Colors.white,
       scrolledUnderElevation: 0.0,
@@ -28,9 +33,7 @@ class RoomChatAppBar extends GetView<RoomChatController>
         ),
       ),
       title: InkWell(
-        onTap: () {
-          Get.toNamed(AppRoutes.DetailGrup);
-        },
+        onTap: (controller.chatRoomInfo['isGroup'] == true) ? () => Get.toNamed(AppRoutes.DetailGrup) : null,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -38,11 +41,13 @@ class RoomChatAppBar extends GetView<RoomChatController>
             Stack(
               clipBehavior: Clip.none,
               children: [
-                const CircleAvatar(
-                  radius: 20,
-                  backgroundImage: NetworkImage(
-                    "https://i.pravatar.cc/150?u=a042581f4e29026704d",
-                  ),
+                CircleAvatar(
+                  radius: 20, // Sesuaikan ukuran radius
+                  backgroundColor: ThemeColor.grey4,
+                  backgroundImage: hasImage ? (isFileImage ? FileImage(File(photoUrl!)) : NetworkImage(photoUrl!)) as ImageProvider : null,
+                  child: !hasImage ? Icon(
+                    controller.chatRoomInfo['isGroup'] == true ? Icons.group : Icons.person, size: 24, color: ThemeColor.grey5
+                  ) : null,
                 ),
                 if (controller.chatRoomInfo['isOnline'] == 0)
                   Positioned(
@@ -76,8 +81,7 @@ class RoomChatAppBar extends GetView<RoomChatController>
                   Obx(() {
                     if (controller.chatRoomInfo['isGroup'] == true) {
                       return Text(
-                        controller.chatRoomInfo['members'] ??
-                            'Tidak ada member',
+                        controller.chatRoomInfo['members'] ?? 'Tidak ada member',
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 12,
@@ -117,8 +121,17 @@ class RoomChatAppBar extends GetView<RoomChatController>
               Future.delayed(Duration.zero, () {
                 controller.toggleSearchMode();
               });
-            } else if (value == 'starred') {
-              Get.toNamed(AppRoutes.DetailStar);
+            } else if (value == 'room-star') {
+              final String currentRoomId = controller.chatRoomInfo['id'].toString();
+              final String currentRoomName = controller.chatRoomInfo['name'];
+    
+              Get.toNamed(
+                AppRoutes.RoomStar,
+                arguments: {
+                  'roomId': currentRoomId,
+                  'roomName': currentRoomName,
+                },
+              );
             }
           },
           itemBuilder:
@@ -135,7 +148,7 @@ class RoomChatAppBar extends GetView<RoomChatController>
                   ),
                 ),
                 const PopupMenuItem(
-                  value: 'starred',
+                  value: 'room-star',
                   child: Text(
                     'Pesan Berbintang',
                     style: TextStyle(

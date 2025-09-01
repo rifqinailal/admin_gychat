@@ -9,10 +9,7 @@ class DetailArsipController extends GetxController {
   final ChatListController _chatListController = Get.find<ChatListController>();
   var selectedArchivedChats = <ChatModel>{}.obs;
 
-  List<ChatModel> get archivedChats =>
-      _chatListController.allChatsInternal
-          .where((chat) => chat.isArchived)
-          .toList();
+  List<ChatModel> get archivedChats => _chatListController.allChatsInternal.where((chat) => chat.isArchived).toList();
 
   void toggleSelection(ChatModel chat) {
     if (selectedArchivedChats.contains(chat)) {

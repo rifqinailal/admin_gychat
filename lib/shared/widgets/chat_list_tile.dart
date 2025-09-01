@@ -141,7 +141,7 @@ class ChatListTile extends StatelessWidget {
                         ),
                         child: Text(
                           unreadCount.toString(),
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(color: ThemeColor.white),
                         ),
                       ),
                   ],

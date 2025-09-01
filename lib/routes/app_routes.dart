@@ -1,7 +1,8 @@
 abstract class AppRoutes {
   static const Auth = '/auth';
   static const Dashboard = '/dashboard';
-  static const DetailStar = '/detail-star';
+  static const GlobalStar = '/global-star';
+  static const RoomStar = '/room-star';
   static const GrupBaru = '/grup-baru';
   static const DetailGrup = '/detail-grup';
   static const Profile = '/profile';

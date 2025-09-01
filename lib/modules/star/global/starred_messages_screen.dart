@@ -1,21 +1,24 @@
-// lib/modules/star/detail_star_screen.dart
+// lib/modules/star/room/starred_messages_screen.dart
+import 'package:admin_gychat/models/global_starred_message_model.dart';
+import 'package:admin_gychat/models/message_model.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'detail_star_controller.dart';
+import 'package:intl/intl.dart';
+import 'starred_messages_controller.dart';
+import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 
-class DetailStarScreen extends GetView<DetailStarsController> {
-  const DetailStarScreen({super.key});
+class StarredMessagesScreen extends GetView<StarredMessagesController> {
+  const StarredMessagesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // AppBar sekarang dibangun berdasarkan state dari controller
-      appBar: _buildAppBar(), // _buildAppBar() already returns Obx, which wraps an AppBar
+      appBar: _buildAppBar(),
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-            image: AssetImage("assets/images/bgchatadmin.jpg"),
+            image: AssetImage("assets/images/bg_room.png"),
             fit: BoxFit.cover,
           ),
         ),
@@ -24,7 +27,7 @@ class DetailStarScreen extends GetView<DetailStarsController> {
             return const Center(
               child: Text(
                 'Tidak ada pesan berbintang',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+                style: TextStyle(fontSize: 16, color: ThemeColor.grey2),
               ),
             );
           }
@@ -33,8 +36,8 @@ class DetailStarScreen extends GetView<DetailStarsController> {
             padding: const EdgeInsets.only(top: 8.0, bottom: 8.0),
             itemCount: controller.filteredMessages.length,
             itemBuilder: (context, index) {
-              final message = controller.filteredMessages[index];
-              return _buildMessageItem(message, context);
+              final gMessage = controller.filteredMessages[index];
+              return _buildMessageItem(gMessage, context);
             },
           );
         }),
@@ -42,12 +45,9 @@ class DetailStarScreen extends GetView<DetailStarsController> {
     );
   }
 
-  /// AppBar Switcher
-  /// Memilih AppBar yang akan ditampilkan berdasarkan state
   PreferredSizeWidget _buildAppBar() {
     return PreferredSize(
-      // Menentukan tinggi standar AppBar
-      preferredSize: const Size.fromHeight(kToolbarHeight), 
+      preferredSize: const Size.fromHeight(kToolbarHeight),
       child: Obx(() {
         if (controller.isSearchActive.value) {
           return _buildSearchAppBar();
@@ -60,55 +60,68 @@ class DetailStarScreen extends GetView<DetailStarsController> {
     );
   }
 
-  /// AppBar untuk tampilan default (tidak sedang search atau selection)
   AppBar _buildDefaultAppBar() {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: ThemeColor.white,
       elevation: 0.5,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new, color: ThemeColor.darkGrey2),
+        icon: const Icon(
+          Icons.arrow_back_ios_new, 
+          color: ThemeColor.darkGrey2,
+          size: 25
+        ),
         onPressed: () => Get.back(),
       ),
       title: const Text(
         'Berbintang',
-        style: TextStyle(color: ThemeColor.darkGrey2, fontSize: 20),
+        style: TextStyle(
+          fontFamily: 'Poppins',
+          fontWeight: FontWeight.normal,
+          color: ThemeColor.darkGrey2, 
+          fontSize: 20
+        ),
       ),
       actions: [
         IconButton(
-          icon: const Icon(Icons.search, color: ThemeColor.darkGrey2),
+          icon: Transform.rotate(
+            angle: 1.3,
+            child: const Icon(
+              Icons.search, 
+              color: ThemeColor.darkGrey2,
+              size: 25
+            ),
+          ),
           onPressed: () => controller.toggleSearch(),
         ),
         IconButton(
-          icon: const Icon(Icons.delete_outline, color: ThemeColor.darkGrey2),
+          icon: const Icon(
+            Icons.delete_outline, 
+            color: ThemeColor.darkGrey2,
+            size: 25
+          ),
           onPressed: () => controller.confirmDeleteAll(),
         ),
       ],
     );
   }
 
-  /// AppBar untuk tampilan ketika mode pencarian aktif
-  /// AppBar untuk tampilan ketika mode pencarian aktif
   AppBar _buildSearchAppBar() {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: ThemeColor.white,
       elevation: 0.5,
       automaticallyImplyLeading: false,
-      
-      // TAMBAHKAN BARIS INI
-      // Menambahkan spasi 16 pixel di kiri dan kanan search bar
-      titleSpacing: 16.0, 
-
+      titleSpacing: 18.0,
       title: Container(
         width: double.infinity,
         height: 40,
         decoration: BoxDecoration(
-          color: const Color(0xFFF0F0F0),
+          color: ThemeColor.lightGrey2,
           borderRadius: BorderRadius.circular(30.0),
         ),
         child: Row(
           children: [
             IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black54, size: 20),
+              icon: const Icon(Icons.arrow_back_ios_new, color: ThemeColor.darkGrey1, size: 20),
               onPressed: () => controller.toggleSearch(),
             ),
             Expanded(
@@ -120,7 +133,7 @@ class DetailStarScreen extends GetView<DetailStarsController> {
                   border: InputBorder.none,
                   hintStyle: TextStyle(color: Colors.grey),
                 ),
-                style: const TextStyle(color: Colors.black, fontSize: 16),
+                style: const TextStyle(color: ThemeColor.black, fontSize: 16),
               ),
             ),
           ],
@@ -129,54 +142,51 @@ class DetailStarScreen extends GetView<DetailStarsController> {
     );
   }
 
-  /// AppBar untuk tampilan ketika mode seleksi pesan aktif
   AppBar _buildSelectionAppBar() {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: ThemeColor.white,
       elevation: 0.5,
       leading: IconButton(
-        icon: const Icon(Icons.close, color: Colors.black),
+        icon: const Icon(Icons.close, color: ThemeColor.black),
         onPressed: () => controller.exitSelectionMode(),
       ),
       title: Obx(() => Text(
         '${controller.selectedMessages.length} dipilih',
-        style: const TextStyle(color: Colors.black, fontSize: 18),
+        style: const TextStyle(color: ThemeColor.black, fontSize: 18),
       )),
       actions: [
         IconButton(
-          // Mengganti ikon menjadi hapus, lebih sesuai dengan fungsinya
-          icon: const Icon(Icons.delete_outline, color: Colors.black),
-          onPressed: () => controller.confirmDeleteSelected(),
+          icon: const Icon(
+            MaterialCommunityIcons.star_off_outline, 
+            color: ThemeColor.black),
+          onPressed: () => controller.confirmUnstarSelected(),
         ),
       ],
     );
   }
-  
-  // Kode _buildMessageItem tidak diubah, tetap sama
-  Widget _buildMessageItem(DetailStar message, BuildContext context) {
-    // ... (kode Anda yang sudah ada di sini)
-     return GestureDetector(
-      onTap: () => controller.handleMessageTap(message),
-      onLongPress: () => controller.handleMessageLongPress(message),
+
+  Widget _buildMessageItem(GlobalStarredMessage gMessage, BuildContext context) {
+    final message = gMessage.message;
+    final contextName = gMessage.chatRoomName;
+
+    return GestureDetector(
+      onTap: () => controller.handleMessageTap(gMessage),
+      onLongPress: () => controller.handleMessageLongPress(gMessage),
       child: Obx(
         () => Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          color:
-              message.isSelected.value
-                  ? Colors.blue.withOpacity(0.2)
-                  : Colors.transparent,
+          color: gMessage.isSelected.value ? ThemeColor.lightBlue30 : Colors.transparent,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(
+              const CircleAvatar(
                 radius: 20,
-                backgroundImage: AssetImage(
-                  message.avatarUrl ?? 'assets/images/default_avatar.png',
+                backgroundColor: ThemeColor.grey4,
+                child: Icon(
+                  Icons.person, 
+                  color: ThemeColor.grey5,
+                  size: 25,
                 ),
-                onBackgroundImageError: (exception, stackTrace) {
-                  const Icon(Icons.person, color: Colors.white);
-                },
-                backgroundColor: const Color.fromARGB(255, 192, 186, 186),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -186,29 +196,32 @@ class DetailStarScreen extends GetView<DetailStarsController> {
                     Row(
                       children: [
                         Text(
-                          message.sender ?? 'No Sender',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          message.senderName,
+                          style: const TextStyle(fontWeight: FontWeight.normal),
                         ),
                         const Padding(
-                          padding: EdgeInsets.symmetric(horizontal: 4.0),
-                          child: Text(
-                            '▸',
-                            style: TextStyle(color: Colors.black54),
-                          ),
+                          padding: EdgeInsets.symmetric(horizontal: 10.0),
+                          child: Text('▸', style: TextStyle(
+                            color: ThemeColor.black, 
+                            fontSize: 30
+                          )),
                         ),
+                        const SizedBox(width: 1),
                         Expanded(
                           child: Text(
-                            message.context ?? 'No Context',
+                            contextName,
                             style: const TextStyle(fontWeight: FontWeight.bold),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 2),
                         Text(
-                          message.date ?? '',
+                          DateFormat('dd/MM/yy').format(message.timestamp),
                           style: const TextStyle(
-                            color: Colors.grey,
-                            fontSize: 12,
+                            fontFamily: 'Poppins',
+                            fontWeight: FontWeight.normal,
+                            color: ThemeColor.black, 
+                            fontSize: 14
                           ),
                         ),
                       ],
@@ -219,22 +232,21 @@ class DetailStarScreen extends GetView<DetailStarsController> {
                         maxWidth: MediaQuery.of(context).size.width * 0.66,
                       ),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 255, 255, 255),
-                          borderRadius: BorderRadius.circular(14),
+                          color: ThemeColor.white,
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              message.text ?? 'No message text',
+                              message.text ?? (message.type == MessageType.image ? 'Gambar' : 'Dokumen'),
                               style: const TextStyle(
-                                color: Colors.black87,
-                                fontSize: 15,
+                                fontFamily: 'Poppins',
+                                fontWeight: FontWeight.normal,
+                                color: ThemeColor.black, 
+                                fontSize: 15
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -243,16 +255,18 @@ class DetailStarScreen extends GetView<DetailStarsController> {
                               children: [
                                 const Spacer(),
                                 const Icon(
-                                  Icons.star,
-                                  color: Colors.amber,
-                                  size: 16,
+                                  Icons.star, 
+                                  color: ThemeColor.mediumGrey4, 
+                                  size: 16
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  message.time ?? '',
+                                  DateFormat('HH:mm').format(message.timestamp),
                                   style: const TextStyle(
-                                    color: Colors.grey,
-                                    fontSize: 12,
+                                    fontFamily: 'Poppins',
+                                    fontWeight: FontWeight.normal,
+                                    color: ThemeColor.black, 
+                                    fontSize: 12
                                   ),
                                 ),
                               ],
@@ -270,4 +284,4 @@ class DetailStarScreen extends GetView<DetailStarsController> {
       ),
     );
   }
-}
+} 
