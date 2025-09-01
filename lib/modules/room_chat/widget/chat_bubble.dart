@@ -52,11 +52,19 @@ class ChatBubble extends StatelessWidget {
   });
 
   Widget _buildReplyPreview() {
-    if (repliedMessage == null) return const SizedBox.shrink();
+  if (repliedMessage == null) return const SizedBox.shrink();
 
-    return ClipRRect(
+  return GestureDetector(
+    onTap: () {
+      // Panggil controller untuk jump ke pesan yang direply
+      final controller = Get.find<RoomChatController>();
+      final replyMessageId = repliedMessage!['messageId'];
+      if (replyMessageId != null) {
+        controller.jumpToReplyMessage(replyMessageId);
+      }
+    },
+    child: ClipRRect(
       borderRadius: BorderRadius.circular(8),
-
       child: Container(
         margin: EdgeInsets.only(bottom: 7),
         padding: const EdgeInsets.all(8),
@@ -67,42 +75,51 @@ class ChatBubble extends StatelessWidget {
             children: [
               Container(
                 width: 4,
-                color:
-                    isSender
-                        ? Colors.white70
-                        : ThemeColor.primary.withOpacity(0.7),
+                color: isSender
+                    ? Colors.white70
+                    : ThemeColor.primary.withOpacity(0.7),
               ),
               const SizedBox(width: 8),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    repliedMessage!['name'] ?? 'Unknown',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 14,
-                      color: isSender ? ThemeColor.white : ThemeColor.primary,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      repliedMessage!['name'] ?? 'Unknown',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14,
+                        color: isSender ? ThemeColor.white : ThemeColor.primary,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    repliedMessage!['text'] ?? '',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      fontWeight: FontWeight.normal,
-                      fontSize: 13,
-                      color: isSender ? Colors.white70 : Colors.black54,
+                    const SizedBox(height: 2),
+                    Text(
+                      repliedMessage!['text'] ?? '',
+                      maxLines: 2, // Ubah ke 2 baris untuk pesan panjang
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontWeight: FontWeight.normal,
+                        fontSize: 13,
+                        color: isSender ? Colors.white70 : Colors.black54,
+                        height: 1.3, // Line height untuk spacing yang lebih baik
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
+              ),
+              // Tambahkan icon kecil untuk indikasi bisa diklik
+              Icon(
+                Icons.keyboard_arrow_up,
+                size: 16,
+                color: isSender ? Colors.white70 : Colors.black54,
               ),
             ],
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _buildHighlightedText() {
     // Jika tidak ada kata kunci pencarian, tampilkan Text biasa.

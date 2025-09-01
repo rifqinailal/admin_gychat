@@ -506,41 +506,6 @@ class RoomChatController extends GetxController {
     replyMessage.value = null;
   }
 
-  // Fungsi untuk mengirim pesan baru
-  void _sendImageWithCaption(XFile pickedFile, String caption) {
-    final imagePath = pickedFile.path;
-    final newMessage = MessageModel(
-      messageId: DateTime.now().millisecondsSinceEpoch,
-      senderId: currentUserId,
-      senderName: "Anda",
-      chatRoomId: (chatRoomInfo['id'] ?? 'unknown_room').toString(), 
-      timestamp: DateTime.now(),
-      isSender: true,
-      type: MessageType.image,
-      imagePath: imagePath,
-      text: caption.isNotEmpty ? caption : null, 
-    );
-    messages.insert(0, newMessage);
-  }
-
-  void _sendDocumentFromPicker(PlatformFile file) {
-       final newMessage = MessageModel(
-        messageId: DateTime.now().millisecondsSinceEpoch,
-        senderId: currentUserId,
-        senderName: "Anda",
-        // TAMBAHKAN INI
-        chatRoomId: (chatRoomInfo['id'] ?? 'unknown_room').toString(),
-        timestamp: DateTime.now(),
-        isSender: true,
-        type: MessageType.document,
-        documentPath: file.path,
-        documentName: file.name,
-        // text bisa diisi nama file atau null
-        text: file.name, 
-      );
-      messages.insert(0, newMessage);
-  }
-
   void sendMessage() {
     if (editingMessage.value != null) {
       updateMessage();
@@ -550,8 +515,12 @@ class RoomChatController extends GetxController {
 
     if (text.isNotEmpty) {
       final Map<String, String>? repliedMessageData = replyMessage.value != null
-          ? {'name': replyMessage.value!.senderName, 'text': replyMessage.value!.text ?? 'File'}
-          : null;
+    ? {
+        'name': replyMessage.value!.senderName, 
+        'text': replyMessage.value!.text ?? 'File',
+        'messageId': replyMessage.value!.messageId.toString(), // TAMBAHKAN INI
+      }
+    : null;
       final newMessage = MessageModel(
         messageId: DateTime.now().millisecondsSinceEpoch,
         senderId: currentUserId,
@@ -588,10 +557,7 @@ class RoomChatController extends GetxController {
     clearMessageSelection();
   }
 
-  // Fungsi untuk memberi/menghapus pin pada pesan yang dipilih
   void pinSelectedMessages() {
-    // Untuk saat ini, kita hanya bisa pin satu pesan.
-    // Ambil pesan pertama dari yang dipilih.
     if (selectedMessages.isNotEmpty) {
       final messageToPin = selectedMessages.first;
 
@@ -720,8 +686,6 @@ class RoomChatController extends GetxController {
       ),
     );
   }
-
-  // 2. Fungsi utama untuk menjalankan aksi hapus
   void deleteMessages({required bool deleteForAll}) {
     // Jika "Hapus untuk saya"
     if (!deleteForAll) {
@@ -766,14 +730,10 @@ class RoomChatController extends GetxController {
       }
     }
   }
-
-  // 2. Fungsi untuk membatalkan mode edit.
   void cancelEdit() {
     editingMessage.value = null;
     messageController.clear();
   }
-
-  // 3. Fungsi untuk memperbarui pesan.
   void updateMessage() {
     final newText = messageController.text.trim();
     // Pastikan ada pesan yang sedang diedit dan teks barunya tidak kosong.
@@ -831,13 +791,11 @@ class RoomChatController extends GetxController {
           ],
         ),
       ),
-      // Gunakan `barrierColor` untuk kontrol penuh atas latar belakang
       barrierColor: Colors.black.withOpacity(0.5),
     );
   }
 
   Future<void> downloadImage(String imagePath) async {
-    // Meminta izin penyimpanan
     var status = await Permission.storage.request();
 
     if (status.isGranted) {
@@ -851,7 +809,6 @@ class RoomChatController extends GetxController {
           fileName: fileName,
           skipIfExists: true,
         );
-        // ===============================================
 
         if (result.isSuccess) {
           Get.snackbar('Berhasil', 'Gambar berhasil disimpan di galeri.');
@@ -871,4 +828,43 @@ class RoomChatController extends GetxController {
       );
     }
   }
+
+  void jumpToReplyMessage(String replyMessageId) {
+  try {
+    final int targetMessageId = int.parse(replyMessageId);
+    
+    // Cari index pesan yang direply
+    final index = messages.indexWhere((m) => m.messageId == targetMessageId);
+    
+    if (index != -1 && itemScrollController.isAttached) {
+      // Scroll ke pesan tersebut
+      itemScrollController.scrollTo(
+        index: index,
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOutCubic,
+      );
+      
+      // Beri highlight sementara
+      highlightedMessageId.value = targetMessageId;
+      Future.delayed(const Duration(seconds: 2), () {
+        if (highlightedMessageId.value == targetMessageId) {
+          highlightedMessageId.value = null;
+        }
+      });
+    } else {
+      // Jika pesan tidak ditemukan
+      Get.snackbar(
+        'Info', 
+        'Pesan yang direply tidak ditemukan',
+        snackPosition: SnackPosition.TOP,
+        duration: const Duration(seconds: 2),
+      );
+    }
+  } catch (e) {
+    print('Error jumping to reply message: $e');
+  }
 }
+
+}
+
+
