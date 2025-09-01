@@ -98,26 +98,16 @@ class ChatListView extends GetView<ChatListController> {
                           final chat = chatList[index];
 
                           return Obx(() {
-                            final isSelected = controller.selectedChats
-                                .contains(chat);
+                            final isSelected = controller.selectedChats.contains(chat);
                             return ChatListTile(
                               name: chat.name,
-                              lastMessage:
-                                  chat.lastMessage ??
-                                  '', 
-                              avatarUrl:
-                                  chat.urlPhoto ??
-                                  "https://i.pravatar.cc/150?u=${chat.roomId}", 
-                              time:
-                                  chat.lastTime != null
-                                      ? DateFormat('HH:mm').format(
-                                        chat.lastTime!,
-                                      ) 
-                                      : '--:--', 
+                              lastMessage: chat.lastMessage ?? '',
+                              avatarUrl: chat.urlPhoto,
+                              roomType: chat.roomType,
+                              time: chat.lastTime != null ? DateFormat('HH:mm').format(chat.lastTime!) : '--:--',
                               unreadCount: chat.unreadCount,
                               isPinned: chat.isPinned,
-                              isOnline:
-                                  chat.name == 'Bantuan Teknis', 
+                              isOnline: chat.name == 'Bantuan Teknis', 
                               isSelected: isSelected,
                               onTap: () {
                                 if (controller.isSelectionMode.value) {
@@ -129,8 +119,7 @@ class ChatListView extends GetView<ChatListController> {
                                       "id": chat.roomId,
                                       "name": chat.name,
                                       "isGroup": chat.roomType == 'group',
-                                      "members":
-                                          "Pak Ketua, Pimpinan B, Admin A...",
+                                      "members": "Pak Ketua, Pimpinan B, Admin A...",
                                     },
                                   );
                                 }
@@ -156,10 +145,8 @@ class ChatListView extends GetView<ChatListController> {
   Widget _buildSearchResults() {
     return Obx(() {
       return ListView(
-        // padding: const EdgeInsets.all(16),
-        children: [
-          // Hasil Pencarian Chat
-          if (controller.searchResultChats.isNotEmpty) ...[
+        children: [ 
+          if (controller.searchResultChats.isNotEmpty) ...[ 
             Padding(
               padding: const EdgeInsets.only(left: 20),
               child: Text(
@@ -172,19 +159,15 @@ class ChatListView extends GetView<ChatListController> {
               ),
             ),
             SizedBox(height: 10),
-            ...controller.searchResultChats.map((chat) {
+            ...controller.searchResultChats.map((chat) { 
               return ChatListTile(
                 name: chat.name,
-                avatarUrl: "https://i.pravatar.cc/150?u=${chat.roomId}",
+                avatarUrl: chat.urlPhoto,
+                roomType: chat.roomType,
                 unreadCount: chat.unreadCount,
                 isPinned: chat.isPinned,
                 lastMessage: chat.lastMessage ?? '',
-                time:
-                    chat.lastTime != null
-                        ? DateFormat('HH:mm').format(
-                          chat.lastTime!,
-                        ) 
-                        : '--:--',
+                time: chat.lastTime != null ? DateFormat('HH:mm').format(chat.lastTime!) : '--:--',
                 isSelected: false,
                 isOnline: false,
                 onTap: () {
@@ -193,7 +176,7 @@ class ChatListView extends GetView<ChatListController> {
                     arguments: {
                       "id": chat.roomId,
                       "name": chat.name,
-                      "isGroup": chat.roomType == 'group', 
+                      "isGroup": chat.roomType == 'group',
                       "members": "Pak Ketua, Pimpinan B, Admin A...",
                     },
                   );

@@ -201,8 +201,8 @@ class QuickController extends GetxController {
             ),
             if (hasExistingImage)
               ListTile(
-                leading: Icon(Icons.delete, color: Colors.red.shade700),
-                title: Text('Hapus Gambar', style: TextStyle(color: Colors.red.shade700)),
+                leading: Icon(Icons.delete, color: ThemeColor.Red1),
+                title: Text('Hapus Gambar', style: TextStyle(color: ThemeColor.Red1)),
                 onTap: () {
                   Get.back();
                   removeImage();

@@ -2,52 +2,105 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'detail_grup_controller.dart';
+import 'package:admin_gychat/shared/theme/colors.dart';
 
 class EditDescriptionScreen extends GetView<DetailGrupController> {
   const EditDescriptionScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    const primaryColor = Color(0xFF007AFF);
-
-    return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F7),
-      appBar: AppBar(
-        backgroundColor: const Color(0xFFF2F2F7),
-        elevation: 0,
-        leading: TextButton(
-          onPressed: () => Get.back(),
-          child: const Text('Cancel', style: TextStyle(color: primaryColor, fontSize: 17)),
+    return Container(
+      decoration: const BoxDecoration(
+        color: ThemeColor.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(30),
+          topRight: Radius.circular(30),
         ),
-        centerTitle: true,
-        title: const Text(
-          'Edit Description',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
-        actions: [
-          TextButton(
-            onPressed: controller.saveGroupDescription, // Panggil fungsi simpan deskripsi
-            child: const Text('Save', style: TextStyle(color: primaryColor, fontSize: 17, fontWeight: FontWeight.bold)),
-          ),
-        ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: TextField(
-            controller: controller.descriptionController,
-            autofocus: true,
-            maxLines: null, // Memungkinkan input teks multi-baris tanpa batas
-            keyboardType: TextInputType.multiline,
-            style: const TextStyle(fontSize: 16),
-            decoration: const InputDecoration(
-              hintText: 'Group Description',
-              contentPadding: EdgeInsets.all(16),
-              border: InputBorder.none,
+      constraints: BoxConstraints(
+        maxHeight: MediaQuery.of(context).size.height * 0.85,
+      ),
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        backgroundColor: Colors.transparent,
+        body: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 34),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Custom top bar replacing the AppBar
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      InkWell(
+                        onTap: () => Get.back(),
+                        borderRadius: BorderRadius.circular(8),
+                        child: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              color: ThemeColor.black,
+                              fontSize: 17,
+                              fontWeight: FontWeight.normal,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const Text(
+                        'Edit Description',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          color: ThemeColor.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 17,
+                        ),
+                      ),
+                      InkWell(
+                        onTap: controller.saveGroupDescription,
+                        borderRadius: BorderRadius.circular(8),
+                        child: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Text(
+                            'Save',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              color: ThemeColor.black,
+                              fontSize: 17,
+                              fontWeight: FontWeight.normal,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 25),
+
+                  // Refactored TextField with direct styling
+                  TextField(
+                    controller: controller.descriptionController,
+                    autofocus: true,
+                    maxLines: null,
+                    keyboardType: TextInputType.multiline,
+                    style: const TextStyle(fontFamily: 'Poppins', fontSize: 16),
+                    decoration: InputDecoration(
+                      hintText: 'Group Description',
+                      filled: true,
+                      fillColor: ThemeColor.grey3,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(30),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 30, horizontal: 30
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),

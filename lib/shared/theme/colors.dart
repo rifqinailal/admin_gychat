@@ -21,6 +21,9 @@ class ThemeColor {
   static const mediumGrey2_40 = Color(0x669A9696); //9A9696 40%
   static const grey2 = Color(0xFF6F6B6B); //6F6B6B 100%
   static const grey3 = Color(0x85D9D9D9); //D9D9D9 52%
+  static const grey4 = Color(0xFFE4E6E7); //E4E6E7 100%
+  static const grey5 = Color(0xFFAEB4B7); //AEB4B7 100%
+  static const grey6 = Color(0xFFD9D9D9); //D9D9D9 100%
   static const black = Color(0xFF000000); //000000 100%
   static const mediumGrey5 = Color(0xFFB4ADAD); //B4ADAD 100%
   static const yelow = Color(0xFFFFB400); //FFB400 100%
@@ -28,4 +31,7 @@ class ThemeColor {
   static const Red1 = Color(0xFFFF0000); //FF0000 100%
   static const Red2 = Color(0xFFDC3545); //DC3545 100%
   static const lightGrey3 = Color(0xFFEBEBEB); //EBEBEB 100%
+  static const blue = Color(0xFF478AFF); //478AFF 100%
+  static const red = Color(0xFFE5252A); //E5252A 100%
+  static const blue2 = Color(0xFF0086F9); //0086F9 100%
 }

@@ -47,7 +47,7 @@ class ChatHeader extends StatelessWidget {
                 Get.toNamed(AppRoutes.GrupBaru);
                 break;
               case MainMenuAction.berbintang:
-                Get.toNamed(AppRoutes.DetailStar);
+                Get.toNamed(AppRoutes.GlobalStar);
                 break;
               case MainMenuAction.pengaturan:
                 dashboardController.changeTabIndex(3);

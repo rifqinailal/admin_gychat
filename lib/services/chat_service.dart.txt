@@ -1,0 +1,54 @@
+import 'package:get/get.dart';
+import 'package:admin_gychat/models/chat_model.dart';
+
+class ChatService extends GetxService {
+  // Daftar semua chat room, dibuat reaktif
+  final RxList<ChatModel> chatList = <ChatModel>[].obs;
+
+  @override
+  void onInit() {
+    super.onInit();
+    // Di sini Anda akan memuat data chat awal dari API atau storage
+    _loadInitialChats();
+  }
+
+  // Fungsi untuk mencari chat berdasarkan ID-nya
+  ChatModel findChatById(int roomId) {
+    return chatList.firstWhere(
+      (chat) => chat.roomId == roomId,
+      orElse: () => throw Exception('Chat with id $roomId not found'),
+    );
+  }
+
+  // --- CONTOH DATA DUMMY ---
+  // Ganti ini dengan logika fetch API Anda yang sebenarnya
+  void _loadInitialChats() {
+    // Anggap saja ini data dari API
+    chatList.assignAll([
+      ChatModel(
+        roomId: 101,
+        roomMemberId: 201,
+        roomType: 'group',
+        name: 'Grup-9 Members',
+        description: 'Lorem ipsum is a placeholder text commonly used...',
+        urlPhoto: null, // Awalnya tidak ada foto
+        lastMessage: 'Oke, siap!',
+        lastTime: DateTime.now().subtract(Duration(minutes: 5)),
+        unreadCount: 2,
+        isPinned: true,
+      ),
+      ChatModel(
+        roomId: 102,
+        roomMemberId: 202,
+        roomType: 'personal',
+        name: 'John Doe',
+        lastMessage: 'Bisa minta tolong?',
+        lastTime: DateTime.now().subtract(Duration(hours: 1)),
+        urlPhoto: 'https://i.pravatar.cc/150?u=a042581f4e29026704d',
+        unreadCount: 0,
+        isOnline: true,
+      ),
+      // ... tambahkan chat lain jika perlu
+    ]);
+  }
+}

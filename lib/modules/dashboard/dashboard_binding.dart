@@ -10,7 +10,7 @@ class DashboardBinding extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<DashboardController>(() => DashboardController()); 
-    Get.lazyPut<ChatListController>(() => ChatListController()); 
+    Get.lazyPut<ChatListController>(() => ChatListController(), fenix: true); 
     Get.lazyPut<SettingController>(() => SettingController());
     Get.lazyPut<ProfileController>(() => ProfileController());
   }

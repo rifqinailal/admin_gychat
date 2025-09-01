@@ -10,8 +10,12 @@ import 'package:admin_gychat/modules/grup/detail_grup/detail_grup_binding.dart';
 import 'package:admin_gychat/modules/grup/detail_grup/detail_grup_screen.dart';
 import 'package:admin_gychat/modules/grup/grup_baru/grup_baru_binding.dart';
 import 'package:admin_gychat/modules/grup/grup_baru/grup_baru_screen.dart';
-import 'package:admin_gychat/modules/star/detail_star_binding.dart';
-import 'package:admin_gychat/modules/star/detail_star_screen.dart';
+//import 'package:admin_gychat/modules/star/detail_star_binding.dart';
+//import 'package:admin_gychat/modules/star/detail_star_screen.dart';
+import 'package:admin_gychat/modules/star/global/starred_messages_binding.dart';
+import 'package:admin_gychat/modules/star/global/starred_messages_screen.dart';
+import 'package:admin_gychat/modules/star/room/room_starred_binding.dart';
+import 'package:admin_gychat/modules/star/room/room_starred_screen.dart';
 import 'package:admin_gychat/modules/arsip/detail_arsip_binding.dart';
 import 'package:admin_gychat/modules/arsip/detail_arsip_screen.dart';
 //import 'package:admin_gychat/modules/setting/profile/profile_binding.dart.txt';
@@ -60,11 +64,17 @@ class AppPages {
       page: () => const DetailGrupScreen(),
       binding: DetailGrupBinding(),
     ),
-    // Detail Star
+    // Star Global
     GetPage(
-      name: AppRoutes.DetailStar,
-      page: () => const DetailStarScreen(),
-      binding: DetailStarBinding(),
+      name: AppRoutes.GlobalStar,
+      page: () => const StarredMessagesScreen(),
+      binding: StarredMessagesBinding(),
+    ),
+    // Star Room
+    GetPage(
+      name: AppRoutes.RoomStar,
+      page: () => const RoomStarredScreen(),
+      binding: RoomStarredBinding(),
     ),
     // Detail Arsip
     GetPage(

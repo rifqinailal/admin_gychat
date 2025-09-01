@@ -159,7 +159,7 @@ class ProfileScreen extends GetView<ProfileController> {
           child: Obx(() {
             return CircleAvatar(
               radius: 60,
-              backgroundColor: const Color.fromARGB(255, 231, 231, 231),
+              backgroundColor: ThemeColor.grey4,
               backgroundImage: controller.profileImage.value != null
                   ? FileImage(controller.profileImage.value!)
                   : null,
@@ -167,7 +167,7 @@ class ProfileScreen extends GetView<ProfileController> {
                   ? Icon(
                       Icons.person,
                       size: 60,
-                      color: Colors.grey.withOpacity(0.7),
+                      color: ThemeColor.grey5,
                     )
                   : null,
             );

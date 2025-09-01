@@ -1,6 +1,7 @@
 // lib/modules/arsip/detail_arsip_screen.dart
 import 'package:admin_gychat/modules/arsip/detail_arsip_controller.dart';
 import 'package:admin_gychat/routes/app_routes.dart';
+import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:admin_gychat/shared/widgets/chat_list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
@@ -12,14 +13,24 @@ import 'package:get/get_state_manager/src/simple/get_view.dart';
 class DetailArsipScreen extends GetView<DetailArsipController> {
   const DetailArsipScreen({super.key});
 
+  String _formatChatTime(DateTime? time) {
+    if (time == null) {
+      return '';
+    }
+    // Menggunakan cara manual untuk format HH:mm
+    final hour = time.hour.toString().padLeft(2, '0');
+    final minute = time.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: ThemeColor.white,
       appBar: _buildAppBar(),
       body: Column(
         children: [
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Expanded(
             child: Obx(
               () => ListView.builder(
@@ -29,12 +40,14 @@ class DetailArsipScreen extends GetView<DetailArsipController> {
                   return Obx(() { 
                     final isSelected = controller.selectedArchivedChats.contains(chat);
                     return ChatListTile(
-                      avatarUrl: "https://i.pravatar.cc/150?u=${chat.roomId}",
+                      avatarUrl: chat.urlPhoto,
                       name: chat.name,
-                      lastMessage: chat.name,
-                      time: '10.12',
+                      lastMessage: chat.lastMessage ?? '',
+                      time: _formatChatTime(chat.lastTime),
                       unreadCount: chat.unreadCount,
                       isSelected: isSelected,
+                      roomType: chat.roomType, 
+                      
                       onTap: () { 
                         if (controller.selectedArchivedChats.isNotEmpty) {
                           controller.toggleSelection(chat);
@@ -49,8 +62,7 @@ class DetailArsipScreen extends GetView<DetailArsipController> {
                           );
                         }
                       },
-                      onLongPress: () {
-                        
+                      onLongPress: () { 
                         controller.toggleSelection(chat);
                       },
                     );
@@ -66,20 +78,20 @@ class DetailArsipScreen extends GetView<DetailArsipController> {
 
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: ThemeColor.white,
       scrolledUnderElevation: 0.0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black),
+        icon: const Icon(Icons.arrow_back_ios_new, color: ThemeColor.darkGrey2),
         onPressed: () => Get.back(),
       ),
-      title: const Text('Diarsipkan', style: TextStyle(color: Colors.black, fontSize: 20, fontWeight: FontWeight.w500)),
+      title: const Text('Diarsipkan', style: TextStyle(color: ThemeColor.darkGrey2, fontSize: 20, fontWeight: FontWeight.normal)),
       actions: [
         Padding(
           padding: const EdgeInsets.only(right: 12.0),
           child: Obx(() { 
             if (controller.selectedArchivedChats.isNotEmpty) {
               return IconButton(
-                icon: const Icon(Feather.upload, color: Colors.black),
+                icon: const Icon(Feather.upload, color: ThemeColor.darkGrey2),
                 onPressed: () { 
                   controller.unarchiveChats();
                 },
