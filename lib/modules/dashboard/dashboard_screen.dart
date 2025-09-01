@@ -1,3 +1,4 @@
+// lib/app/modules/dashboard/dashboard_screen.dart
 import 'package:admin_gychat/shared/theme/colors.dart'; 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -10,8 +11,7 @@ class DashboardScreen extends GetView<DashboardController> {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    // List of pages to be displayed.
+  Widget build(BuildContext context) { 
     final List<Widget> bodyContent = [
       const ChatListView(listType: ChatListType.all),
       const ChatListView(listType: ChatListType.unread),
@@ -89,7 +89,7 @@ class DashboardScreen extends GetView<DashboardController> {
         width: size,
         height: size,
         colorFilter: const ColorFilter.mode(
-          Colors.grey,
+          ThemeColor.darkGrey1,
           BlendMode.srcIn,
         ),
       ),
