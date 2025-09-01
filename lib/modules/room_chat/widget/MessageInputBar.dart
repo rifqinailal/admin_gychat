@@ -86,6 +86,7 @@ class MessageInputBar extends GetView<RoomChatController> {
       );
     });
   }
+
   Widget _buildReplyPreview() {
     return Obx(() {
       // Jika tidak ada pesan yang di-reply, tampilkan widget kosong.
@@ -110,7 +111,7 @@ class MessageInputBar extends GetView<RoomChatController> {
                   Text(
                     message.senderName,
                     style: const TextStyle(
-                     color: ThemeColor.primary,
+                      color: ThemeColor.primary,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -132,7 +133,8 @@ class MessageInputBar extends GetView<RoomChatController> {
       );
     });
   }
- Widget _buildQuickReplyList() {
+
+  Widget _buildQuickReplyList() {
     return Obx(() {
       if (!controller.showQuickReplies.value) {
         return const SizedBox.shrink();
@@ -186,7 +188,6 @@ class MessageInputBar extends GetView<RoomChatController> {
                 ],
               ),
             ),
-
             Expanded(
               child: ListView.separated(
                 shrinkWrap: true,
@@ -195,14 +196,36 @@ class MessageInputBar extends GetView<RoomChatController> {
                   final reply = controller.filteredQuickReplies[index];
                   return ListTile(
                     leading: Text(
-                      '/${reply.shortcut}',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
+                      '${reply.shortcut}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 17,
+                        color: Colors.black,
+                      ),
                     ),
-                    title: Text(reply.message),
+                    title: Row(
+                      children: [
+                        // Gambar
+                        if (reply.imageFile != null)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(4.0),
+                              child: Image.file(
+                                reply.imageFile!,
+                                width: 40,
+                                height: 40,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                        // Teks Pesan
+                        Expanded(child: Text(reply.message)),
+                      ],
+                    ),
                     onTap: () => controller.selectQuickReply(reply),
                   );
                 },
-
                 separatorBuilder: (context, index) {
                   return const Divider(
                     height: 1,
@@ -213,12 +236,15 @@ class MessageInputBar extends GetView<RoomChatController> {
                 },
               ),
             ),
+
+            // ... (kode lainnya)
           ],
         ),
       );
     });
   }
- Widget _buildMessageInputBar() {
+
+  Widget _buildMessageInputBar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 12),
       color: Colors.white,
@@ -249,14 +275,14 @@ class MessageInputBar extends GetView<RoomChatController> {
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),
                   borderSide: const BorderSide(
-                   color: ThemeColor.primary,
+                    color: ThemeColor.primary,
                     width: 2,
                   ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),
                   borderSide: const BorderSide(
-                   color: ThemeColor.primary,
+                    color: ThemeColor.primary,
                     width: 2,
                   ),
                 ),
@@ -265,7 +291,7 @@ class MessageInputBar extends GetView<RoomChatController> {
                   onPressed: () => controller.takePicture(),
                   icon: const Icon(
                     Icons.camera_alt_outlined,
-                   color: ThemeColor.primary,
+                    color: ThemeColor.primary,
                   ),
                 ),
               ),
@@ -276,7 +302,10 @@ class MessageInputBar extends GetView<RoomChatController> {
             onPressed: controller.sendMessage,
             icon: Transform.rotate(
               angle: 0.8,
-              child: Icon(FontAwesome5Solid.location_arrow, color: ThemeColor.primary),
+              child: Icon(
+                FontAwesome5Solid.location_arrow,
+                color: ThemeColor.primary,
+              ),
             ),
           ),
         ],

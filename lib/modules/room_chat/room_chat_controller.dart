@@ -411,12 +411,32 @@ class RoomChatController extends GetxController {
 
   // FUNGSI BARU: Dipanggil saat salah satu quick reply dipilih.
   void selectQuickReply(QuickReply reply) {
+  // Cek apakah ada gambar yang terlampir
+  if (reply.imageFile != null) {
+    // Buat pesan gambar baru
+    final newMessage = MessageModel(
+      messageId: DateTime.now().millisecondsSinceEpoch,
+      senderId: currentUserId,
+      senderName: "Anda",
+      chatRoomId: (chatRoomInfo['id'] ?? 'unknown_room').toString(),
+      timestamp: DateTime.now(),
+      isSender: true,
+      type: MessageType.image,
+      imagePath: reply.imageFile!.path,
+      text: reply.message.isNotEmpty ? reply.message : null, // Sertakan pesan sebagai caption
+    );
+    messages.insert(0, newMessage);
+    messageController.clear(); // Kosongkan input setelah mengirim
+  } else {
+    // Jika tidak ada gambar, hanya isi teksnya
     messageController.text = reply.message;
     messageController.selection = TextSelection.fromPosition(
       TextPosition(offset: messageController.text.length),
     );
-    showQuickReplies.value = false;
   }
+  showQuickReplies.value = false;
+}
+
 
   // Fungsi untuk memulai mode seleksi (dipanggil saat long-press).
   void startMessageSelection(MessageModel message) {
