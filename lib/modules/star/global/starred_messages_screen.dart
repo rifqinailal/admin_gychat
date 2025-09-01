@@ -1,4 +1,4 @@
-// lib/modules/star/room/starred_messages_screen.dart
+// lib/modules/star/global/starred_messages_screen.dart
 import 'package:admin_gychat/models/global_starred_message_model.dart';
 import 'package:admin_gychat/models/message_model.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';

@@ -1,4 +1,4 @@
-// lib/app/modules/room_chat/widgets/room_chat_app_bar.dart
+// lib/modules/room_chat/widgets/RoomChatAppBar.dart
 import 'dart:io';
 import 'package:admin_gychat/models/message_model.dart';
 import 'package:admin_gychat/routes/app_routes.dart';

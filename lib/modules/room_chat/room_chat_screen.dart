@@ -1,3 +1,4 @@
+// lib/modules/room_chat/room_chat_screen.dart
 import 'package:admin_gychat/models/message_model.dart';
 import 'package:admin_gychat/modules/room_chat/widget/MessageInputBar.dart';
 import 'package:admin_gychat/modules/room_chat/widget/RoomChatAppBar.dart';
@@ -28,7 +29,7 @@ String formatDateSeparator(DateTime date) {
 
 class RoomChatScreen extends GetView<RoomChatController> {
   const RoomChatScreen({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

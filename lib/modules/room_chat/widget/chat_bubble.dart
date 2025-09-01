@@ -1,4 +1,4 @@
-// lib/app/modules/room_chat/widget/chat_bubble.dart
+// lib/modules/room_chat/widget/chat_bubble.dart
 import 'dart:io';
 
 import 'package:admin_gychat/models/message_model.dart';
