@@ -36,7 +36,7 @@ class DashboardScreen extends GetView<DashboardController> {
       ),
       bottomNavigationBar: Obx(
         () => BottomNavigationBar(
-          backgroundColor: ThemeColor.lightGrey3,
+          backgroundColor: ThemeColor.lightGrey2,
           type: BottomNavigationBarType.fixed,
           currentIndex: controller.tabIndex.value,
           onTap: controller.changeTabIndex,

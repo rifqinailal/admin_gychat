@@ -9,11 +9,14 @@ class SettingController extends GetxController {
   final box = GetStorage();
 
   void showLogoutConfirmation(BuildContext context) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
     Get.bottomSheet(
       Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.04),
         child: Column(
-          mainAxisSize: MainAxisSize.min, 
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
               width: double.infinity,
@@ -23,16 +26,18 @@ class SettingController extends GetxController {
               ),
               child: Column(
                 children: [
-                  const SizedBox(height:10),
+                  SizedBox(height: screenHeight * 0.015),
                   const Text(
                     'Are you sure you want to leave?',
-                    style: TextStyle(fontFamily: 'Poppins', color: ThemeColor.grey2, fontSize: 12),
+                    style: TextStyle(
+                        fontFamily: 'Poppins',
+                        color: ThemeColor.grey2,
+                        fontSize: 12),
                   ),
                   InkWell(
                     onTap: () {
                       box.remove('isLoggedIn');
-                      
-                      Get.back();
+                      Get.back(); 
                       Get.offAllNamed(AppRoutes.Auth);
                     },
                     child: Container(
@@ -53,8 +58,7 @@ class SettingController extends GetxController {
                 ],
               ),
             ),
-            const SizedBox(height: 10), 
-            
+            SizedBox(height: screenHeight * 0.01),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
@@ -79,7 +83,7 @@ class SettingController extends GetxController {
                 ),
               ),
             ),
-            const SizedBox(height: 40),
+            SizedBox(height: screenHeight * 0.04),
           ],
         ),
       ),
