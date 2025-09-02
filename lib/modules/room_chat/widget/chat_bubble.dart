@@ -9,7 +9,7 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
 
-class ChatBubble extends StatelessWidget {
+class ChatBubble extends StatefulWidget {
   final String? text;
   final bool isSender;
   final bool isSystemMessage;
@@ -51,107 +51,208 @@ class ChatBubble extends StatelessWidget {
     required this.isDeleted,
   });
 
-  Widget _buildReplyPreview() {
-  if (repliedMessage == null) return const SizedBox.shrink();
+  @override
+  State<ChatBubble> createState() => _ChatBubbleState();
+}
 
-  return GestureDetector(
-    onTap: () {
-      // Panggil controller untuk jump ke pesan yang direply
-      final controller = Get.find<RoomChatController>();
-      final replyMessageId = repliedMessage!['messageId'];
-      if (replyMessageId != null) {
-        controller.jumpToReplyMessage(replyMessageId);
-      }
-    },
-    child: ClipRRect(
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        margin: EdgeInsets.only(bottom: 7),
-        padding: const EdgeInsets.all(8),
-        color: isSender ? Color(0xFF1A2C79) : Color(0xFFEAE8FF),
-        child: IntrinsicHeight(
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 4,
-                color: isSender
-                    ? Colors.white70
-                    : ThemeColor.primary.withOpacity(0.7),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      repliedMessage!['name'] ?? 'Unknown',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 14,
-                        color: isSender ? ThemeColor.white : ThemeColor.primary,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      repliedMessage!['text'] ?? '',
-                      maxLines: 2, // Ubah ke 2 baris untuk pesan panjang
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontWeight: FontWeight.normal,
-                        fontSize: 13,
-                        color: isSender ? Colors.white70 : Colors.black54,
-                        height: 1.3, // Line height untuk spacing yang lebih baik
-                      ),
-                    ),
-                  ],
+class _ChatBubbleState extends State<ChatBubble> {
+  bool isExpanded = false;
+
+  Widget _buildReplyPreview() {
+    if (widget.repliedMessage == null) return const SizedBox.shrink();
+
+    return GestureDetector(
+      onTap: () {
+        // Panggil controller untuk jump ke pesan yang direply
+        final controller = Get.find<RoomChatController>();
+        final replyMessageId = widget.repliedMessage!['messageId'];
+        if (replyMessageId != null) {
+          controller.jumpToReplyMessage(replyMessageId);
+        }
+      },
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          margin: EdgeInsets.only(bottom: 7),
+          padding: const EdgeInsets.all(8),
+          color: widget.isSender ? Color(0xFF1A2C79) : Color(0xFFEAE8FF),
+          child: IntrinsicHeight(
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 4,
+                  color: widget.isSender
+                      ? Colors.white70
+                      : ThemeColor.primary.withOpacity(0.7),
                 ),
-              ),
-              // Tambahkan icon kecil untuk indikasi bisa diklik
-              Icon(
-                Icons.keyboard_arrow_up,
-                size: 16,
-                color: isSender ? Colors.white70 : Colors.black54,
-              ),
-            ],
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.repliedMessage!['name'] ?? 'Unknown',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 14,
+                          color: widget.isSender ? ThemeColor.white : ThemeColor.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        widget.repliedMessage!['text'] ?? '',
+                        maxLines: 2, // Ubah ke 2 baris untuk pesan panjang
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontWeight: FontWeight.normal,
+                          fontSize: 13,
+                          color: widget.isSender ? Colors.white70 : Colors.black54,
+                          height: 1.3, // Line height untuk spacing yang lebih baik
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Tambahkan icon kecil untuk indikasi bisa diklik
+                Icon(
+                  Icons.keyboard_arrow_up,
+                  size: 16,
+                  color: widget.isSender ? Colors.white70 : Colors.black54,
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   Widget _buildHighlightedText() {
+    final shouldShowButton = _shouldShowExpandButton();
+    
     // Jika tidak ada kata kunci pencarian, tampilkan Text biasa.
-    if (highlightText == null || highlightText!.isEmpty) {
-      return Text(
-        text ?? '',
-        style: TextStyle(color: isSender ? ThemeColor.white : ThemeColor.black),
+    if (widget.highlightText == null || widget.highlightText!.isEmpty) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            widget.text ?? '',
+            maxLines: (shouldShowButton && !isExpanded) ? 7 : null,
+            overflow: (shouldShowButton && !isExpanded) ? TextOverflow.ellipsis : TextOverflow.visible,
+            style: TextStyle(color: widget.isSender ? ThemeColor.white : ThemeColor.black),
+          ),
+          if (shouldShowButton)
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  isExpanded = !isExpanded;
+                });
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  isExpanded ? 'Sembunyikan' : 'Baca selengkapnya...',
+                  style: TextStyle(
+                    color: widget.isSender ? Colors.white70 : Colors.blue.shade600,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ),
+        ],
       );
     }
 
-    final regex = RegExp(highlightText!, caseSensitive: false);
-    final matches = regex.allMatches(text ?? '');
+    final regex = RegExp(widget.highlightText!, caseSensitive: false);
+    final matches = regex.allMatches(widget.text ?? '');
 
     if (matches.isEmpty) {
-      return Text(
-        text ?? '',
-        style: TextStyle(color: isSender ? ThemeColor.white : ThemeColor.black),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            widget.text ?? '',
+            maxLines: (shouldShowButton && !isExpanded) ? 7 : null,
+            overflow: (shouldShowButton && !isExpanded) ? TextOverflow.ellipsis : TextOverflow.visible,
+            style: TextStyle(color: widget.isSender ? ThemeColor.white : ThemeColor.black),
+          ),
+          if (shouldShowButton)
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  isExpanded = !isExpanded;
+                });
+              },
+              child: Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  isExpanded ? 'Sembunyikan' : 'Baca selengkapnya...',
+                  style: TextStyle(
+                    color: widget.isSender ? Colors.white70 : Colors.blue.shade600,
+                    fontWeight: FontWeight.w500,
+                    fontSize: 13,
+                  ),
+                ),
+              ),
+            ),
+        ],
       );
     }
 
     // `RichText` bisa menampilkan teks dengan berbagai gaya berbeda dalam satu widget.
-    return RichText(
-      text: TextSpan(
-        style: TextStyle(
-          color: isSender ? ThemeColor.white : ThemeColor.black,
-          fontSize: 14,
-          fontWeight: FontWeight.w400,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        RichText(
+          maxLines: (shouldShowButton && !isExpanded) ? 7 : null,
+          overflow: (shouldShowButton && !isExpanded) ? TextOverflow.ellipsis : TextOverflow.visible,
+          text: TextSpan(
+            style: TextStyle(
+              color: widget.isSender ? ThemeColor.white : ThemeColor.black,
+              fontSize: 14,
+              fontWeight: FontWeight.w400,
+            ),
+            // `children` diisi oleh list `TextSpan` yang sudah dipecah.
+            children: _generateSpans(widget.text ?? '', matches),
+          ),
         ),
-        // `children` diisi oleh list `TextSpan` yang sudah dipecah.
-        children: _generateSpans(text ?? '', matches),
-      ),
+        if (shouldShowButton)
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                isExpanded = !isExpanded;
+              });
+            },
+            child: Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                isExpanded ? 'Sembunyikan' : 'Baca selengkapnya...',
+                style: TextStyle(
+                  color: widget.isSender ? Colors.white70 : Colors.blue.shade600,
+                  fontWeight: FontWeight.w500,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
+  }
+
+  // Fungsi untuk mengecek apakah perlu menampilkan tombol expand
+  bool _shouldShowExpandButton() {
+    if (widget.text == null || widget.text!.isEmpty) return false;
+    
+    // Cara sederhana: hitung berdasarkan jumlah baris dengan split
+    final lines = widget.text!.split('\n').length;
+    
+    // Atau hitung berdasarkan panjang karakter dan perkiraan
+    const int avgCharPerLine = 40; // Lebih konservatif
+    const int maxLines = 7;
+    
+    return lines > maxLines || widget.text!.length > (avgCharPerLine * maxLines);
   }
 
   // Fungsi untuk memecah teks menjadi bagian normal dan bagian highlight.
@@ -190,22 +291,22 @@ class ChatBubble extends StatelessWidget {
     Widget buildTail() {
       return Positioned(
         bottom: 0,
-        right: isSender ? -6 : null,
-        left: isSender ? null : -6,
+        right: widget.isSender ? -6 : null,
+        left: widget.isSender ? null : -6,
         child: Icon(
-          isSender ? Icons.arrow_right : Icons.arrow_left,
+          widget.isSender ? Icons.arrow_right : Icons.arrow_left,
           size: 20,
-          color: isSender ? ThemeColor.primary : ThemeColor.white,
+          color: widget.isSender ? ThemeColor.primary : ThemeColor.white,
         ),
       );
     }
 
     // 2. Helper untuk membuat baris ikon status (bintang/pin)
     Widget buildStatusRow() {
-      if (!isPinned && !isStarred) return const SizedBox.shrink();
+      if (!widget.isPinned && !widget.isStarred) return const SizedBox.shrink();
 
-      IconData statusIcon = isPinned ? Icons.push_pin : Icons.star;
-      Color iconColor = isSender ? Colors.white70 : Colors.black54;
+      IconData statusIcon = widget.isPinned ? Icons.push_pin : Icons.star;
+      Color iconColor = widget.isSender ? Colors.white70 : Colors.black54;
 
       return Padding(
         padding: const EdgeInsets.only(right: 6, left: 3),
@@ -217,7 +318,7 @@ class ChatBubble extends StatelessWidget {
     }
 
     Widget buildMessageContent() {
-      if (isDeleted) {
+      if (widget.isDeleted) {
         return Row(
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
@@ -235,11 +336,11 @@ class ChatBubble extends StatelessWidget {
           ],
         );
       }
-      if (type == MessageType.document && documentName != null) {
+      if (widget.type == MessageType.document && widget.documentName != null) {
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (isSender) buildStatusRow(),
+            if (widget.isSender) buildStatusRow(),
             Flexible(
               child: Container(
                 padding: const EdgeInsets.all(12),
@@ -258,7 +359,7 @@ class ChatBubble extends StatelessWidget {
                     const SizedBox(width: 12),
                     Flexible(
                       child: Text(
-                        documentName!,
+                        widget.documentName!,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
@@ -271,23 +372,23 @@ class ChatBubble extends StatelessWidget {
                 ),
               ),
             ),
-            if (!isSender) buildStatusRow(),
+            if (!widget.isSender) buildStatusRow(),
           ],
         );
       }
 
-      if (type == MessageType.image && imagePath != null) {
+      if (widget.type == MessageType.image && widget.imagePath != null) {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             GestureDetector(
               onTap: () {
-                Get.find<RoomChatController>().showImageFullScreen(imagePath!);
+                Get.find<RoomChatController>().showImageFullScreen(widget.imagePath!);
               },
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(15),
                 child: Image.file(
-                  File(imagePath!),
+                  File(widget.imagePath!),
                   width: MediaQuery.of(context).size.width * 0.7,
                   fit: BoxFit.cover,
                 ),
@@ -300,11 +401,11 @@ class ChatBubble extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  if (isSender) buildStatusRow(),
-                  if (text != null && text!.isNotEmpty) Flexible(
-        child: _buildHighlightedText(),
-      ),
-                  if (!isSender) buildStatusRow(),
+                  if (widget.isSender) buildStatusRow(),
+                  if (widget.text != null && widget.text!.isNotEmpty) Flexible(
+                    child: _buildHighlightedText(),
+                  ),
+                  if (!widget.isSender) buildStatusRow(),
                 ],
               ),
             ),
@@ -312,30 +413,30 @@ class ChatBubble extends StatelessWidget {
         );
       }
 
-     return Row(
-    mainAxisSize: MainAxisSize.min,
-    crossAxisAlignment: CrossAxisAlignment.end, 
-    children: [
-      if (isSender) buildStatusRow(),
-      Flexible(
-        child: _buildHighlightedText(),
-      ),
-      if (!isSender) buildStatusRow(),
-    ],
-  );
-}
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.end, 
+        children: [
+          if (widget.isSender) buildStatusRow(),
+          Flexible(
+            child: _buildHighlightedText(),
+          ),
+          if (!widget.isSender) buildStatusRow(),
+        ],
+      );
+    }
 
     return GestureDetector(
-      onTap: onTap,
-      onLongPress: onLongPress,
+      onTap: widget.onTap,
+      onLongPress: widget.onLongPress,
       child: Container(
         color:
-            isSelected
+            widget.isSelected
                 ? ThemeColor.primary.withOpacity(0.3)
                 : Colors.transparent,
         child: Column(
           crossAxisAlignment:
-              isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              widget.isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(
@@ -344,9 +445,9 @@ class ChatBubble extends StatelessWidget {
               ),
               child: Align(
                 alignment:
-                    isSystemMessage
+                    widget.isSystemMessage
                         ? Alignment.center
-                        : (isSender
+                        : (widget.isSender
                             ? Alignment.centerRight
                             : Alignment.centerLeft),
                 child: Stack(
@@ -354,7 +455,7 @@ class ChatBubble extends StatelessWidget {
                   children: [
                     Container(
                       padding:
-                          type == MessageType.image
+                          widget.type == MessageType.image
                               ? const EdgeInsets.all(6)
                               : const EdgeInsets.all(10),
                       constraints: BoxConstraints(
@@ -362,33 +463,33 @@ class ChatBubble extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color:
-                            isSystemMessage
+                            widget.isSystemMessage
                                 ? Colors.yellow.shade200
-                                : (isSender
+                                : (widget.isSender
                                     ? ThemeColor.primary
                                     : ThemeColor.white),
                         borderRadius: BorderRadius.only(
                           topLeft: const Radius.circular(16),
                           topRight: const Radius.circular(16),
                           bottomLeft: Radius.circular(
-                            showTail && !isSender ? 0 : 16,
+                            widget.showTail && !widget.isSender ? 0 : 16,
                           ),
                           bottomRight: Radius.circular(
-                            showTail && isSender ? 0 : 16,
+                            widget.showTail && widget.isSender ? 0 : 16,
                           ),
                         ),
                       ),
                       child: Column(
                         crossAxisAlignment:
-                            isSender
+                            widget.isSender
                                 ? CrossAxisAlignment.start
                                 : CrossAxisAlignment.start,
                         children: [
-                          if (senderName != null && !isSender)
+                          if (widget.senderName != null && !widget.isSender)
                             Padding(
                               padding: const EdgeInsets.only(bottom: 4.0),
                               child: Text(
-                                senderName!,
+                                widget.senderName!,
                                 style: const TextStyle(
                                   color: Colors.pinkAccent,
                                   fontWeight: FontWeight.bold,
@@ -396,10 +497,10 @@ class ChatBubble extends StatelessWidget {
                                 ),
                               ),
                             ),
-                          if (repliedMessage != null)
+                          if (widget.repliedMessage != null)
                             Padding(
                               padding:
-                                  type == MessageType.text
+                                  widget.type == MessageType.text
                                       ? EdgeInsets.zero
                                       : const EdgeInsets.fromLTRB(8, 0, 8, 8),
                               child: _buildReplyPreview(),
@@ -409,7 +510,7 @@ class ChatBubble extends StatelessWidget {
                         ],
                       ),
                     ),
-                    if (showTail && !isSystemMessage) buildTail(),
+                    if (widget.showTail && !widget.isSystemMessage) buildTail(),
                   ],
                 ),
               ),
@@ -417,7 +518,7 @@ class ChatBubble extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(left: 20, right: 20, bottom: 8),
               child: Text(
-                DateFormat('HH:mm').format(timestamp),
+                DateFormat('HH:mm').format(widget.timestamp),
                 style: const TextStyle(fontSize: 12, color: Colors.grey),
               ),
             ),
