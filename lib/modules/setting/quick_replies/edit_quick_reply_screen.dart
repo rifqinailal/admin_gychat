@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'quick_controller.dart';
 import 'package:admin_gychat/models/quick_reply_model.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
-import 'dart:io';
 
 class EditQuickReplyScreen extends GetView<QuickController> {
   final QuickReply? reply;

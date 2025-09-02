@@ -5,7 +5,6 @@ import 'package:get/get.dart';
 import 'package:admin_gychat/shared/theme/colors.dart'; 
 import 'package:admin_gychat/modules/setting/profile/profile_controller.dart';
 import 'setting_controller.dart';
-import 'dart:io';
 
 class SettingScreen extends GetView<SettingController> {
   const SettingScreen({super.key});
