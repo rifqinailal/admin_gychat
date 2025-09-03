@@ -326,7 +326,10 @@ class RoomChatController extends GetxController {
 
   Future<void> _sendDocument() async {
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles();
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['pdf', 'doc', 'docx'],
+      );
       if (result != null) {
         final PlatformFile file = result.files.first;
         final newMessage = MessageModel(
