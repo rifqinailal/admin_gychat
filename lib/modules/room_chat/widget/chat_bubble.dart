@@ -59,8 +59,7 @@ class _ChatBubbleState extends State<ChatBubble> {
   bool isExpanded = false;
 
   Widget _buildReplyPreview() {
-    if (widget.repliedMessage == null) return const SizedBox.shrink();
-
+     if (widget.repliedMessage == null || widget.isDeleted) return const SizedBox.shrink();
     return GestureDetector(
       onTap: () {
         // Panggil controller untuk jump ke pesan yang direply
@@ -428,7 +427,7 @@ class _ChatBubbleState extends State<ChatBubble> {
 
     return GestureDetector(
       onTap: widget.onTap,
-      onLongPress: widget.onLongPress,
+      onLongPress: widget.isDeleted ? null : widget.onLongPress,
       child: Container(
         color:
             widget.isSelected
