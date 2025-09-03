@@ -39,9 +39,13 @@ class RoomChatController extends GetxController {
   List<MessageModel> get filteredMessages {
     if (searchQuery.isEmpty) return messages;
     return messages
-        .where((msg) =>
-            msg.text?.toLowerCase().contains(searchQuery.value.toLowerCase()) ??
-            false)
+        .where(
+          (msg) =>
+              msg.text?.toLowerCase().contains(
+                searchQuery.value.toLowerCase(),
+              ) ??
+              false,
+        )
         .toList();
   }
 
@@ -67,12 +71,15 @@ class RoomChatController extends GetxController {
     var initialMessages = _chatListController.getMessagesForRoom(roomId);
     messages.assignAll(initialMessages);
 
-    final chat = _chatListController.allChatsInternal
-        .firstWhere((c) => c.roomId == roomId, orElse: () => throw "Chat not found!");
+    final chat = _chatListController.allChatsInternal.firstWhere(
+      (c) => c.roomId == roomId,
+      orElse: () => throw "Chat not found!",
+    );
     if (chat.pinnedMessageId != null) {
       try {
-        pinnedMessage.value =
-            messages.firstWhere((m) => m.messageId == chat.pinnedMessageId);
+        pinnedMessage.value = messages.firstWhere(
+          (m) => m.messageId == chat.pinnedMessageId,
+        );
       } catch (e) {
         pinnedMessage.value = null;
       }
@@ -102,13 +109,14 @@ class RoomChatController extends GetxController {
       senderId: currentUserId,
       senderName: "Anda",
       text: text,
-      repliedMessage: replyMessage.value != null
-          ? {
-              'name': replyMessage.value!.senderName,
-              'text': replyMessage.value!.text ?? 'File',
-              'messageId': replyMessage.value!.messageId.toString()
-            }
-          : null,
+      repliedMessage:
+          replyMessage.value != null
+              ? {
+                'name': replyMessage.value!.senderName,
+                'text': replyMessage.value!.text ?? 'File',
+                'messageId': replyMessage.value!.messageId.toString(),
+              }
+              : null,
       timestamp: DateTime.now(),
       isSender: true,
       type: MessageType.text,
@@ -126,15 +134,20 @@ class RoomChatController extends GetxController {
       var index = messages.indexWhere((m) => m.messageId == msg.messageId);
       if (index != -1) {
         // Buat objek pesan baru dengan status bintang yang diperbarui
-        final updatedMessage = messages[index].copyWith(isStarred: !messages[index].isStarred);
+        final updatedMessage = messages[index].copyWith(
+          isStarred: !messages[index].isStarred,
+        );
         // Perbarui UI lokal
         messages[index] = updatedMessage;
         // Minta controller utama untuk menyimpan perubahan
-        _chatListController.updateMessageInChat(chatRoomInfo['id'], updatedMessage);
+        _chatListController.updateMessageInChat(
+          chatRoomInfo['id'],
+          updatedMessage,
+        );
       }
     }
     messages.refresh();
-    
+
     if (Get.isRegistered<StarredMessagesController>()) {
       Get.find<StarredMessagesController>().loadStarredMessages();
     }
@@ -150,7 +163,9 @@ class RoomChatController extends GetxController {
       } else {
         pinnedMessage.value = messageToPin;
         _chatListController.setPinnedMessage(
-            chatRoomInfo['id'], messageToPin.messageId);
+          chatRoomInfo['id'],
+          messageToPin.messageId,
+        );
       }
     }
     clearMessageSelection();
@@ -159,7 +174,7 @@ class RoomChatController extends GetxController {
   // --- FUNGSI YANG DIPERBAIKI ---
   void deleteMessages({required bool deleteForAll}) {
     List<MessageModel> messagesToDelete = List.from(selectedMessages);
-    
+
     if (!deleteForAll) {
       messages.removeWhere((msg) => messagesToDelete.contains(msg));
     } else {
@@ -168,15 +183,20 @@ class RoomChatController extends GetxController {
         if (index != -1) {
           final updatedMessage = messages[index].copyWith(isDeleted: true);
           messages[index] = updatedMessage;
-          _chatListController.updateMessageInChat(chatRoomInfo['id'], updatedMessage);
+          _chatListController.updateMessageInChat(
+            chatRoomInfo['id'],
+            updatedMessage,
+          );
         }
       }
     }
-    
+
     // Jika 'Hapus untuk saya', kita perlu mengupdate seluruh list pesan di ChatModel
-    if(!deleteForAll) {
-        final chat = _chatListController.allChatsInternal.firstWhere((c) => c.roomId == chatRoomInfo['id']);
-        chat.messages.removeWhere((msg) => messagesToDelete.contains(msg));
+    if (!deleteForAll) {
+      final chat = _chatListController.allChatsInternal.firstWhere(
+        (c) => c.roomId == chatRoomInfo['id'],
+      );
+      chat.messages.removeWhere((msg) => messagesToDelete.contains(msg));
     }
 
     _chatListController.saveChatsToStorage();
@@ -188,12 +208,16 @@ class RoomChatController extends GetxController {
   void updateMessage() {
     final newText = messageController.text.trim();
     if (editingMessage.value != null && newText.isNotEmpty) {
-      var index =
-          messages.indexWhere((m) => m.messageId == editingMessage.value!.messageId);
+      var index = messages.indexWhere(
+        (m) => m.messageId == editingMessage.value!.messageId,
+      );
       if (index != -1) {
         final updatedMessage = messages[index].copyWith(text: newText);
         messages[index] = updatedMessage;
-        _chatListController.updateMessageInChat(chatRoomInfo['id'], updatedMessage);
+        _chatListController.updateMessageInChat(
+          chatRoomInfo['id'],
+          updatedMessage,
+        );
       }
       messages.refresh();
       cancelEdit();
@@ -226,7 +250,10 @@ class RoomChatController extends GetxController {
     try {
       await OpenFilex.open(path);
     } catch (e) {
-      Get.snackbar('Error', 'Tidak dapat membuka file. Pastikan ada aplikasi yang mendukung.');
+      Get.snackbar(
+        'Error',
+        'Tidak dapat membuka file. Pastikan ada aplikasi yang mendukung.',
+      );
     }
   }
 
@@ -249,8 +276,14 @@ class RoomChatController extends GetxController {
               onTap: () => Get.back(),
             ),
             ListTile(
-              trailing: const Icon(Icons.photo_library, color: Colors.blueAccent),
-              leading: const Text('Choose images', style: TextStyle(fontSize: 17, color: Colors.black)),
+              trailing: const Icon(
+                Icons.photo_library,
+                color: Colors.blueAccent,
+              ),
+              leading: const Text(
+                'Choose images',
+                style: TextStyle(fontSize: 17, color: Colors.black),
+              ),
               onTap: () {
                 Get.back();
                 _sendImage(ImageSource.gallery);
@@ -259,7 +292,10 @@ class RoomChatController extends GetxController {
             const Divider(height: 1, thickness: 1),
             ListTile(
               trailing: const Icon(Icons.insert_drive_file, color: Colors.red),
-              leading: const Text('Choose dokumen', style: TextStyle(fontSize: 17, color: Colors.black)),
+              leading: const Text(
+                'Choose dokumen',
+                style: TextStyle(fontSize: 17, color: Colors.black),
+              ),
               onTap: () {
                 Get.back();
                 _sendDocument();
@@ -304,9 +340,18 @@ class RoomChatController extends GetxController {
           documentPath: file.path,
           documentName: file.name,
           text: file.name,
+          repliedMessage:
+              replyMessage.value != null
+                  ? {
+                    'name': replyMessage.value!.senderName,
+                    'text': replyMessage.value!.text ?? 'File',
+                    'messageId': replyMessage.value!.messageId.toString(),
+                  }
+                  : null,
         );
         messages.insert(0, newMessage);
         _chatListController.addMessageToChat(chatRoomInfo['id'], newMessage);
+        cancelReply();
       }
     } catch (e) {
       Get.snackbar('Error', 'Gagal memilih dokumen: $e');
@@ -339,12 +384,19 @@ class RoomChatController extends GetxController {
               right: 0,
               child: Container(
                 margin: const EdgeInsets.all(16.0),
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 8.0,
+                  vertical: 4.0,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.15), blurRadius: 10, offset: const Offset(0, 4)),
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
                   ],
                 ),
                 child: Row(
@@ -369,7 +421,10 @@ class RoomChatController extends GetxController {
                       child: FloatingActionButton(
                         elevation: 0,
                         backgroundColor: Colors.white,
-                        child: const Icon(Icons.send, color: ThemeColor.primary),
+                        child: const Icon(
+                          Icons.send,
+                          color: ThemeColor.primary,
+                        ),
                         onPressed: () {
                           final newMessage = MessageModel(
                             chatRoomId: chatRoomInfo['id'].toString(),
@@ -381,10 +436,25 @@ class RoomChatController extends GetxController {
                             type: MessageType.image,
                             imagePath: pickedFile.path,
                             text: captionController.text.trim(),
+                            repliedMessage:
+                                replyMessage.value != null
+                                    ? {
+                                      'name': replyMessage.value!.senderName,
+                                      'text':
+                                          replyMessage.value!.text ?? 'File',
+                                      'messageId':
+                                          replyMessage.value!.messageId
+                                              .toString(),
+                                    }
+                                    : null,
                           );
                           messages.insert(0, newMessage);
-                          _chatListController.addMessageToChat(chatRoomInfo['id'], newMessage);
+                          _chatListController.addMessageToChat(
+                            chatRoomInfo['id'],
+                            newMessage,
+                          );
                           Get.back();
+                          cancelReply();
                         },
                       ),
                     ),
@@ -408,7 +478,9 @@ class RoomChatController extends GetxController {
         filteredQuickReplies.assignAll(quickController.quickReplies);
       } else {
         filteredQuickReplies.assignAll(
-          quickController.quickReplies.where((reply) => reply.shortcut.toLowerCase().contains(query)),
+          quickController.quickReplies.where(
+            (reply) => reply.shortcut.toLowerCase().contains(query),
+          ),
         );
       }
     } else {
@@ -428,10 +500,19 @@ class RoomChatController extends GetxController {
         type: MessageType.image,
         imagePath: reply.imageFile!.path,
         text: reply.message.isNotEmpty ? reply.message : null,
+        repliedMessage:
+            replyMessage.value != null
+                ? {
+                  'name': replyMessage.value!.senderName,
+                  'text': replyMessage.value!.text ?? 'File',
+                  'messageId': replyMessage.value!.messageId.toString(),
+                }
+                : null,
       );
       messages.insert(0, newMessage);
       _chatListController.addMessageToChat(chatRoomInfo['id'], newMessage);
       messageController.clear();
+      cancelReply();
     } else {
       messageController.text = reply.message;
       messageController.selection = TextSelection.fromPosition(
@@ -494,14 +575,23 @@ class RoomChatController extends GetxController {
     Get.dialog(
       Dialog(
         backgroundColor: Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20.0),
+        ),
         child: Padding(
           padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Hapus pesan', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w500, color: Colors.grey)),
+              const Text(
+                'Hapus pesan',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey,
+                ),
+              ),
               const SizedBox(height: 5),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
@@ -515,8 +605,18 @@ class RoomChatController extends GetxController {
                           Get.back();
                           deleteMessages(deleteForAll: true);
                         },
-                        style: TextButton.styleFrom(alignment: Alignment.centerRight, padding: const EdgeInsets.symmetric(vertical: 12)),
-                        child: const Text('Hapus untuk semua orang', textAlign: TextAlign.right, style: TextStyle(color: ThemeColor.primary, fontSize: 16)),
+                        style: TextButton.styleFrom(
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                        ),
+                        child: const Text(
+                          'Hapus untuk semua orang',
+                          textAlign: TextAlign.right,
+                          style: TextStyle(
+                            color: ThemeColor.primary,
+                            fontSize: 16,
+                          ),
+                        ),
                       ),
                     ),
                   SizedBox(
@@ -526,16 +626,36 @@ class RoomChatController extends GetxController {
                         Get.back();
                         deleteMessages(deleteForAll: false);
                       },
-                      style: TextButton.styleFrom(alignment: Alignment.centerRight, padding: const EdgeInsets.symmetric(vertical: 12)),
-                      child: const Text('Hapus untuk saya', textAlign: TextAlign.right, style: TextStyle(color: ThemeColor.primary, fontSize: 16)),
+                      style: TextButton.styleFrom(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: const Text(
+                        'Hapus untuk saya',
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          color: ThemeColor.primary,
+                          fontSize: 16,
+                        ),
+                      ),
                     ),
                   ),
                   SizedBox(
                     width: double.infinity,
                     child: TextButton(
                       onPressed: () => Get.back(),
-                      style: TextButton.styleFrom(alignment: Alignment.centerRight, padding: const EdgeInsets.symmetric(vertical: 12)),
-                      child: const Text('Batal', textAlign: TextAlign.right, style: TextStyle(color: ThemeColor.primary, fontSize: 16)),
+                      style: TextButton.styleFrom(
+                        alignment: Alignment.centerRight,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                      child: const Text(
+                        'Batal',
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          color: ThemeColor.primary,
+                          fontSize: 16,
+                        ),
+                      ),
                     ),
                   ),
                 ],
@@ -550,7 +670,9 @@ class RoomChatController extends GetxController {
   void setEditMessage() {
     if (selectedMessages.length == 1) {
       final messageToEdit = selectedMessages.first;
-      if (messageToEdit.isSender && (messageToEdit.type == MessageType.text || messageToEdit.type == MessageType.image)) {
+      if (messageToEdit.isSender &&
+          (messageToEdit.type == MessageType.text ||
+              messageToEdit.type == MessageType.image)) {
         editingMessage.value = messageToEdit;
         messageController.text = messageToEdit.text ?? '';
         messageController.selection = TextSelection.fromPosition(
@@ -558,7 +680,10 @@ class RoomChatController extends GetxController {
         );
         clearMessageSelection();
       } else {
-        Get.snackbar('Info', 'Hanya pesan teks atau gambar Anda yang bisa diedit.');
+        Get.snackbar(
+          'Info',
+          'Hanya pesan teks atau gambar Anda yang bisa diedit.',
+        );
         clearMessageSelection();
       }
     }
@@ -616,7 +741,8 @@ class RoomChatController extends GetxController {
     var status = await Permission.storage.request();
     if (status.isGranted) {
       try {
-        final String fileName = "IMG_${DateTime.now().millisecondsSinceEpoch}.jpg";
+        final String fileName =
+            "IMG_${DateTime.now().millisecondsSinceEpoch}.jpg";
         final result = await SaverGallery.saveFile(
           androidRelativePath: "Pictures/GychatAdmin",
           filePath: imagePath,
@@ -626,13 +752,19 @@ class RoomChatController extends GetxController {
         if (result.isSuccess) {
           Get.snackbar('Berhasil', 'Gambar berhasil disimpan di galeri.');
         } else {
-          Get.snackbar('Gagal', 'Tidak dapat menyimpan gambar: ${result.errorMessage}');
+          Get.snackbar(
+            'Gagal',
+            'Tidak dapat menyimpan gambar: ${result.errorMessage}',
+          );
         }
       } catch (e) {
         Get.snackbar('Error', 'Terjadi kesalahan saat menyimpan gambar.');
       }
     } else {
-      Get.snackbar('Izin Ditolak', 'Izin akses penyimpanan dibutuhkan untuk menyimpan gambar.');
+      Get.snackbar(
+        'Izin Ditolak',
+        'Izin akses penyimpanan dibutuhkan untuk menyimpan gambar.',
+      );
     }
   }
 
@@ -653,7 +785,11 @@ class RoomChatController extends GetxController {
           }
         });
       } else {
-        Get.snackbar('Info', 'Pesan yang direply tidak ditemukan', snackPosition: SnackPosition.TOP);
+        Get.snackbar(
+          'Info',
+          'Pesan yang direply tidak ditemukan',
+          snackPosition: SnackPosition.TOP,
+        );
       }
     } catch (e) {
       print('Error jumping to reply message: $e');
