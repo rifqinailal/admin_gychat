@@ -1,37 +1,38 @@
 // lib/modules/star/room/room_starred_controller.dart
 import 'package:admin_gychat/models/message_model.dart';
+import 'package:admin_gychat/modules/chat_list/chat_list_controller.dart';
 import 'package:admin_gychat/modules/room_chat/room_chat_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
 
 class RoomStarredController extends GetxController {
-  // Variabel untuk data
+  final ChatListController _chatListController = Get.find();
+
   var starredMessages = <MessageModel>[].obs;
   var filteredMessages = <MessageModel>[].obs;
-
-  // Variabel untuk mode seleksi
   var isSelectionMode = false.obs;
   var selectedMessages = <MessageModel>{}.obs;
-
-  // Variabel untuk mode pencarian
   var isSearchActive = false.obs;
   final TextEditingController searchController = TextEditingController();
 
-  // Info room
-  late String roomId;
+  late int roomId; // Tipe data sudah benar (int)
   late String roomName;
 
   @override
   void onInit() {
     super.onInit();
     if (Get.arguments is Map) {
-      roomId = Get.arguments['roomId'];
+      // --- PERBAIKAN DI SINI ---
+      // Mengonversi argumen 'roomId' menjadi int secara aman
+      roomId = Get.arguments['roomId'] is int
+          ? Get.arguments['roomId']
+          : int.parse(Get.arguments['roomId'].toString());
+      // ------------------------
+
       roomName = Get.arguments['roomName'];
       loadStarredMessages();
     }
-    // Search bar
     searchController.addListener(() {
       filterMessages(searchController.text);
     });
@@ -44,26 +45,39 @@ class RoomStarredController extends GetxController {
   }
 
   void loadStarredMessages() {
-    starredMessages.clear();
-    final box = GetStorage('ChatRoom_$roomId');
-    final messagesJson = box.read<List>('messages_$roomId');
-
-    if (messagesJson != null) {
-      final allMessages = messagesJson
-          .map((json) => MessageModel.fromJson(Map<String, dynamic>.from(json)))
-          .toList();
-
-      //final starred = allMessages.where((msg) => msg.isStarred && !msg.isDeleted).toList();
-      final starred = allMessages.where((msg) => msg.isStarred && !msg.isDeleted).toList();
-      starred.sort((a, b) => b.timestamp.compareTo(a.timestamp));
-      
-      starredMessages.assignAll(starred);
-      filteredMessages.assignAll(starredMessages);
-    }
-    print("Total starred messages in room $roomId: ${starredMessages.length}");
+    final allMessages = _chatListController.getMessagesForRoom(roomId);
+    final starred = allMessages.where((msg) => msg.isStarred && !msg.isDeleted).toList();
+    starred.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    
+    starredMessages.assignAll(starred);
+    filteredMessages.assignAll(starredMessages);
   }
 
-  // Pencarian
+  void unstarMessages(List<MessageModel> messagesToUnstar) {
+    for (var msgToUnstar in messagesToUnstar) {
+      final updatedMessage = msgToUnstar.copyWith(isStarred: false);
+      _chatListController.updateMessageInChat(roomId, updatedMessage);
+    }
+
+    if (Get.isRegistered<RoomChatController>()) {
+      final roomChatController = Get.find<RoomChatController>();
+      if (roomChatController.chatRoomInfo['id'] == roomId) {
+        for (var msgToUnstar in messagesToUnstar) {
+           var index = roomChatController.messages.indexWhere((m) => m.messageId == msgToUnstar.messageId);
+           if (index != -1) {
+             roomChatController.messages[index] = roomChatController.messages[index].copyWith(isStarred: false);
+           }
+        }
+        roomChatController.messages.refresh();
+      }
+    }
+
+    exitSelectionMode();
+    loadStarredMessages();
+  }
+
+  // ... (Sisa kode Anda di bawah ini tidak perlu diubah) ...
+  
   void toggleSearch() {
     isSearchActive.value = !isSearchActive.value;
     if (!isSearchActive.value) {
@@ -111,7 +125,6 @@ class RoomStarredController extends GetxController {
     selectedMessages.clear();
   }
 
-  // Hapus Bintang dari pesan yang dipilih
   void confirmUnstarSelected() {
     if (selectedMessages.isEmpty) return;
     _showDeleteDialog(
@@ -130,7 +143,6 @@ class RoomStarredController extends GetxController {
     );
   }
 
-  // Hapus Bintang dari SEMUA pesan di room ini
   void confirmUnstarAllInRoom() {
     if (starredMessages.isEmpty) {
        Get.snackbar(
@@ -145,7 +157,7 @@ class RoomStarredController extends GetxController {
     _showDeleteDialog(
       title: 'Hapus Semua Bintang ?',
       onConfirm: () {
-        unstarMessages(starredMessages);
+        unstarMessages(starredMessages.toList());
         Get.back();
         Get.snackbar(
           'Success', 
@@ -157,35 +169,7 @@ class RoomStarredController extends GetxController {
       },
     );
   }
-
-  // Fungsi inti untuk menghapus bintang
-  void unstarMessages(List<MessageModel> messagesToUnstar) {
-    final box = GetStorage('ChatRoom_$roomId');
-    final messagesJson = box.read<List>('messages_$roomId');
-
-    if (messagesJson != null) {
-      var messagesList = messagesJson
-          .map((json) => MessageModel.fromJson(Map<String, dynamic>.from(json)))
-          .toList();
-
-      for (var msgToUnstar in messagesToUnstar) {
-        var index = messagesList.indexWhere((m) => m.messageId == msgToUnstar.messageId);
-        if (index != -1) {
-          messagesList[index] = messagesList[index].copyWith(isStarred: false);
-        }
-      }
-      
-      box.write('messages_$roomId', messagesList.map((m) => m.toJson()).toList());
-    }
-
-    // Update state
-    if (Get.isRegistered<RoomChatController>()) {
-      Get.find<RoomChatController>().refreshMessagesFromStorage();
-    }
-    exitSelectionMode();
-    loadStarredMessages();
-  }
-
+  
   void _showDeleteDialog({required String title, required VoidCallback onConfirm}) {
     Get.dialog(
       AlertDialog(

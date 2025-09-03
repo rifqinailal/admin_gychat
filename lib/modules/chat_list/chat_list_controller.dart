@@ -31,13 +31,15 @@ class ChatListController extends GetxController {
   void onInit() {
     super.onInit();
     loadChatsFromStorage();
-    debounce(
-      _allChats,
-      (_) => saveChatsToStorage(),
-      time: const Duration(seconds: 1),
-    );
     searchController = TextEditingController();
     searchController.addListener(_onSearchChanged);
+  }
+
+   @override
+  void onClose() {
+    saveChatsToStorage(); // Simpan saat controller ditutup
+    searchController.dispose();
+    super.onClose();
   }
 
   List<ChatModel> get allChatsInternal => _allChats;
@@ -55,6 +57,68 @@ class ChatListController extends GetxController {
       allChats.where((chat) => chat.unreadCount > 0).toList();
   List<ChatModel> get groupChats =>
       allChats.where((chat) => chat.roomType == 'group').toList();
+
+  List<MessageModel> getMessagesForRoom(int roomId) {
+    try {
+      final chat = _allChats.firstWhere((c) => c.roomId == roomId);
+      return chat.messages;
+    } catch (e) {
+      print("Chat with ID $roomId not found. Returning empty list.");
+      return [];
+    }
+  }
+  void setPinnedMessage(int roomId, int? messageId) {
+    final index = _allChats.indexWhere((c) => c.roomId == roomId);
+    if (index != -1) {
+      // Dapatkan chat lama
+      final chat = _allChats[index];
+      // Buat chat baru dengan ID pin yang diperbarui
+      final updatedChat = chat.copyWith(pinnedMessageId: messageId);
+      // Ganti chat lama dengan yang baru
+      _allChats[index] = updatedChat;
+      // Simpan perubahan
+      saveChatsToStorage();
+    }
+  }
+  // Fungsi untuk menambahkan pesan baru ke room dan menyimpan
+  void addMessageToChat(int roomId, MessageModel message) {
+    final index = _allChats.indexWhere((c) => c.roomId == roomId);
+    if (index != -1) {
+      final chat = _allChats[index];
+      
+      // Tambahkan pesan baru ke list di dalam ChatModel
+      chat.messages.insert(0, message);
+      
+      // Buat salinan chat yang sudah diperbarui dan pindahkan ke atas
+      final updatedChat = chat.copyWith(
+        lastMessage: message.text ?? (message.type == MessageType.image ? 'Image' : 'Document'),
+        lastTime: message.timestamp,
+      );
+      
+      _allChats.removeAt(index);
+      _allChats.insert(0, updatedChat);
+      
+      // Langsung simpan untuk memastikan persistensi
+      saveChatsToStorage();
+    }
+  }
+
+  void updateMessageInChat(int roomId, MessageModel updatedMessage) {
+    final chatIndex = _allChats.indexWhere((c) => c.roomId == roomId);
+    if (chatIndex != -1) {
+      final chat = _allChats[chatIndex];
+      final messageIndex = chat.messages.indexWhere((m) => m.messageId == updatedMessage.messageId);
+      
+      if (messageIndex != -1) {
+        // Ganti pesan lama dengan versi yang sudah diperbarui
+        chat.messages[messageIndex] = updatedMessage;
+        // Simpan seluruh state aplikasi
+        saveChatsToStorage();
+        print("Message ${updatedMessage.messageId} in room $roomId updated and saved.");
+      }
+    }
+  }
+  // ------------------------------------
 
   void saveChatsToStorage() {
     List<Map<String, dynamic>> chatsJson =
@@ -75,6 +139,23 @@ class ChatListController extends GetxController {
       print("Daftar chat berhasil dimuat dari local storage!");
     } else {
       fetchChats();
+    }
+  }
+
+
+  void updateChatMetadata(int roomId, String? lastMessage, DateTime? lastTime) {
+    int index = _allChats.indexWhere((chat) => chat.roomId == roomId);
+    if (index != -1) {
+      final chat = _allChats[index];
+      // Pindahkan chat ke paling atas
+      _allChats.removeAt(index);
+      _allChats.insert(0, chat.copyWith(
+        lastMessage: lastMessage,
+        lastTime: lastTime,
+      ));
+      
+      // Langsung simpan perubahan
+      saveChatsToStorage();
     }
   }
 

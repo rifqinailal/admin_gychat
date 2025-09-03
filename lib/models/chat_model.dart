@@ -14,7 +14,8 @@ class ChatModel {
   final int unreadCount;
   bool isArchived;
   bool isPinned;
-  final List<MessageModel> messages; // Tetap kita simpan untuk pencarian lokal
+  final List<MessageModel> messages;
+  final int? pinnedMessageId; // <-- TAMBAHKAN INI
 
   ChatModel({
     required this.roomId,
@@ -29,7 +30,31 @@ class ChatModel {
     this.isArchived = false,
     this.isPinned = false,
     this.messages = const [],
+    this.pinnedMessageId, // <-- TAMBAHKAN INI
   });
+
+  ChatModel copyWith({
+    String? lastMessage,
+    DateTime? lastTime,
+    List<MessageModel>? messages,
+    int? pinnedMessageId, // <-- TAMBAHKAN INI
+  }) {
+    return ChatModel(
+      roomId: this.roomId,
+      roomMemberId: this.roomMemberId,
+      roomType: this.roomType,
+      name: this.name,
+      description: this.description,
+      urlPhoto: this.urlPhoto,
+      lastMessage: lastMessage ?? this.lastMessage,
+      lastTime: lastTime ?? this.lastTime,
+      unreadCount: this.unreadCount,
+      isArchived: this.isArchived,
+      isPinned: this.isPinned,
+      messages: messages ?? this.messages,
+      pinnedMessageId: pinnedMessageId ?? this.pinnedMessageId, // <-- TAMBAHKAN INI
+    );
+  }
   
   // Method `toJson` untuk menyimpan ke GetStorage
   Map<String, dynamic> toJson() {
@@ -46,6 +71,7 @@ class ChatModel {
       'is_archived': isArchived,
       'is_pinned': isPinned,
       'messages': messages.map((m) => m.toJson()).toList(),
+      'pinned_message_id': pinnedMessageId, // <-- TAMBAHKAN INI
     };
   }
   
@@ -66,6 +92,7 @@ class ChatModel {
       messages: json['messages'] != null
           ? (json['messages'] as List).map((m) => MessageModel.fromJson(m)).toList()
           : [],
+      pinnedMessageId: json['pinned_message_id'], // <-- TAMBAHKAN INI
     );
   }
-} 
+}
