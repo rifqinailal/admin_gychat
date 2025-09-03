@@ -1,15 +1,63 @@
 // lib/modules/star/room/room_starred_controller.dart
 import 'package:admin_gychat/models/message_model.dart';
 import 'package:admin_gychat/modules/room_chat/room_chat_controller.dart';
+import 'package:admin_gychat/modules/star/room/room_starred_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'dart:async';
 
 class RoomStarredController extends GetxController {
   // Variabel untuk data
   var starredMessages = <MessageModel>[].obs;
   var filteredMessages = <MessageModel>[].obs;
+
+  var messages = <MessageModel>[].obs;
+  final ItemScrollController itemScrollController = ItemScrollController();
+  final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
+  var highlightedMessageId = Rxn<String>();
+
+  void goToStarredMessages() async {
+    final result = await Get.to(
+      () => const RoomStarredScreen(),
+      arguments: {
+        'roomId': roomId,
+        'roomName': roomName,
+      },
+    );
+    if (result != null && result is String) {
+      jumpToMessage(result);
+    }
+  }
+  void jumpToMessage(String messageId) {
+    final index = filteredMessages.indexWhere((msg) => msg.messageId == messageId);
+
+    if (index != -1 && itemScrollController.isAttached) {
+      highlightedMessageId.value = messageId;
+      itemScrollController.scrollTo(
+        index: index,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+        alignment: 0.5, // 0.5 agar pesan berada di tengah layar
+      );
+      // Hapus highlight setelah beberapa detik
+      Timer(const Duration(seconds: 3), () {
+        if (highlightedMessageId.value == messageId) {
+          highlightedMessageId.value = null;
+        }
+      });
+    } else {
+      Get.snackbar(
+        'Info', 
+        'Pesan mungkin tidak ada lagi di halaman ini.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: ThemeColor.primary.withOpacity(0.8),
+        colorText: ThemeColor.white,
+      );
+    }
+  }
 
   // Variabel untuk mode seleksi
   var isSelectionMode = false.obs;
@@ -85,6 +133,8 @@ class RoomStarredController extends GetxController {
   void handleMessageTap(MessageModel message) {
     if (isSelectionMode.value) {
       toggleMessageSelection(message);
+    } else {
+      Get.back(result: message.messageId);
     }
   }
 

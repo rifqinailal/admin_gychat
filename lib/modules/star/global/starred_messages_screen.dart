@@ -67,7 +67,7 @@ class StarredMessagesScreen extends GetView<StarredMessagesController> {
       leading: IconButton(
         icon: const Icon(
           Icons.arrow_back_ios_new, 
-          color: ThemeColor.darkGrey2,
+          color: ThemeColor.black,
           size: 25
         ),
         onPressed: () => Get.back(),
@@ -77,7 +77,7 @@ class StarredMessagesScreen extends GetView<StarredMessagesController> {
         style: TextStyle(
           fontFamily: 'Poppins',
           fontWeight: FontWeight.normal,
-          color: ThemeColor.darkGrey2, 
+          color: ThemeColor.black, 
           fontSize: 20
         ),
       ),
@@ -87,7 +87,7 @@ class StarredMessagesScreen extends GetView<StarredMessagesController> {
             angle: 1.3,
             child: const Icon(
               Icons.search, 
-              color: ThemeColor.darkGrey2,
+              color: ThemeColor.black,
               size: 25
             ),
           ),
@@ -96,7 +96,7 @@ class StarredMessagesScreen extends GetView<StarredMessagesController> {
         IconButton(
           icon: const Icon(
             Icons.delete_outline, 
-            color: ThemeColor.darkGrey2,
+            color: ThemeColor.black,
             size: 25
           ),
           onPressed: () => controller.confirmDeleteAll(),
@@ -201,10 +201,11 @@ class StarredMessagesScreen extends GetView<StarredMessagesController> {
                         ),
                         const Padding(
                           padding: EdgeInsets.symmetric(horizontal: 10.0),
-                          child: Text('▸', style: TextStyle(
-                            color: ThemeColor.black, 
-                            fontSize: 30
-                          )),
+                          child: Icon(
+                            Icons.play_arrow,
+                            size: 16,
+                            color: ThemeColor.black
+                          ),
                         ),
                         const SizedBox(width: 1),
                         Expanded(
@@ -261,7 +262,7 @@ class StarredMessagesScreen extends GetView<StarredMessagesController> {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  DateFormat('HH:mm').format(message.timestamp),
+                                  DateFormat('HH.mm').format(message.timestamp),
                                   style: const TextStyle(
                                     fontFamily: 'Poppins',
                                     fontWeight: FontWeight.normal,
