@@ -1,23 +1,22 @@
-// lib/app/modules/room_chat/room_chat_screen.dart
-import 'dart:io';
-
+// lib/modules/room_chat/room_chat_screen.dart
 import 'package:admin_gychat/models/message_model.dart';
+import 'package:admin_gychat/modules/room_chat/widget/MessageInputBar.dart';
+import 'package:admin_gychat/modules/room_chat/widget/RoomChatAppBar.dart';
 import 'package:admin_gychat/modules/room_chat/widget/chat_bubble.dart';
 import 'package:admin_gychat/modules/room_chat/widget/date_separator.dart';
 import 'package:admin_gychat/modules/room_chat/widget/pinned_message_bar.dart';
-import 'package:admin_gychat/routes/app_routes.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:flutter_vector_icons/flutter_vector_icons.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'room_chat_controller.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 bool isSameDay(DateTime date1, DateTime date2) {
   return date1.year == date2.year &&
-  date1.month == date2.month &&
-  date1.day == date2.day;
+      date1.month == date2.month &&
+      date1.day == date2.day;
 }
 
 String formatDateSeparator(DateTime date) {
@@ -26,597 +25,258 @@ String formatDateSeparator(DateTime date) {
   if (isSameDay(date, now)) return "Today";
   if (isSameDay(date, yesterday)) return "Yesterday";
   return DateFormat('dd MMMM yyyy').format(date);
-} 
+}
 
 class RoomChatScreen extends GetView<RoomChatController> {
   const RoomChatScreen({super.key});
 
-  AppBar _buildNormalAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white,
-      scrolledUnderElevation: 0.0,
-       leadingWidth: 35, 
-       titleSpacing:0,
-      leading: IconButton(
-        onPressed: () => Get.back(),
-        icon: const Icon(Icons.arrow_back_ios),
-      ),
-      title:
-      InkWell(
-        onTap: () {
-          Get.toNamed(AppRoutes.DetailGrup);
-        },
-        child: Row(
-          children: [
-            const CircleAvatar(
-              backgroundImage: NetworkImage(
-                "https://i.pravatar.cc/150?u=a042581f4e29026704d",
-              ),
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      resizeToAvoidBottomInset: true,
+      appBar: RoomChatAppBar(),
+      body: SafeArea(
+        child: Container(
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/bg_room.png'),
+              fit: BoxFit.cover,
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Obx(
-                    () => Text(
-                      controller.chatRoomInfo['name'] ?? 'Chat Room',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+          ),
+          child: Column(
+            children: [
+              Obx(() {
+                if (controller.pinnedMessage.value != null) {
+                  return PinnedMessageBar(
+                    message: controller.pinnedMessage.value!,
+                  );
+                } else {
+                  return const SizedBox.shrink();
+                }
+              }),
+              Expanded(
+                child: Obx(
+                  () => ScrollablePositionedList.builder(
+                    itemScrollController: controller.itemScrollController,
+                    itemPositionsListener: controller.itemPositionsListener,
+                    reverse: true,
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 16,
+                      horizontal: 8,
                     ),
-                  ),
-                  Obx(() {
-                    if (controller.chatRoomInfo['isGroup'] == true) {
-                      return Text(
-                        controller.chatRoomInfo['members'] ?? 'Tidak ada member',
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    itemCount: controller.filteredMessages.length,
+                    itemBuilder: (context, index) {
+                      final message = controller.filteredMessages[index];
+                      final bool isGroupChat =
+                          controller.chatRoomInfo['isGroup'] ?? false;
+
+                      final bool showDateSeparator;
+                      if (index == controller.filteredMessages.length - 1) {
+                        showDateSeparator = true;
+                      } else {
+                        final prevMessage =
+                            controller.filteredMessages[index + 1];
+                        showDateSeparator =
+                            !isSameDay(
+                              message.timestamp,
+                              prevMessage.timestamp,
+                            );
+                      }
+
+                      final bool showTail;
+                      if (index == 0) {
+                        showTail = true;
+                      } else {
+                        final prevMessage =
+                            controller.filteredMessages[index - 1];
+                        showTail = message.senderId != prevMessage.senderId;
+                      }
+                      return _SwipeToReplyWrapper(
+                        message: message,
+                        controller: controller,
+                        child: Obx(() {
+                          final isSelected = controller.selectedMessages
+                              .contains(message);
+                          final isHighlighted =
+                              controller.highlightedMessageId.value ==
+                              message.messageId;
+                          return Container(
+                            color:
+                                isHighlighted
+                                    ? ThemeColor.primary.withOpacity(0.2)
+                                    : Colors.transparent,
+                            child: Column(
+                              children: [
+                                if (showDateSeparator)
+                                  DateSeparator(
+                                    text: formatDateSeparator(
+                                      message.timestamp,
+                                    ),
+                                  ),
+                                ChatBubble(
+                                  text: message.text,
+                                  isSender: message.isSender,
+                                  timestamp: message.timestamp,
+                                  showTail: showTail,
+                                  highlightText: controller.searchQuery.value,
+                                  senderName:
+                                      isGroupChat ? message.senderName : null,
+                                  repliedMessage: message.repliedMessage,
+                                  isStarred: message.isStarred,
+                                  isPinned: message.isPinned,
+                                  isSelected: isSelected,
+                                  type: message.type,
+                                  imagePath: message.imagePath,
+                                  documentName: message.documentName,
+                                  isDeleted: message.isDeleted,
+                                  onTap: () {
+                                    if (controller
+                                        .isMessageSelectionMode
+                                        .value) {
+                                      controller.toggleMessageSelection(
+                                        message,
+                                      );
+                                    } else if (message.type ==
+                                            MessageType.document &&
+                                        message.documentPath != null) {
+                                      controller.openDocument(
+                                        message.documentPath!,
+                                      );
+                                    }
+                                  },
+                                  onLongPress: () {
+                                    controller.startMessageSelection(message);
+                                  },
+                                ),
+                              ],
+                            ),
+                          );
+                        }),
                       );
-                    }
-                    return const SizedBox.shrink();
-                  }),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-      actions: [
-        PopupMenuButton(
-          color: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ), 
-          onSelected: (value) {
-            if (value == 'search') {
-              Future.delayed(Duration.zero,(){
-                controller.toggleSearchMode();
-              });
-            } else if (value == 'starred') {
-                Get.toNamed(AppRoutes.DetailStar);
-              }
-          },
-          itemBuilder:
-              (context) => [
-                const PopupMenuItem(value: 'search', child: Text('Search')),
-                const PopupMenuItem( 
-                  value:
-                  'starred',
-                  child: Text('Pesan Berbintang'),
+                    },
+                  ),
                 ),
-              ],
-        ),
-      ],
-    );
-  }
-
-  AppBar _buildSearchAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white,
-      scrolledUnderElevation: 0.0,
-      leading: IconButton(
-        onPressed: () => controller.toggleSearchMode(),
-        icon: const Icon(Icons.arrow_back_ios),
-      ),
-      title: TextField(
-        controller: controller.searchController,
-        decoration: const InputDecoration(
-          hintText: 'Search...',
-          border: InputBorder.none,
-        ),
-        onChanged: (value) => controller.updateSearchQuery(value),
-      ),
-    );
-  }
-
-  AppBar _buildMessageSelectionAppBar() {
-    return AppBar(
-      backgroundColor: Colors.white,
-      scrolledUnderElevation: 0.0,
-      leadingWidth: 100,
-      leading: Row(
-        children: [
-          IconButton(
-            onPressed: () => controller.clearMessageSelection(),
-            icon: const Icon(Icons.arrow_back_ios),
+              ),
+              // Wrap MessageInputBar dengan Container dan padding untuk spacing tambahan
+              MessageInputBar(),
+            ],
           ),
-          Obx(
-            () => Text(
-              '${controller.selectedMessages.length}',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ],
+        ),
       ),
-      actions: [
-        IconButton(onPressed: () {}, icon: const Icon(Octicons.reply)),
+    );
+  }
+}
 
-        IconButton(
-          onPressed: () => controller.starSelectedMessages(),
-          icon: const Icon(AntDesign.staro),
-        ),
+class _SwipeToReplyWrapper extends StatefulWidget {
+  final Widget child;
+  final MessageModel message;
+  final RoomChatController controller;
 
-        IconButton(
-          onPressed: () => controller.pinSelectedMessages(),
-          icon: Transform.rotate(angle: 1.5, child: Icon(Octicons.pin)),
-        ),
+  const _SwipeToReplyWrapper({
+    required this.child,
+    required this.message,
+    required this.controller,
+  });
 
-        IconButton(
-          onPressed: () => controller.copySelectedMessagesText(),
-          icon: const Icon(Icons.copy),
-        ),
-        Obx(() {
-          // Hanya tampilkan jika 1 pesan teks milik kita yang dipilih
-          if (controller.selectedMessages.length == 1 &&
-              controller.selectedMessages.first.isSender &&
-              (controller.selectedMessages.first.type == MessageType.text ||
-                  controller.selectedMessages.first.type ==
-                      MessageType.image)) {
-            return IconButton(
-              onPressed: () => controller.setEditMessage(),
-              icon: const Icon(Octicons.pencil),
-            );
-          }
-          return const SizedBox.shrink(); // Jika tidak, sembunyikan
-        }),
-        IconButton(
-          onPressed: () => controller.showDeleteConfirmationDialog(),
-          icon: const Icon(FontAwesome5Regular.trash_alt, size: 20),
-        ),
-      ],
+  @override
+  State<_SwipeToReplyWrapper> createState() => _SwipeToReplyWrapperState();
+}
+
+class _SwipeToReplyWrapperState extends State<_SwipeToReplyWrapper>
+    with TickerProviderStateMixin {
+  double _offsetX = 0.0;
+  late AnimationController _animationController;
+  bool _hasTriggered = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 200),
     );
   }
 
-  Widget _buildEditPreview() {
-    return Obx(() {
-      final message = controller.editingMessage.value;
-      if (message == null) {
-        return const SizedBox.shrink();
-      }
-
-      // Tentukan widget pratinjau berdasarkan tipe pesan
-      Widget previewContent;
-      if (message.type == MessageType.image && message.imagePath != null) {
-        // Jika gambar, tampilkan gambar kecil (thumbnail)
-        previewContent = Row(
-          children: [
-            const Text(
-              'Edit Pesan untuk',
-              style: TextStyle(
-                color: ThemeColor.primary,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const Spacer(),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: Image.file(
-                File(message.imagePath!),
-                width: 30,
-                height: 30,
-                fit: BoxFit.cover,
-              ),
-            ),
-          ],
-        );
-      } else {
-        // Jika teks, tampilkan teksnya (logika lama)
-        previewContent = Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Edit Pesan',
-              style: TextStyle(
-                color: ThemeColor.primary,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            Text(
-              message.text ?? '',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(color: Colors.black54),
-            ),
-          ],
-        );
-      }
-
-      return Container(
-        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-        color: Colors.white,
-        child: Row(
-          children: [
-            const Icon(Icons.edit, color: ThemeColor.primary),
-            const SizedBox(width: 8),
-            Expanded(
-              child: previewContent,
-            ), // Tampilkan konten pratinjau di sini
-            IconButton(
-              onPressed: () => controller.cancelEdit(),
-              icon: const Icon(Icons.close),
-            ),
-          ],
-        ),
-      );
-    });
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kToolbarHeight),
-        child: Obx(() {
-          if (controller.isMessageSelectionMode.value) {
-            return _buildMessageSelectionAppBar();
-          } else if (controller.isSearchMode.value) {
-            return _buildSearchAppBar();
+    return GestureDetector(
+      onPanStart: (details) {
+        _hasTriggered = false;
+        _animationController.stop();
+      },
+      onPanUpdate: (details) {
+        setState(() {
+          final delta = details.delta.dx;
+
+          // Batasi arah geser sesuai pengirim
+          if (widget.message.isSender) {
+            // Pesan dari kita: hanya bisa geser ke kiri
+            if (delta < 0) {
+              _offsetX = (_offsetX + delta).clamp(-50.0, 0.0);
+            }
           } else {
-            return _buildNormalAppBar();
+            // Pesan dari orang lain: hanya bisa geser ke kanan
+            if (delta > 0) {
+              _offsetX = (_offsetX + delta).clamp(0.0, 50.0);
+            }
           }
-        }),
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/bg_room.png'),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Column(
-          children: [
-            Obx(() {
-              // Cek apakah ada pesan yang di-pin di controller.
-              if (controller.pinnedMessage.value != null) {
-                // Jika ada, tampilkan widget PinnedMessageBar.
-                return PinnedMessageBar(
-                  message: controller.pinnedMessage.value!,
-                );
-              } else {
-                // Jika tidak ada, tampilkan widget kosong.
-                return const SizedBox.shrink();
-              }
-            }),
-            Expanded(
-              child: Obx(
-                () => ListView.builder(
-                  reverse: true,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 16,
-                    horizontal: 8,
-                  ),
-                  itemCount: controller.filteredMessages.length,
 
-                  // Di dalam file RoomChatScreen.dart
-                  itemBuilder: (context, index) {
-                    final message = controller.filteredMessages[index];
-                    final bool isGroupChat =
-                        controller.chatRoomInfo['isGroup'] ?? false;
-
-                    final bool showDateSeparator;
-                    if (index == controller.filteredMessages.length - 1) {
-                      showDateSeparator = true;
-                    } else {
-                      final prevMessage =
-                          controller.filteredMessages[index + 1];
-                      showDateSeparator =
-                          !isSameDay(message.timestamp, prevMessage.timestamp);
-                    }
-
-                    final bool showTail;
-                    if (index == 0) {
-                      showTail = true;
-                    } else {
-                      final prevMessage =
-                          controller.filteredMessages[index - 1];
-                      showTail = message.senderId != prevMessage.senderId;
-                    }
-                    return Slidable(
-                      key: ValueKey(message.timestamp),
-                      startActionPane: ActionPane(
-                        motion: const StretchMotion(),
-                        dismissible: DismissiblePane(
-                          onDismissed: () {},
-                          confirmDismiss: () async {
-                            Future.delayed(Duration.zero, () {
-                              controller.setReplyMessage(message);
-                            });
-                            return false;
-                          },
-                        ),
-                        children: [
-                          SlidableAction(
-                            onPressed: (context) {
-                              controller.setReplyMessage(message);
-                            },
-                            backgroundColor: Colors.transparent,
-                            foregroundColor: ThemeColor.primary,
-                            icon: Icons.reply,
-                            label: 'Reply',
-                          ),
-                        ],
-                      ),
-
-                      child: Obx(() {
-                        final isSelected = controller.selectedMessages.contains(
-                          message,
-                        );
-
-                        return Column(
-                          children: [
-                            if (showDateSeparator)
-                              DateSeparator(
-                                text: formatDateSeparator(message.timestamp),
-                              ),
-                            ChatBubble(
-                              text: message.text,
-                              isSender: message.isSender,
-                              timestamp: message.timestamp,
-                              showTail: showTail,
-                              highlightText: controller.searchQuery.value,
-                              senderName:
-                                  isGroupChat ? message.senderName : null,
-                              repliedMessage: message.repliedMessage,
-                              isStarred: message.isStarred,
-                              isPinned: message.isPinned,
-                              isSelected: isSelected,
-                              type: message.type,
-                              imagePath: message.imagePath,
-                              documentName: message.documentName,
-                              isDeleted: message.isDeleted,
-                              onTap: () {
-                                if (controller.isMessageSelectionMode.value) {
-                                  controller.toggleMessageSelection(message);
-                                } else if (message.type ==
-                                        MessageType.document &&
-                                    message.documentPath != null) {
-                                  controller.openDocument(
-                                    message.documentPath!,
-                                  );
-                                }
-                              },
-                              onLongPress: () {
-                                controller.startMessageSelection(message);
-                              },
-                            ),
-                          ],
-                        );
-                      }),
-                    );
-                  },
-                ),
-              ),
-            ),
-            Column(
-              children: [
-                _buildEditPreview(),
-                _buildReplyPreview(),
-                _buildQuickReplyList(),
-                _buildMessageInputBar(),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMessageInputBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-      color: Colors.white,
-      child: Row(
+          // Trigger reply jika geser lebih dari 20px
+          if (!_hasTriggered && _offsetX.abs() > 40) {
+            _hasTriggered = true;
+            widget.controller.setReplyMessage(widget.message);
+            // Haptic feedback
+            HapticFeedback.lightImpact();
+          }
+        });
+      },
+      onPanEnd: (details) {
+        // Animasi kembali ke posisi normal
+        _animationController.forward(from: 0.0).then((_) {
+          setState(() {
+            _offsetX = 0.0;
+          });
+        });
+      },
+      child: Stack(
         children: [
-          IconButton(
-            onPressed: () => controller.showAttachmentOptions(),
-            icon: const Icon(
-              Icons.insert_drive_file_outlined,
-              color: ThemeColor.primary,
-            ),
-          ),
-          Expanded(
-            child: TextField(
-              controller: controller.messageController,
-              decoration: InputDecoration(
-                hintText: 'write down the answer',
-                filled: true,
-                fillColor: Colors.white,
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: 10,
-                  horizontal: 16,
+          // Background reply icon
+          if (_offsetX.abs() > 5)
+            Positioned.fill(
+              child: Container(
+                alignment:
+                    widget.message.isSender
+                        ? Alignment.centerRight
+                        : Alignment.centerLeft,
+                padding: EdgeInsets.only(
+                  right: widget.message.isSender ? 30 : 0,
+                  left: widget.message.isSender ? 0 : 30,
                 ),
-
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: const BorderSide(
-                    color: Color(0xFF1D2C86),
-                    width: 2,
-                  ),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  borderSide: const BorderSide(
-                    color: Color(0xFF1D2C86),
-                    width: 2,
-                  ),
-                ),
-                // Tombol di belakang teks
-                suffixIcon: IconButton(
-                  onPressed: () => controller.takePicture(),
-                  icon: const Icon(
-                    Icons.camera_alt_outlined,
-                    color: Color(0xFF1D2C86),
+                child: Transform.rotate(
+                  angle:
+                      widget.message.isSender
+                          ? 0
+                          : 3.1416, // rotasi 180 derajat
+                  child: Icon(
+                    Icons.reply,
+                    color: ThemeColor.primary.withOpacity(
+                      (_offsetX.abs() / 50).clamp(0.5, 1.0),
+                    ),
+                    size: 20 + (_offsetX.abs() / 5),
                   ),
                 ),
               ),
             ),
-          ),
-
-          IconButton(
-            onPressed: controller.sendMessage,
-            icon: Transform.rotate(
-              angle: 0.8,
-              child: Icon(FontAwesome5Solid.location_arrow, color: ThemeColor.primary),
-            ),
-          ),
+          // Content dengan transform
+          Transform.translate(offset: Offset(_offsetX, 0), child: widget.child),
         ],
       ),
     );
-  }
-
-  Widget _buildQuickReplyList() {
-    return Obx(() {
-      if (!controller.showQuickReplies.value) {
-        return const SizedBox.shrink();
-      }
-      final bool isEmpty = controller.filteredQuickReplies.isEmpty;
-      return AnimatedContainer(
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-        height: isEmpty ? 100 : 250,
-
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 10,
-              offset: Offset(0, -2),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Quick replies',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-
-                  TextButton(
-                    onPressed: () {
-                      Get.toNamed(AppRoutes.QuickReplies);
-                    },
-
-                    child: Obx(
-                      () => Text(
-                        controller.quickController.quickReplies.isEmpty
-                            ? 'Setting'
-                            : 'Edit',
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            Expanded(
-              child: ListView.separated(
-                shrinkWrap: true,
-                itemCount: controller.filteredQuickReplies.length,
-                itemBuilder: (context, index) {
-                  final reply = controller.filteredQuickReplies[index];
-                  return ListTile(
-                    leading: Text(
-                      '/${reply.shortcut}',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    title: Text(reply.message),
-                    onTap: () => controller.selectQuickReply(reply),
-                  );
-                },
-
-                separatorBuilder: (context, index) {
-                  return const Divider(
-                    height: 1,
-                    thickness: 1,
-                    indent: 16, // Jarak garis dari kiri
-                    endIndent: 16, // Jarak garis dari kanan
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      );
-    });
-  }
-
-  Widget _buildReplyPreview() {
-    return Obx(() {
-      // Jika tidak ada pesan yang di-reply, tampilkan widget kosong.
-      if (controller.replyMessage.value == null) {
-        return const SizedBox.shrink();
-      }
-
-      final message = controller.replyMessage.value!;
-      return Container(
-        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-        color: Colors.white,
-        child: Row(
-          children: [
-            // Baris vertikal
-            Container(width: 4, height: 40, color: const Color(0xFF1D2C86)),
-            const SizedBox(width: 8),
-
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    message.senderName,
-                    style: const TextStyle(
-                      color: Color(0xFF1D2C86),
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    message.text ?? 'Gambar',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-
-            IconButton(
-              onPressed: () => controller.cancelReply(),
-              icon: const Icon(Icons.close),
-            ),
-          ],
-        ),
-      );
-    });
   }
 }

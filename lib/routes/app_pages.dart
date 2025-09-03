@@ -4,17 +4,21 @@ import 'package:admin_gychat/modules/auth/forgot_password/forgot_password_bindin
 import 'package:admin_gychat/modules/auth/forgot_password/forgot_password_screen.dart';
 import 'package:admin_gychat/modules/dashboard/dashboard_binding.dart';
 import 'package:admin_gychat/modules/dashboard/dashboard_screen.dart';
-import 'package:admin_gychat/modules/setting/setting_binding.dart';
+//import 'package:admin_gychat/modules/setting/setting_binding.dart.txt';
 import 'package:admin_gychat/modules/setting/setting_screen.dart';
 import 'package:admin_gychat/modules/grup/detail_grup/detail_grup_binding.dart';
 import 'package:admin_gychat/modules/grup/detail_grup/detail_grup_screen.dart';
 import 'package:admin_gychat/modules/grup/grup_baru/grup_baru_binding.dart';
 import 'package:admin_gychat/modules/grup/grup_baru/grup_baru_screen.dart';
-import 'package:admin_gychat/modules/star/detail_star_binding.dart';
-import 'package:admin_gychat/modules/star/detail_star_screen.dart';
+//import 'package:admin_gychat/modules/star/detail_star_binding.dart';
+//import 'package:admin_gychat/modules/star/detail_star_screen.dart';
+import 'package:admin_gychat/modules/star/global/starred_messages_binding.dart';
+import 'package:admin_gychat/modules/star/global/starred_messages_screen.dart';
+import 'package:admin_gychat/modules/star/room/room_starred_binding.dart';
+import 'package:admin_gychat/modules/star/room/room_starred_screen.dart';
 import 'package:admin_gychat/modules/arsip/detail_arsip_binding.dart';
 import 'package:admin_gychat/modules/arsip/detail_arsip_screen.dart';
-import 'package:admin_gychat/modules/setting/profile/profile_binding.dart';
+//import 'package:admin_gychat/modules/setting/profile/profile_binding.dart.txt';
 import 'package:admin_gychat/modules/setting/profile/profile_screen.dart';
 import 'package:admin_gychat/modules/setting/quick_replies/quick_binding.dart';
 import 'package:admin_gychat/modules/setting/quick_replies/quick_screen.dart';
@@ -22,6 +26,7 @@ import 'package:admin_gychat/modules/setting/quick_replies/edit_quick_reply_scre
 import 'package:admin_gychat/modules/setting/away_message/away_binding.dart';
 import 'package:admin_gychat/modules/setting/away_message/away_screen.dart';
 import 'package:admin_gychat/modules/setting/away_message/schedule_screen.dart';
+import 'package:admin_gychat/modules/setting/away_message/edit_message_screen.dart';
 import 'package:admin_gychat/modules/room_chat/room_chat_binding.dart';
 import 'package:admin_gychat/modules/room_chat/room_chat_screen.dart';
 import 'package:get/get.dart';
@@ -59,11 +64,17 @@ class AppPages {
       page: () => const DetailGrupScreen(),
       binding: DetailGrupBinding(),
     ),
-    // Detail Star
+    // Star Global
     GetPage(
-      name: AppRoutes.DetailStar,
-      page: () => const DetailStarScreen(),
-      binding: DetailStarBinding(),
+      name: AppRoutes.GlobalStar,
+      page: () => const StarredMessagesScreen(),
+      binding: StarredMessagesBinding(),
+    ),
+    // Star Room
+    GetPage(
+      name: AppRoutes.RoomStar,
+      page: () => const RoomStarredScreen(),
+      binding: RoomStarredBinding(),
     ),
     // Detail Arsip
     GetPage(
@@ -75,7 +86,7 @@ class AppPages {
     GetPage(
       name: AppRoutes.Profile,
       page: () => const ProfileScreen(),
-      binding: ProfileBinding(),
+      //binding: ProfileBinding(),
     ),
     // Quick Replies
     GetPage(
@@ -100,6 +111,11 @@ class AppPages {
       name: AppRoutes.Schedule,
       page: () => const ScheduleScreen(),
     ),
+    // Edit Message
+    GetPage(
+      name: AppRoutes.EditMessage,
+      page: () => const EditMessageScreen(),
+    ),
     // Room Chat
     GetPage(
       name: AppRoutes.ROOM_CHAT, 
@@ -107,9 +123,10 @@ class AppPages {
       binding: RoomChatBinding(),
     ),
     // Setting
-   GetPage(name:AppRoutes.Setting,
-    page: () => SettingScreen(),
-    binding: SettingBinding()
+    GetPage(
+      name:AppRoutes.Setting,
+      page: () => SettingScreen(),
+      //binding: SettingBinding()
     )
   ];
 }

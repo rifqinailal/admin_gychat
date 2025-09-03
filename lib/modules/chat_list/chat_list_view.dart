@@ -1,4 +1,3 @@
-// lib/app/modules/chat_list/chat_list_view.dart
 import 'package:admin_gychat/models/chat_model.dart';
 import 'package:admin_gychat/routes/app_routes.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
@@ -6,8 +5,8 @@ import 'package:admin_gychat/shared/widgets/chat_header.dart';
 import 'package:admin_gychat/shared/widgets/chat_list_tile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'chat_list_controller.dart';
 
 enum ChatListType { all, unread, group }
@@ -36,8 +35,9 @@ class ChatListView extends GetView<ChatListController> {
       color: Colors.white,
       child: Column(
         children: [
+          SizedBox(height: 50),
           const ChatHeader(),
-          const SizedBox(height: 20),
+          SizedBox(height: 20),
           Expanded(
             child: Obx(() {
               final chatList = getChatList();
@@ -48,7 +48,10 @@ class ChatListView extends GetView<ChatListController> {
                 return Column(
                   children: [
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 36),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 36,
+                        vertical: 0,
+                      ),
                       child: InkWell(
                         onTap: () {
                           Get.toNamed(AppRoutes.DetailArsip);
@@ -57,9 +60,8 @@ class ChatListView extends GetView<ChatListController> {
                           children: [
                             SvgPicture.asset(
                               'assets/icons/Arhive_load_duotone_line.svg',
-                              width: 2,
-                              height: 25,
-                              // Atur warna untuk ikon tidak aktif
+                              width: 20,
+                              height: 20,
                               colorFilter: const ColorFilter.mode(
                                 Colors.grey,
                                 BlendMode.srcIn,
@@ -86,27 +88,26 @@ class ChatListView extends GetView<ChatListController> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     // Chat List
                     Expanded(
                       child: ListView.builder(
+                        padding: EdgeInsets.zero,
                         itemCount: chatList.length,
                         itemBuilder: (context, index) {
                           final chat = chatList[index];
 
                           return Obx(() {
-                            final isSelected = controller.selectedChats
-                                .contains(chat);
-
+                            final isSelected = controller.selectedChats.contains(chat);
                             return ChatListTile(
-                              isPinned: chat.isPinned,
                               name: chat.name,
-                              lastMessage: "Hi, I have a problem with....",
-                              avatarUrl:
-                                  "https://i.pravatar.cc/150?u=${chat.name}",
-                              time: "10.16",
+                              lastMessage: chat.lastMessage ?? '',
+                              avatarUrl: chat.urlPhoto,
+                              roomType: chat.roomType,
+                              time: chat.lastTime != null ? DateFormat('HH:mm').format(chat.lastTime!) : '--:--',
                               unreadCount: chat.unreadCount,
-                              isOnline: chat.name == 'Jeremy Owen',
+                              isPinned: chat.isPinned,
+                              isOnline: chat.name == 'Bantuan Teknis', 
                               isSelected: isSelected,
                               onTap: () {
                                 if (controller.isSelectionMode.value) {
@@ -115,11 +116,10 @@ class ChatListView extends GetView<ChatListController> {
                                   Get.toNamed(
                                     AppRoutes.ROOM_CHAT,
                                     arguments: {
-                                      "id": chat.id,
+                                      "id": chat.roomId,
                                       "name": chat.name,
-                                      "isGroup": chat.isGroup,
-                                      "members":
-                                          "Pak Ketua, Pimpinan B, Admin A...",
+                                      "isGroup": chat.roomType == 'group',
+                                      "members": "Pak Ketua, Pimpinan B, Admin A...",
                                     },
                                   );
                                 }
@@ -145,10 +145,8 @@ class ChatListView extends GetView<ChatListController> {
   Widget _buildSearchResults() {
     return Obx(() {
       return ListView(
-        // padding: const EdgeInsets.all(16),
-        children: [
-          // Hasil Pencarian Chat
-          if (controller.searchResultChats.isNotEmpty) ...[
+        children: [ 
+          if (controller.searchResultChats.isNotEmpty) ...[ 
             Padding(
               padding: const EdgeInsets.only(left: 20),
               child: Text(
@@ -161,23 +159,24 @@ class ChatListView extends GetView<ChatListController> {
               ),
             ),
             SizedBox(height: 10),
-            ...controller.searchResultChats.map((chat) {
+            ...controller.searchResultChats.map((chat) { 
               return ChatListTile(
                 name: chat.name,
-                avatarUrl: "https://i.pravatar.cc/150?u=${chat.id}",
+                avatarUrl: chat.urlPhoto,
+                roomType: chat.roomType,
                 unreadCount: chat.unreadCount,
                 isPinned: chat.isPinned,
-                lastMessage: 'assalamualaikum',
-                time: "10.11",
+                lastMessage: chat.lastMessage ?? '',
+                time: chat.lastTime != null ? DateFormat('HH:mm').format(chat.lastTime!) : '--:--',
                 isSelected: false,
                 isOnline: false,
                 onTap: () {
                   Get.toNamed(
                     AppRoutes.ROOM_CHAT,
                     arguments: {
-                      "id": chat.id,
+                      "id": chat.roomId,
                       "name": chat.name,
-                      "isGroup": chat.isGroup,
+                      "isGroup": chat.roomType == 'group',
                       "members": "Pak Ketua, Pimpinan B, Admin A...",
                     },
                   );
@@ -222,9 +221,9 @@ class ChatListView extends GetView<ChatListController> {
                     () => Get.toNamed(
                       AppRoutes.ROOM_CHAT,
                       arguments: {
-                        "id": result.chat.id,
+                        "id": result.chat.roomId,
                         "name": result.chat.name,
-                        "isGroup": result.chat.isGroup,
+                         "isGroup": result.chat.roomType == 'group', 
                         "members": "Pak Ketua, Pimpinan B, Admin A...",
                       },
                     ),

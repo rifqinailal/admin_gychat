@@ -1,36 +1,33 @@
-// lib/modules/grup/detail_grup/edit_description_screen.dart
+// lib/app/modules/setting/away_message/edit_message_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'detail_grup_controller.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
+import 'away_controller.dart';
 
-class EditDescriptionScreen extends GetView<DetailGrupController> {
-  const EditDescriptionScreen({super.key});
+class EditMessageScreen extends StatelessWidget {
+  const EditMessageScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final AwayController controller = Get.find<AwayController>();
+    final textController = TextEditingController(text: controller.message.value);
+
     return Container(
-      decoration: const BoxDecoration(
-        color: ThemeColor.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(30),
-          topRight: Radius.circular(30),
-        ),
-      ),
+      // Menggunakan constraints agar lebih fleksibel di berbagai ukuran layar
       constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.85,
+        maxHeight: MediaQuery.of(context).size.height * 0.9,
       ),
       child: Scaffold(
         resizeToAvoidBottomInset: false,
-        backgroundColor: Colors.transparent,
+        backgroundColor: ThemeColor.white,
         body: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 34),
+            padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 30),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Custom top bar replacing the AppBar
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -51,7 +48,7 @@ class EditDescriptionScreen extends GetView<DetailGrupController> {
                         ),
                       ),
                       const Text(
-                        'Edit Description',
+                        'Edit Away Message',
                         style: TextStyle(
                           fontFamily: 'Poppins',
                           color: ThemeColor.black,
@@ -60,7 +57,9 @@ class EditDescriptionScreen extends GetView<DetailGrupController> {
                         ),
                       ),
                       InkWell(
-                        onTap: controller.saveGroupDescription,
+                        onTap: () {
+                          controller.saveMessage(textController.text);
+                        },
                         borderRadius: BorderRadius.circular(8),
                         child: const Padding(
                           padding: EdgeInsets.all(8.0),
@@ -79,15 +78,14 @@ class EditDescriptionScreen extends GetView<DetailGrupController> {
                   ),
                   const SizedBox(height: 25),
 
-                  // Refactored TextField with direct styling
                   TextField(
-                    controller: controller.descriptionController,
+                    controller: textController,
                     autofocus: true,
+                    // Mengatur maxLines ke null agar TextField bisa memanjang tanpa batas.
                     maxLines: null,
+                    // Hapus minLines agar tinggi bisa menyesuaikan dari 1 baris.
                     keyboardType: TextInputType.multiline,
-                    style: const TextStyle(fontFamily: 'Poppins', fontSize: 16),
                     decoration: InputDecoration(
-                      hintText: 'Group Description',
                       filled: true,
                       fillColor: ThemeColor.grey3,
                       border: OutlineInputBorder(
@@ -95,9 +93,9 @@ class EditDescriptionScreen extends GetView<DetailGrupController> {
                         borderSide: BorderSide.none,
                       ),
                       contentPadding: const EdgeInsets.symmetric(
-                        vertical: 30, horizontal: 30
-                      ),
+                          vertical: 30, horizontal: 30),
                     ),
+                    style: const TextStyle(fontFamily: 'Poppins', fontSize: 16),
                   ),
                 ],
               ),

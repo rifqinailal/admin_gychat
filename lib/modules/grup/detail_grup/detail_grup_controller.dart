@@ -5,31 +5,26 @@ import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'edit_detail_profile_grup_screen.dart';
 import 'edit_description_screen.dart';
 import 'grup_media_screen.dart';
 import 'grup_invite_link_screen.dart';
 import 'grup_qr_code_screen.dart';
+import 'package:admin_gychat/shared/theme/colors.dart';
 
 class DetailGrupController extends GetxController {
   final ImagePicker _picker = ImagePicker();
 
-  // Data grup
-  var groupName = 'Grup-9 Members'.obs;
-  var groupDescription =
-  'Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content. This makes it easier to focus on the layout and design.'
-  .obs; // <-- Deskripsi dibuat lebih panjang untuk demo
+  var groupName = 'Grup-9 Members'.obs; 
+  var groupDescription = 'Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content. This makes it easier to focus on the layout and design.'.obs;
   var groupImage = Rx<File?>(null);
   var members = List.generate(8, (index) => 'User ${index + 1}').obs;
   var isExitingGroup = false.obs;
+  var isDescriptionExpanded = false.obs;
 
-  // State untuk deskripsi
-  var isDescriptionExpanded =
-      false.obs; // <-- [BARU] State untuk expand/collapse deskripsi
-
-  // Controller untuk text field
-  late TextEditingController nameController;
+  late TextEditingController nameController; 
   late TextEditingController descriptionController;
 
   var selectedMediaTabIndex = 0.obs; // 0: Media, 1: Links, 2: Docs
@@ -37,15 +32,14 @@ class DetailGrupController extends GetxController {
   // Data dummy untuk ditampilkan
   final RxList<Map<String, String>> mediaList = <Map<String, String>>[].obs;
   final RxList<Map<String, String>> linksList = <Map<String, String>>[].obs;
-  final RxList<Map<String, dynamic>> docsList =
-      <Map<String, dynamic>>[
-        {'name': 'Juknis Olympiade Star', 'type': 'pdf'},
-        {'name': 'Juknis Olympiade Star', 'type': 'pdf'},
-        {'name': 'Juknis Olympiade Star', 'type': 'pdf'},
-        {'name': 'Juknis Olympiade Star', 'type': 'doc'},
-        {'name': 'Juknis Olympiade Star', 'type': 'doc'},
-        {'name': 'Juknis Olympiade Star', 'type': 'doc'},
-      ].obs;
+  final RxList<Map<String, dynamic>> docsList = <Map<String, dynamic>>[
+    {'name': 'Juknis Olympiade Star', 'type': 'pdf'},
+    {'name': 'Juknis Olympiade Star', 'type': 'pdf'},
+    {'name': 'Juknis Olympiade Star', 'type': 'pdf'},
+    {'name': 'Juknis Olympiade Star', 'type': 'doc'},
+    {'name': 'Juknis Olympiade Star', 'type': 'doc'},
+    {'name': 'Juknis Olympiade Star', 'type': 'doc'}
+  ].obs;
 
   // Variabel untuk link grup
   var groupInviteLink = 'https://chat.whatsapp.com/llitc1NxjwBGsXGDITXMT'.obs;
@@ -57,54 +51,155 @@ class DetailGrupController extends GetxController {
     nameController = TextEditingController(text: groupName.value);
     descriptionController = TextEditingController(text: groupDescription.value);
   }
-  
-  // [TAMBAHKAN] Fungsi untuk membuka tautan grup
+
+  // Memilih dan memotong gambar
+  Future<void> pickImage(ImageSource source) async {
+    try {
+      final XFile? pickedFile = await _picker.pickImage(source: source);
+      if (pickedFile != null) {
+        final croppedFile = await _cropImage(File(pickedFile.path));
+        if (croppedFile != null) {
+          groupImage.value = File(croppedFile.path);
+          Get.snackbar(
+            'Success',
+            'Group photo updated successfully.',
+            snackPosition: SnackPosition.TOP,
+            backgroundColor: Colors.green.withOpacity(0.6),
+            colorText: ThemeColor.white,
+            margin: const EdgeInsets.all(18),
+          );
+        }
+      }
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Failed to pick image: $e',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: ThemeColor.Red1.withOpacity(0.6),
+        colorText: ThemeColor.white,
+        margin: const EdgeInsets.all(18),
+      );
+    }
+  }
+
+  // Memotong gambar
+  Future<CroppedFile?> _cropImage(File imageFile) async {
+    return await ImageCropper().cropImage(
+      sourcePath: imageFile.path,
+      compressQuality: 70,
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: 'Crop Image',
+          toolbarColor: ThemeColor.black,
+          toolbarWidgetColor: ThemeColor.white,
+          initAspectRatio: CropAspectRatioPreset.original,
+          lockAspectRatio: false,
+          aspectRatioPresets: [
+            CropAspectRatioPreset.original,
+            CropAspectRatioPreset.square,
+            CropAspectRatioPreset.ratio3x2,
+            CropAspectRatioPreset.ratio4x3,
+            CropAspectRatioPreset.ratio16x9,
+          ],
+        ),
+        IOSUiSettings(
+          title: 'Crop Image',
+          aspectRatioLockEnabled: false,
+        ),
+      ],
+    );
+  }
+
+  // Melihat gambar grup
+  Future<void> viewGroupImage() async {
+    if (groupImage.value != null) {
+      await Get.to(
+        () => Scaffold(
+          backgroundColor: ThemeColor.black,
+          body: Stack(
+            fit: StackFit.expand,
+            children: [
+              InteractiveViewer(
+                panEnabled: true,
+                boundaryMargin: EdgeInsets.zero,
+                minScale: 1.0,
+                maxScale: 4.0,
+                child: Image.file(
+                  groupImage.value!,
+                  fit: BoxFit.contain,
+                ),
+              ),
+              Positioned(
+                top: 50.0,
+                left: 16.0,
+                child: CircleAvatar(
+                  backgroundColor: ThemeColor.black.withOpacity(0.5),
+                  child: IconButton(
+                    icon: const Icon(
+                      Icons.close,
+                      color: ThemeColor.white,
+                      size: 20,
+                    ),
+                    onPressed: () => Get.back(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        fullscreenDialog: true,
+        transition: Transition.fade,
+      );
+      await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    }
+  }
+
+  // Fungsi untuk membuka tautan grup
   Future<void> launchGroupLink() async {
     final Uri url = Uri.parse(groupInviteLink.value);
-    // Membuka link di aplikasi eksternal (WhatsApp/Browser)
+    // Membuka link di aplikasi eksternal (Gychat/Browser)
     if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
       Get.snackbar('Gagal', 'Tidak dapat membuka tautan');
     }
   }
 
-  // [TAMBAHKAN] Fungsi untuk navigasi ke halaman QR Code
+  // Fungsi untuk navigasi ke halaman QR Code
   void goToQrCodeScreen() {
     Get.to(() => const GrupQrCodeScreen());
   }
 
-  // [BARU] Navigasi ke halaman invite link
+  // Navigasi ke halaman invite link
   void goToInviteLinkScreen() {
     Get.to(() => const GrupInviteLinkScreen());
   }
 
-  // [BARU] Fungsi untuk menyalin link
+  // Fungsi untuk menyalin link
   void copyInviteLink() {
     Clipboard.setData(ClipboardData(text: groupInviteLink.value));
     Get.snackbar(
       'Copied',
       'Group invite link copied to clipboard',
-      snackPosition: SnackPosition.BOTTOM,
-      backgroundColor: Colors.black54,
-      colorText: Colors.white,
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.green.withOpacity(0.6),
+      colorText: ThemeColor.white,
+      margin: const EdgeInsets.all(16),
     );
   }
 
-  // [BARU] Fungsi untuk membagikan link
+  // Fungsi untuk membagikan link
   void forwardInviteLink() {
     final link = groupInviteLink.value;
     final group = groupName.value;
-    // Menggunakan package share_plus untuk membagikan konten
-    Share.share('Join the "$group" group on WhatsApp: $link');
+    Share.share('Join the "$group" group on Gychat: $link');
   }
 
-  // --- [BARU] Fungsi untuk halaman media ---
+  // --- Fungsi untuk halaman media ---
   void changeMediaTab(int index) {
     selectedMediaTabIndex.value = index;
   }
 
   void goToMediaScreen() {
-    // Set tab default ke Docs saat halaman dibuka, sesuai desain
-    selectedMediaTabIndex.value = 2;
+    selectedMediaTabIndex.value = 2; // Asumsi Docs adalah tab ke-2
     Get.to(() => const GrupMediaScreen());
   }
 
@@ -114,28 +209,36 @@ class DetailGrupController extends GetxController {
   }
 
   void goToEditInfoScreen() {
-  nameController.text = groupName.value;
-  
-  // Gunakan Get.bottomSheet untuk memunculkan widget dari bawah
-  Get.bottomSheet(
-    const EditDetailProfileGrupScreen(), // Panggil screen yang akan kita buat
-    isScrollControlled: true, // Penting agar sheet bisa full screen & menyesuaikan keyboard
-    backgroundColor: Colors.transparent, // Agar tidak ada warna latar default
-  );
+    nameController.text = groupName.value;
+    Get.bottomSheet(
+      const EditDetailProfileGrupScreen(),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+    );
   }
 
-  // [DIPERBARUI] Navigasi ke halaman edit deskripsi
-  void goToEditDescriptionScreen() {
-    // Pastikan controller text field memiliki data terbaru sebelum navigasi
+  // Halaman edit deskripsi
+  void goToEditDescriptionScreen() { 
     descriptionController.text = groupDescription.value;
-    Get.to(() => const EditDescriptionScreen());
+    Get.bottomSheet(
+      const EditDescriptionScreen(),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+    );
   }
 
-  // [BARU] Fungsi untuk menyimpan deskripsi
+  // Menyimpan deskripsi
   void saveGroupDescription() {
     groupDescription.value = descriptionController.text;
-    Get.back(); // Kembali ke DetailGrupScreen
-    Get.snackbar('Success', 'Group description updated!');
+    Get.back();
+    Get.snackbar(
+      'Success',
+      'Group description updated!',
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.green.withOpacity(0.6),
+      colorText: ThemeColor.white,
+      margin: const EdgeInsets.all(18),
+    );
   }
 
   // Menampilkan pilihan untuk edit foto
@@ -144,7 +247,7 @@ class DetailGrupController extends GetxController {
       Container(
         padding: const EdgeInsets.all(16),
         decoration: const BoxDecoration(
-          color: Colors.white,
+          color: ThemeColor.white,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(20),
             topRight: Radius.circular(20),
@@ -153,34 +256,55 @@ class DetailGrupController extends GetxController {
         child: Wrap(
           children: <Widget>[
             ListTile(
-              leading: const Icon(Icons.camera_alt, color: Color(0xFF007AFF)),
+              leading: const Icon(
+                Icons.camera_alt,
+                color: ThemeColor.black,
+                size: 20
+              ),
               title: const Text(
                 'Take Photo',
-                style: TextStyle(color: Color(0xFF007AFF)),
+                style: TextStyle(
+                  color: ThemeColor.black,
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16
+                ),
               ),
               onTap: () {
                 Get.back();
+                pickImage(ImageSource.camera);
               },
             ),
             ListTile(
               leading: const Icon(
                 Icons.photo_library,
-                color: Color(0xFF007AFF),
+                color: ThemeColor.black,
+                size: 20,
               ),
               title: const Text(
                 'Choose Photo',
-                style: TextStyle(color: Color(0xFF007AFF)),
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: ThemeColor.black
+                ),
               ),
               onTap: () {
                 Get.back();
-                pickImageFromGallery();
+                pickImage(ImageSource.gallery);
               },
             ),
             ListTile(
-              leading: const Icon(Icons.delete, color: Colors.red),
+              leading: const Icon(Icons.delete, color: ThemeColor.Red1),
               title: const Text(
                 'Delete Photo',
-                style: TextStyle(color: Colors.red),
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: ThemeColor.Red1
+                ),
               ),
               onTap: () {
                 Get.back();
@@ -206,7 +330,7 @@ class DetailGrupController extends GetxController {
                 Get.back();
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
+                backgroundColor: ThemeColor.white,
                 minimumSize: const Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -214,14 +338,19 @@ class DetailGrupController extends GetxController {
               ),
               child: const Text(
                 'Delete Photo',
-                style: TextStyle(color: Colors.red, fontSize: 18),
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.bold,
+                  color: ThemeColor.Red1,
+                  fontSize: 18
+                ),
               ),
             ),
             const SizedBox(height: 10),
             ElevatedButton(
               onPressed: () => Get.back(),
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF007AFF),
+                backgroundColor: ThemeColor.black,
                 minimumSize: const Size(double.infinity, 50),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -230,9 +359,10 @@ class DetailGrupController extends GetxController {
               child: const Text(
                 'Cancel',
                 style: TextStyle(
-                  color: Colors.white,
+                  fontFamily: 'Poppins',
+                  color: ThemeColor.white,
                   fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.bold
                 ),
               ),
             ),
@@ -248,27 +378,60 @@ class DetailGrupController extends GetxController {
     await Future.delayed(const Duration(seconds: 2));
     isExitingGroup.value = false;
     Get.back();
-    Get.snackbar('Success', 'You have left the group.');
-  }
-
-  Future<void> pickImageFromGallery() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
-    if (image != null) {
-      groupImage.value = File(image.path);
-    }
+    Get.snackbar(
+      'Success',
+      'You have left the group.',
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: Colors.green.withOpacity(0.6),
+      colorText: ThemeColor.white,
+      margin: const EdgeInsets.all(18),
+    );
   }
 
   void deletePhoto() {
-    groupImage.value = null;
+    if (groupImage.value != null) {
+      groupImage.value = null;
+      Get.snackbar(
+        'Success',
+        'Group photo has been deleted.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.green.withOpacity(0.6),
+        colorText: ThemeColor.white,
+        margin: const EdgeInsets.all(18),
+      );
+    } else {
+      Get.snackbar(
+        'Info',
+        'No group photo to delete.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: ThemeColor.primary.withOpacity(0.6),
+        colorText: ThemeColor.white,
+        margin: const EdgeInsets.all(18),
+      );
+    }
   }
 
   void saveGroupInfo() {
     if (nameController.text.isNotEmpty) {
       groupName.value = nameController.text;
       Get.back();
-      Get.snackbar('Success', 'Group info updated!');
+      Get.snackbar(
+        'Success',
+        'Group info updated!',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.green.withOpacity(0.6),
+        colorText: ThemeColor.white,
+        margin: const EdgeInsets.all(18),
+      );
     } else {
-      Get.snackbar('Error', 'Group name cannot be empty.');
+      Get.snackbar(
+        'Error',
+        'Group name cannot be empty.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: ThemeColor.Red1.withOpacity(0.6),
+        colorText: ThemeColor.white,
+        margin: const EdgeInsets.all(18),
+      );
     }
   }
 
@@ -278,4 +441,4 @@ class DetailGrupController extends GetxController {
     descriptionController.dispose();
     super.onClose();
   }
-}
+} 

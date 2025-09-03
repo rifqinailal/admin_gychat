@@ -2,44 +2,45 @@
 import 'package:admin_gychat/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
-import 'package:admin_gychat/shared/theme/colors.dart';
+import 'package:admin_gychat/shared/theme/colors.dart'; 
+import 'package:admin_gychat/modules/setting/profile/profile_controller.dart';
 import 'setting_controller.dart';
 
 class SettingScreen extends GetView<SettingController> {
   const SettingScreen({super.key});
 
   @override
-  Widget build(BuildContext context) { 
+  Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    final profileController = Get.find<ProfileController>();
     return Scaffold(
       backgroundColor: ThemeColor.lightGrey1,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          padding: EdgeInsets.symmetric(horizontal: screenWidth * 0.06),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 40),
+              SizedBox(height: screenHeight * 0.05),
               const Text(
                 'Setting',
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
                   color: ThemeColor.blue1,
-                  
+                  fontFamily: 'Poppins',
                 ),
               ),
-
-              const SizedBox(height: 25),
-              _buildProfileCard(),
-
-              const SizedBox(height: 20),
+              SizedBox(height: screenHeight * 0.03),
+              Obx(() {
+                return _buildProfileCard(profileController);
+              }),
+              SizedBox(height: screenHeight * 0.025),
               _buildOptionsCard(),
-
-              const Spacer(),
-              _buildLogoutButton(context, controller),
-
-              const SizedBox(height: 295),
+              SizedBox(height: screenHeight * 0.025),
+             _buildLogoutButton(context, controller), 
             ],
           ),
         ),
@@ -47,7 +48,7 @@ class SettingScreen extends GetView<SettingController> {
     );
   }
 
-  Widget _buildProfileCard() { 
+  Widget _buildProfileCard(ProfileController profileCtrl) {
     return Card(
       elevation: 0,
       color: ThemeColor.white,
@@ -57,33 +58,29 @@ class SettingScreen extends GetView<SettingController> {
         child: ListTile(
           leading: CircleAvatar(
             radius: 28,
-            backgroundColor: ThemeColor.white,
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: Image.asset(
-                'assets/images/gypem_logo.png',
-                width: 50,
-                height: 50,
-                fit: BoxFit.contain,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[200],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(Icons.business, color: Colors.grey[800]),
-                  );
-                },
-              ),
-            ),
+            backgroundColor: ThemeColor.grey4,
+            backgroundImage: profileCtrl.profileImage.value != null
+                ? FileImage(profileCtrl.profileImage.value!)
+                : null,
+            child: profileCtrl.profileImage.value == null
+                ? const Icon(Icons.person, size: 40, color: ThemeColor.grey5)
+                : null,
           ),
-          title: const Text(
-            'GYPEM INDONESIA',
-            style: TextStyle(fontWeight: FontWeight.bold, color: ThemeColor.black),
+          title: Text(
+            profileCtrl.name.value,
+            style: const TextStyle(
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.bold,
+                color: ThemeColor.black),
           ),
-          subtitle: const Text('Chat Only !', style: TextStyle(color: ThemeColor.black, fontSize: 14, fontWeight: FontWeight.normal)),
+          subtitle: Text(
+            profileCtrl.about.value,
+            style: const TextStyle(
+                fontFamily: 'Poppins',
+                color: ThemeColor.black,
+                fontSize: 14,
+                fontWeight: FontWeight.normal),
+          ),
           trailing: const Icon(Icons.chevron_right, color: ThemeColor.black),
           onTap: () {
             Get.toNamed(AppRoutes.Profile);
@@ -93,7 +90,7 @@ class SettingScreen extends GetView<SettingController> {
     );
   }
 
-  Widget _buildOptionsCard() { 
+  Widget _buildOptionsCard() {
     return Card(
       elevation: 0,
       color: ThemeColor.white,
@@ -102,17 +99,20 @@ class SettingScreen extends GetView<SettingController> {
         children: [
           ListTile(
             leading: const Icon(Icons.dark_mode_outlined, color: ThemeColor.black),
-            title: const Text('Away Message', style: TextStyle(fontWeight: FontWeight.bold)),
+            title: const Text('Away Message',
+                style: TextStyle(
+                    fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
             subtitle: const Text('Reply automatically when you are away'),
             trailing: const Icon(Icons.chevron_right, color: ThemeColor.black),
             onTap: () {
               Get.toNamed(AppRoutes.AwayMessage);
             },
-            
-          ),
+          ), 
           ListTile(
             leading: const Icon(Icons.flash_on, color: ThemeColor.black),
-            title: const Text('Quick Replies', style: TextStyle(fontWeight: FontWeight.bold)),
+            title: const Text('Quick Replies',
+                style: TextStyle(
+                    fontFamily: 'Poppins', fontWeight: FontWeight.bold)),
             subtitle: const Text('Reuse frequent message'),
             trailing: const Icon(Icons.chevron_right, color: ThemeColor.black),
             onTap: () {
@@ -128,13 +128,13 @@ class SettingScreen extends GetView<SettingController> {
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
-        onPressed: () { 
+        onPressed: () {
           controller.showLogoutConfirmation(context);
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: ThemeColor.blue1, 
+          backgroundColor: ThemeColor.blue1,
           padding: const EdgeInsets.symmetric(vertical: 14),
-          shape: RoundedRectangleBorder( 
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(15),
           ),
           elevation: 0,
@@ -142,6 +142,7 @@ class SettingScreen extends GetView<SettingController> {
         child: const Text(
           'Logout',
           style: TextStyle(
+            fontFamily: 'Poppins',
             fontSize: 18,
             fontWeight: FontWeight.bold,
             color: ThemeColor.white,
@@ -150,4 +151,4 @@ class SettingScreen extends GetView<SettingController> {
       ),
     );
   }
-}
+} 
