@@ -2,15 +2,22 @@
 import 'package:admin_gychat/models/message_model.dart';
 import 'package:admin_gychat/modules/chat_list/chat_list_controller.dart';
 import 'package:admin_gychat/modules/room_chat/room_chat_controller.dart';
+import 'package:admin_gychat/modules/star/room/room_starred_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'dart:async';
 
 class RoomStarredController extends GetxController {
   final ChatListController _chatListController = Get.find();
 
   var starredMessages = <MessageModel>[].obs;
   var filteredMessages = <MessageModel>[].obs;
+  var messages = <MessageModel>[].obs;
+  final ItemScrollController itemScrollController = ItemScrollController();
+  final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
+  var highlightedMessageId = Rxn<String>();
   var isSelectionMode = false.obs;
   var selectedMessages = <MessageModel>{}.obs;
   var isSearchActive = false.obs;
@@ -99,6 +106,8 @@ class RoomStarredController extends GetxController {
   void handleMessageTap(MessageModel message) {
     if (isSelectionMode.value) {
       toggleMessageSelection(message);
+    } else {
+      Get.back(result: message.messageId);
     }
   }
 

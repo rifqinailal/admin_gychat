@@ -25,13 +25,8 @@ class RoomStarredScreen extends GetView<RoomStarredController> {
           if (controller.filteredMessages.isEmpty) {
             return Center(
               child: Text(
-                controller.isSearchActive.value ? 'Tidak ada hasil ditemukan' : 'Tidak ada pesan berbintang di room ini',
-                style: const TextStyle(
-                  fontFamily: 'Poppins',
-                  fontWeight: FontWeight.normal,
-                  fontSize: 16, 
-                  color: ThemeColor.grey2
-                ),
+                controller.isSearchActive.value ? 'Tidak ada hasil ditemukan' : 'Tidak ada pesan berbintang',
+                style: const TextStyle(fontSize: 16, color: ThemeColor.grey2),
               ),
             );
           }
@@ -41,7 +36,7 @@ class RoomStarredScreen extends GetView<RoomStarredController> {
             itemCount: controller.filteredMessages.length,
             itemBuilder: (context, index) {
               final message = controller.filteredMessages[index];
-              return _buildMessageItem(message);
+              return _buildMessageItem(message, context);
             },
           );
         }),
@@ -71,8 +66,8 @@ class RoomStarredScreen extends GetView<RoomStarredController> {
       leading: IconButton(
         icon: const Icon(
           Icons.arrow_back_ios_new,
-          color: ThemeColor.darkGrey2,
-          size: 25,
+          color: ThemeColor.black,
+          size: 25
         ),
         onPressed: () => Get.back(),
       ),
@@ -81,8 +76,8 @@ class RoomStarredScreen extends GetView<RoomStarredController> {
         style: TextStyle(
           fontFamily: 'Poppins',
           fontWeight: FontWeight.normal,
-          color: ThemeColor.darkGrey2,
-          fontSize: 20,
+          color: ThemeColor.black,
+          fontSize: 20
         ),
       ),
       actions: [
@@ -91,8 +86,8 @@ class RoomStarredScreen extends GetView<RoomStarredController> {
             angle: 1.3,
             child: const Icon(
               Icons.search,
-              color: ThemeColor.darkGrey2,
-              size: 25,
+              color: ThemeColor.black,
+              size: 25
             ),
           ),
           onPressed: () => controller.toggleSearch(),
@@ -100,8 +95,8 @@ class RoomStarredScreen extends GetView<RoomStarredController> {
         IconButton(
           icon: const Icon(
             Icons.delete_outline,
-            color: ThemeColor.darkGrey2,
-            size: 25,
+            color: ThemeColor.black,
+            size: 25
           ),
           onPressed: () => controller.confirmUnstarAllInRoom(),
         ),
@@ -125,11 +120,7 @@ class RoomStarredScreen extends GetView<RoomStarredController> {
         child: Row(
           children: [
             IconButton(
-              icon: const Icon(
-                Icons.arrow_back_ios_new, 
-                color: ThemeColor.darkGrey1,
-                size: 20
-              ),
+              icon: const Icon(Icons.arrow_back_ios_new, color: ThemeColor.darkGrey1, size: 20),
               onPressed: () => controller.toggleSearch(),
             ),
             Expanded(
@@ -137,21 +128,11 @@ class RoomStarredScreen extends GetView<RoomStarredController> {
                 controller: controller.searchController,
                 autofocus: true,
                 decoration: const InputDecoration(
-                  hintText: 'Search Here',
+                  hintText: 'Search Here...',
                   border: InputBorder.none,
-                  hintStyle: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontWeight: FontWeight.normal,
-                    color: ThemeColor.mediumGrey2,
-                    fontSize: 16
-                  ),
+                  hintStyle: TextStyle(color: Colors.grey),
                 ),
-                style: const TextStyle(
-                  fontFamily: 'Poppins',
-                  fontWeight: FontWeight.normal,
-                  color: ThemeColor.black, 
-                  fontSize: 16
-                ),
+                style: const TextStyle(color: ThemeColor.black, fontSize: 16),
               ),
             ),
           ],
@@ -170,19 +151,13 @@ class RoomStarredScreen extends GetView<RoomStarredController> {
       ),
       title: Obx(() => Text(
         '${controller.selectedMessages.length} dipilih',
-        style: const TextStyle(
-          fontFamily: 'Poppins',
-          fontWeight: FontWeight.normal,
-          color: ThemeColor.black, 
-          fontSize: 18
-        ),
+        style: const TextStyle(color: ThemeColor.black, fontSize: 18),
       )),
       actions: [
         IconButton(
           icon: const Icon(
             MaterialCommunityIcons.star_off_outline,
-            color: ThemeColor.black,
-            size: 25,
+            color: ThemeColor.black
           ),
           onPressed: () => controller.confirmUnstarSelected(),
         ),
@@ -190,48 +165,48 @@ class RoomStarredScreen extends GetView<RoomStarredController> {
     );
   }
 
-  Widget _buildMessageItem(MessageModel message) {
-    final senderName = message.senderName;
+  Widget _buildMessageItem(MessageModel message, BuildContext context) {
     final contextName = controller.roomName;
 
     return GestureDetector(
       onTap: () => controller.handleMessageTap(message),
       onLongPress: () => controller.handleMessageLongPress(message),
-      child: Obx(() {
-        final isSelected = controller.selectedMessages.contains(message);
-        return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          color: isSelected ? ThemeColor.lightBlue30 : Colors.transparent,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const CircleAvatar(
-                radius: 20,
-                backgroundColor: ThemeColor.grey4,
-                child: Icon(
-                  Icons.person, 
-                  color: ThemeColor.grey5, 
-                  size: 25
+      child: Obx(
+        () {
+          final isSelected = controller.selectedMessages.contains(message);
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            color: isSelected ? ThemeColor.lightBlue30 : Colors.transparent,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const CircleAvatar(
+                  radius: 20,
+                  backgroundColor: ThemeColor.grey4,
+                  child: Icon(
+                    Icons.person,
+                    color: ThemeColor.grey5,
+                    size: 25,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(
-                          senderName,
-                          style: const TextStyle(fontWeight: FontWeight.normal),
-                        ),
-                        if (Get.arguments['isGroup'] == true) ...[
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            message.senderName,
+                            style: const TextStyle(fontWeight: FontWeight.normal),
+                          ),
                           const Padding(
                             padding: EdgeInsets.symmetric(horizontal: 10.0),
-                            child: Text('▸', style: TextStyle(
-                              color: ThemeColor.black, 
-                              fontSize: 30
-                            )),
+                            child: Icon(
+                              Icons.play_arrow,
+                              size: 14,
+                              color: ThemeColor.black
+                            ),
                           ),
                           Expanded(
                             child: Text(
@@ -240,68 +215,75 @@ class RoomStarredScreen extends GetView<RoomStarredController> {
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),
-                        ],
-                        const Spacer(),
-                        Text(
-                          DateFormat('dd/MM/yy').format(message.timestamp),
-                          style: const TextStyle(
-                            fontFamily: 'Poppins',
-                            fontWeight: FontWeight.normal,
-                            color: ThemeColor.black,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 4),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      decoration: BoxDecoration(
-                        color: ThemeColor.white,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
+                          const SizedBox(width: 2),
                           Text(
-                            message.text ?? (message.type == MessageType.image ? 'Gambar' : 'Dokumen'),
+                            DateFormat('dd/MM/yy').format(message.timestamp),
                             style: const TextStyle(
                               fontFamily: 'Poppins',
                               fontWeight: FontWeight.normal,
                               color: ThemeColor.black,
-                              fontSize: 15,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Icon(Icons.star, color: ThemeColor.mediumGrey4, size: 16),
-                                const SizedBox(width: 4),
-                                Text(
-                                  DateFormat('HH:mm').format(message.timestamp),
-                                  style: const TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontWeight: FontWeight.normal,
-                                    color: ThemeColor.black,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ],
+                              fontSize: 14
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 4),
+                      ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: MediaQuery.of(context).size.width * 0.66,
+                        ),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: ThemeColor.white,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                message.text ?? (message.type == MessageType.image ? 'Gambar' : 'Dokumen'),
+                                style: const TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontWeight: FontWeight.normal,
+                                  color: ThemeColor.black,
+                                  fontSize: 15
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Spacer(),
+                                  const Icon(
+                                    Icons.star,
+                                    color: ThemeColor.mediumGrey4,
+                                    size: 16
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    DateFormat('HH.mm').format(message.timestamp),
+                                    style: const TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontWeight: FontWeight.normal,
+                                      color: ThemeColor.black,
+                                      fontSize: 12
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        );
-      }),
+              ],
+            ),
+          );
+        }
+      ),
     );
   }
 }
