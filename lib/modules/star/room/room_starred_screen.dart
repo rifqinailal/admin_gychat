@@ -1,5 +1,6 @@
 // lib/modules/star/room/room_starred_screen.dart
 import 'package:admin_gychat/models/message_model.dart';
+import 'package:admin_gychat/modules/star/widget/starred_message_card.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -228,54 +229,7 @@ class RoomStarredScreen extends GetView<RoomStarredController> {
                         ],
                       ),
                       const SizedBox(height: 4),
-                      ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width * 0.66,
-                        ),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                          decoration: BoxDecoration(
-                            color: ThemeColor.white,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                message.text ?? (message.type == MessageType.image ? 'Gambar' : 'Dokumen'),
-                                style: const TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontWeight: FontWeight.normal,
-                                  color: ThemeColor.black,
-                                  fontSize: 15
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  const Spacer(),
-                                  const Icon(
-                                    Icons.star,
-                                    color: ThemeColor.mediumGrey4,
-                                    size: 16
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    DateFormat('HH.mm').format(message.timestamp),
-                                    style: const TextStyle(
-                                      fontFamily: 'Poppins',
-                                      fontWeight: FontWeight.normal,
-                                      color: ThemeColor.black,
-                                      fontSize: 12
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
+                      StarredMessageCard(message: message),
                     ],
                   ),
                 ),

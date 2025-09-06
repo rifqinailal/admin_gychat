@@ -23,20 +23,14 @@ class RoomStarredController extends GetxController {
   var isSearchActive = false.obs;
   final TextEditingController searchController = TextEditingController();
 
-  late int roomId; // Tipe data sudah benar (int)
+  late int roomId;
   late String roomName;
 
   @override
   void onInit() {
     super.onInit();
-    if (Get.arguments is Map) {
-      // --- PERBAIKAN DI SINI ---
-      // Mengonversi argumen 'roomId' menjadi int secara aman
-      roomId = Get.arguments['roomId'] is int
-          ? Get.arguments['roomId']
-          : int.parse(Get.arguments['roomId'].toString());
-      // ------------------------
-
+    if (Get.arguments is Map) { 
+      roomId = Get.arguments['roomId'] is int ? Get.arguments['roomId'] : int.parse(Get.arguments['roomId'].toString()); 
       roomName = Get.arguments['roomName'];
       loadStarredMessages();
     }
@@ -70,10 +64,10 @@ class RoomStarredController extends GetxController {
       final roomChatController = Get.find<RoomChatController>();
       if (roomChatController.chatRoomInfo['id'] == roomId) {
         for (var msgToUnstar in messagesToUnstar) {
-           var index = roomChatController.messages.indexWhere((m) => m.messageId == msgToUnstar.messageId);
-           if (index != -1) {
-             roomChatController.messages[index] = roomChatController.messages[index].copyWith(isStarred: false);
-           }
+          var index = roomChatController.messages.indexWhere((m) => m.messageId == msgToUnstar.messageId);
+          if (index != -1) {
+            roomChatController.messages[index] = roomChatController.messages[index].copyWith(isStarred: false);
+          }
         }
         roomChatController.messages.refresh();
       }
@@ -81,9 +75,7 @@ class RoomStarredController extends GetxController {
 
     exitSelectionMode();
     loadStarredMessages();
-  }
-
-  // ... (Sisa kode Anda di bawah ini tidak perlu diubah) ...
+  } 
   
   void toggleSearch() {
     isSearchActive.value = !isSearchActive.value;
@@ -97,9 +89,7 @@ class RoomStarredController extends GetxController {
     if (query.isEmpty) {
       filteredMessages.assignAll(starredMessages);
     } else {
-      filteredMessages.assignAll(starredMessages.where((msg) =>
-          (msg.senderName.toLowerCase().contains(query.toLowerCase())) ||
-          (msg.text?.toLowerCase().contains(query.toLowerCase()) ?? false)));
+      filteredMessages.assignAll(starredMessages.where((msg) => (msg.senderName.toLowerCase().contains(query.toLowerCase())) || (msg.text?.toLowerCase().contains(query.toLowerCase()) ?? false)));
     }
   }
 

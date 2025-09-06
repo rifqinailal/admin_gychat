@@ -18,8 +18,7 @@ class ChatListController extends GetxController {
   var _allChats = <ChatModel>[].obs;
   var isSelectionMode = false.obs;
   var selectedChats = <ChatModel>{}.obs;
-  int get archivedChatsCount =>
-      _allChats.where((chat) => chat.isArchived).length;
+  int get archivedChatsCount => _allChats.where((chat) => chat.isArchived).length;
   final int pinLimit = 2;
   late TextEditingController searchController;
   var searchQuery = ''.obs;
@@ -35,9 +34,9 @@ class ChatListController extends GetxController {
     searchController.addListener(_onSearchChanged);
   }
 
-   @override
+  @override
   void onClose() {
-    saveChatsToStorage(); // Simpan saat controller ditutup
+    saveChatsToStorage();
     searchController.dispose();
     super.onClose();
   }
@@ -53,10 +52,8 @@ class ChatListController extends GetxController {
     return chats;
   }
 
-  List<ChatModel> get unreadChats =>
-      allChats.where((chat) => chat.unreadCount > 0).toList();
-  List<ChatModel> get groupChats =>
-      allChats.where((chat) => chat.roomType == 'group').toList();
+  List<ChatModel> get unreadChats => allChats.where((chat) => chat.unreadCount > 0).toList();
+  List<ChatModel> get groupChats => allChats.where((chat) => chat.roomType == 'group').toList();
 
   List<MessageModel> getMessagesForRoom(int roomId) {
     try {
@@ -67,6 +64,7 @@ class ChatListController extends GetxController {
       return [];
     }
   }
+
   void setPinnedMessage(int roomId, int? messageId) {
     final index = _allChats.indexWhere((c) => c.roomId == roomId);
     if (index != -1) {
@@ -80,24 +78,27 @@ class ChatListController extends GetxController {
       saveChatsToStorage();
     }
   }
+
   // Fungsi untuk menambahkan pesan baru ke room dan menyimpan
   void addMessageToChat(int roomId, MessageModel message) {
     final index = _allChats.indexWhere((c) => c.roomId == roomId);
     if (index != -1) {
       final chat = _allChats[index];
-      
+
       // Tambahkan pesan baru ke list di dalam ChatModel
       chat.messages.insert(0, message);
-      
+
       // Buat salinan chat yang sudah diperbarui dan pindahkan ke atas
       final updatedChat = chat.copyWith(
-        lastMessage: message.text ?? (message.type == MessageType.image ? 'Image' : 'Document'),
+        lastMessage: message.text ?? (
+          message.type == MessageType.image ? 'Image' : 'Document'
+        ),
         lastTime: message.timestamp,
       );
-      
+
       _allChats.removeAt(index);
       _allChats.insert(0, updatedChat);
-      
+
       // Langsung simpan untuk memastikan persistensi
       saveChatsToStorage();
     }
@@ -107,22 +108,24 @@ class ChatListController extends GetxController {
     final chatIndex = _allChats.indexWhere((c) => c.roomId == roomId);
     if (chatIndex != -1) {
       final chat = _allChats[chatIndex];
-      final messageIndex = chat.messages.indexWhere((m) => m.messageId == updatedMessage.messageId);
-      
+      final messageIndex = chat.messages.indexWhere(
+        (m) => m.messageId == updatedMessage.messageId,
+      );
+
       if (messageIndex != -1) {
         // Ganti pesan lama dengan versi yang sudah diperbarui
         chat.messages[messageIndex] = updatedMessage;
         // Simpan seluruh state aplikasi
         saveChatsToStorage();
-        print("Message ${updatedMessage.messageId} in room $roomId updated and saved.");
+        print(
+          "Message ${updatedMessage.messageId} in room $roomId updated and saved.",
+        );
       }
     }
-  }
-  // ------------------------------------
+  } 
 
   void saveChatsToStorage() {
-    List<Map<String, dynamic>> chatsJson =
-        _allChats.map((chat) => chat.toJson()).toList();
+    List<Map<String, dynamic>> chatsJson = _allChats.map((chat) => chat.toJson()).toList();
     _box.write(_boxKey, chatsJson);
     print("Daftar chat berhasil disimpan ke local storage!");
   }
@@ -130,30 +133,26 @@ class ChatListController extends GetxController {
   void loadChatsFromStorage() {
     var chatsJson = _box.read<List>(_boxKey);
     if (chatsJson != null && chatsJson.isNotEmpty) {
-      _allChats.value =
-          chatsJson
-              .map(
-                (json) => ChatModel.fromJson(Map<String, dynamic>.from(json)),
-              )
-              .toList();
+      _allChats.value = chatsJson.map(
+        (json) => ChatModel.fromJson(Map<String, dynamic>.from(json))
+      ).toList();
       print("Daftar chat berhasil dimuat dari local storage!");
     } else {
       fetchChats();
     }
   }
 
-
-  void updateChatMetadata(int roomId, String? lastMessage, DateTime? lastTime) {
+  void updateChatMetadata(int roomId, String? lastMessage, DateTime? lastTime) { 
     int index = _allChats.indexWhere((chat) => chat.roomId == roomId);
     if (index != -1) {
       final chat = _allChats[index];
       // Pindahkan chat ke paling atas
       _allChats.removeAt(index);
-      _allChats.insert(0, chat.copyWith(
-        lastMessage: lastMessage,
-        lastTime: lastTime,
-      ));
-      
+      _allChats.insert(
+        0,
+        chat.copyWith(lastMessage: lastMessage, lastTime: lastTime),
+      );
+
       // Langsung simpan perubahan
       saveChatsToStorage();
     }
@@ -189,8 +188,7 @@ class ChatListController extends GetxController {
     List<SearchResultMessage> messageResults = [];
     for (var chat in _allChats) {
       for (var message in chat.messages) {
-        if (message.text != null &&
-            message.text!.toLowerCase().contains(query)) {
+        if (message.text != null && message.text!.toLowerCase().contains(query)) {
           messageResults.add(SearchResultMessage(chat: chat, message: message));
         }
       }
@@ -265,7 +263,7 @@ class ChatListController extends GetxController {
     _allChats.insert(0, newChat);
     print("Grup baru '${newChat.name}' ditambahkan ke list.");
     saveChatsToStorage();
-  } 
+  }
 
   // Dummy data untuk testing
   void fetchChats() {

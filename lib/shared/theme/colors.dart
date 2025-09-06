@@ -34,5 +34,6 @@ class ThemeColor {
   static const lightGrey3 = Color(0xFFEBEBEB); //EBEBEB 100%
   static const blue = Color(0xFF478AFF); //478AFF 100%
   static const red = Color(0xFFE5252A); //E5252A 100%
+  static const lightBlue = Color(0xFFEAE8FF); //EAE8FF 100%
   static const blue2 = Color(0xFF0086F9); //0086F9 100%
 }
