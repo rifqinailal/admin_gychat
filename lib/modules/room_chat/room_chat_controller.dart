@@ -81,7 +81,8 @@ class RoomChatController extends GetxController {
           (m) => m.messageId == chat.pinnedMessageId,
         );
       } catch (e) {
-        isCurrentUserMember.value = false;
+        // Jika pesan yang di-pin tidak ditemukan (misal, setelah dihapus),
+        // anggap pin tidak ada.
         pinnedMessage.value = null;
       }
     }
@@ -131,43 +132,25 @@ class RoomChatController extends GetxController {
     _sendImage(ImageSource.camera);
   }
 
-  // --- PERUBAHAN DI SINI ---
   Future<void> _sendImage(ImageSource source) async {
     try {
       final XFile? pickedFile = await ImagePicker().pickImage(source: source);
       if (pickedFile != null) {
         final CroppedFile? croppedFile = await ImageCropper().cropImage(
-          sourcePath: pickedFile.path,
-          uiSettings: [
-            AndroidUiSettings(
-              toolbarTitle: 'Crop Image',
-              toolbarColor: ThemeColor.black,
-              toolbarWidgetColor: Colors.white,
-              initAspectRatio: CropAspectRatioPreset.original,
-              lockAspectRatio: false, // <-- KUNCI UTAMA, membolehkan ukuran bebas
-              // Menyediakan beberapa pilihan rasio untuk kemudahan pengguna
-              aspectRatioPresets: [
-                CropAspectRatioPreset.original,
-                CropAspectRatioPreset.square,
-                CropAspectRatioPreset.ratio3x2,
-                CropAspectRatioPreset.ratio4x3,
-                CropAspectRatioPreset.ratio16x9
-              ],
-            ),
-            IOSUiSettings(
-              title: 'Potong & Putar Gambar',
-              aspectRatioLockEnabled: false, // <-- KUNCI UTAMA, membolehkan ukuran bebas
-              // Menyediakan beberapa pilihan rasio untuk kemudahan pengguna
-              aspectRatioPresets: [
-                CropAspectRatioPreset.original,
-                CropAspectRatioPreset.square,
-                CropAspectRatioPreset.ratio3x2,
-                CropAspectRatioPreset.ratio4x3,
-                CropAspectRatioPreset.ratio16x9
-              ],
-            ),
-          ],
-        );
+        sourcePath: pickedFile.path,
+        uiSettings: [
+          AndroidUiSettings(
+            toolbarTitle: 'Crop Image',
+            toolbarColor: ThemeColor.black,
+            toolbarWidgetColor: Colors.white,
+            initAspectRatio: CropAspectRatioPreset.original,
+            lockAspectRatio: false,
+          ),
+          IOSUiSettings(
+            title: 'Crop Image',
+            aspectRatioLockEnabled: false,
+          ),
+        ]);
         
         if (croppedFile != null) {
           _showImagePreview(XFile(croppedFile.path), messageController.text);
@@ -177,8 +160,8 @@ class RoomChatController extends GetxController {
       Get.snackbar('Error', 'Gagal memproses gambar: $e');
     }
   }
-  // --- BATAS PERUBAHAN ---
 
+  // [DIUBAH] Fungsi untuk memilih dokumen kini memanggil pratinjau
   Future<void> _sendDocument() async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
@@ -187,7 +170,7 @@ class RoomChatController extends GetxController {
       );
       if (result != null) {
         final PlatformFile file = result.files.first;
-        _showDocumentPreview(file, messageController.text);
+        _showDocumentPreview(file, messageController.text); // Panggil pratinjau
       }
     } catch (e) {
       Get.snackbar('Error', 'Gagal memilih dokumen: $e');
@@ -293,6 +276,7 @@ class RoomChatController extends GetxController {
     );
   }
 
+  // [BARU] Fungsi pratinjau untuk dokumen
   Future<void> _showDocumentPreview(PlatformFile file, String existingText) async {
     final TextEditingController captionController = TextEditingController(text: existingText);
     
@@ -378,7 +362,8 @@ class RoomChatController extends GetxController {
                           type: MessageType.document,
                           documentPath: file.path,
                           documentName: file.name,
-                          text: captionController.text.trim(),
+                          // Mengirimkan teks dari caption controller
+                          text: captionController.text.trim(), 
                           repliedMessage: replyMessage.value != null ? {
                             'name': replyMessage.value!.senderName,
                             'text': replyMessage.value!.text ?? 'File',

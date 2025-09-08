@@ -6,7 +6,6 @@ import 'package:admin_gychat/modules/room_chat/room_chat_controller.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
 
 class ChatBubble extends StatefulWidget {
@@ -26,8 +25,6 @@ class ChatBubble extends StatefulWidget {
   final Map<String, String>? repliedMessage;
   final String? documentName;
   final bool isDeleted;
-
-  // PENAMBAHAN PARAMETER BARU UNTUK HIGHLIGHT
   final String? highlightText;
 
   const ChatBubble({
@@ -59,10 +56,9 @@ class _ChatBubbleState extends State<ChatBubble> {
   bool isExpanded = false;
 
   Widget _buildReplyPreview() {
-     if (widget.repliedMessage == null || widget.isDeleted) return const SizedBox.shrink();
+    if (widget.repliedMessage == null || widget.isDeleted) return const SizedBox.shrink();
     return GestureDetector(
       onTap: () {
-        // Panggil controller untuk jump ke pesan yang direply
         final controller = Get.find<RoomChatController>();
         final replyMessageId = widget.repliedMessage!['messageId'];
         if (replyMessageId != null) {
@@ -72,9 +68,9 @@ class _ChatBubbleState extends State<ChatBubble> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8),
         child: Container(
-          margin: EdgeInsets.only(bottom: 7),
+          margin: const EdgeInsets.only(bottom: 7),
           padding: const EdgeInsets.all(8),
-          color: widget.isSender ? Color(0xFF1A2C79) : Color(0xFFEAE8FF),
+          color: widget.isSender ? const Color(0xFF1A2C79) : const Color(0xFFEAE8FF),
           child: IntrinsicHeight(
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -101,19 +97,18 @@ class _ChatBubbleState extends State<ChatBubble> {
                       const SizedBox(height: 2),
                       Text(
                         widget.repliedMessage!['text'] ?? '',
-                        maxLines: 2, // Ubah ke 2 baris untuk pesan panjang
+                        maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontWeight: FontWeight.normal,
                           fontSize: 13,
                           color: widget.isSender ? Colors.white70 : Colors.black54,
-                          height: 1.3, // Line height untuk spacing yang lebih baik
+                          height: 1.3,
                         ),
                       ),
                     ],
                   ),
                 ),
-                // Tambahkan icon kecil untuk indikasi bisa diklik
                 Icon(
                   Icons.keyboard_arrow_up,
                   size: 16,
@@ -128,26 +123,23 @@ class _ChatBubbleState extends State<ChatBubble> {
   }
 
   Widget _buildHighlightedText() {
+    final textContent = widget.text ?? '';
     final shouldShowButton = _shouldShowExpandButton();
-    
-    // Jika tidak ada kata kunci pencarian, tampilkan Text biasa.
+    final effectiveText = (shouldShowButton && !isExpanded) 
+        ? '${textContent.substring(0, 200)}...' // Tampilkan sebagian teks jika panjang
+        : textContent;
+
     if (widget.highlightText == null || widget.highlightText!.isEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            widget.text ?? '',
-            maxLines: (shouldShowButton && !isExpanded) ? 7 : null,
-            overflow: (shouldShowButton && !isExpanded) ? TextOverflow.ellipsis : TextOverflow.visible,
+            effectiveText,
             style: TextStyle(color: widget.isSender ? ThemeColor.white : ThemeColor.black),
           ),
           if (shouldShowButton)
             GestureDetector(
-              onTap: () {
-                setState(() {
-                  isExpanded = !isExpanded;
-                });
-              },
+              onTap: () => setState(() => isExpanded = !isExpanded),
               child: Padding(
                 padding: const EdgeInsets.only(top: 4),
                 child: Text(
@@ -163,120 +155,46 @@ class _ChatBubbleState extends State<ChatBubble> {
         ],
       );
     }
-
+    
+    // ... Sisa logika _buildHighlightedText tidak berubah
     final regex = RegExp(widget.highlightText!, caseSensitive: false);
-    final matches = regex.allMatches(widget.text ?? '');
-
+    final matches = regex.allMatches(textContent);
+    
     if (matches.isEmpty) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            widget.text ?? '',
-            maxLines: (shouldShowButton && !isExpanded) ? 7 : null,
-            overflow: (shouldShowButton && !isExpanded) ? TextOverflow.ellipsis : TextOverflow.visible,
-            style: TextStyle(color: widget.isSender ? ThemeColor.white : ThemeColor.black),
-          ),
-          if (shouldShowButton)
-            GestureDetector(
-              onTap: () {
-                setState(() {
-                  isExpanded = !isExpanded;
-                });
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  isExpanded ? 'Sembunyikan' : 'Baca selengkapnya...',
-                  style: TextStyle(
-                    color: widget.isSender ? Colors.white70 : Colors.blue.shade600,
-                    fontWeight: FontWeight.w500,
-                    fontSize: 13,
-                  ),
-                ),
-              ),
-            ),
-        ],
-      );
+      return Text(textContent, style: TextStyle(color: widget.isSender ? ThemeColor.white : ThemeColor.black));
     }
-
-    // `RichText` bisa menampilkan teks dengan berbagai gaya berbeda dalam satu widget.
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        RichText(
-          maxLines: (shouldShowButton && !isExpanded) ? 7 : null,
-          overflow: (shouldShowButton && !isExpanded) ? TextOverflow.ellipsis : TextOverflow.visible,
-          text: TextSpan(
-            style: TextStyle(
-              color: widget.isSender ? ThemeColor.white : ThemeColor.black,
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-            ),
-            // `children` diisi oleh list `TextSpan` yang sudah dipecah.
-            children: _generateSpans(widget.text ?? '', matches),
-          ),
-        ),
-        if (shouldShowButton)
-          GestureDetector(
-            onTap: () {
-              setState(() {
-                isExpanded = !isExpanded;
-              });
-            },
-            child: Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Text(
-                isExpanded ? 'Sembunyikan' : 'Baca selengkapnya...',
-                style: TextStyle(
-                  color: widget.isSender ? Colors.white70 : Colors.blue.shade600,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 13,
-                ),
-              ),
-            ),
-          ),
-      ],
+    
+    return RichText(
+      text: TextSpan(
+        style: TextStyle(color: widget.isSender ? ThemeColor.white : ThemeColor.black),
+        children: _generateSpans(textContent, matches),
+      ),
     );
   }
-
-  // Fungsi untuk mengecek apakah perlu menampilkan tombol expand
+  
   bool _shouldShowExpandButton() {
-    if (widget.text == null || widget.text!.isEmpty) return false;
-    
-    // Cara sederhana: hitung berdasarkan jumlah baris dengan split
-    final lines = widget.text!.split('\n').length;
-    
-    // Atau hitung berdasarkan panjang karakter dan perkiraan
-    const int avgCharPerLine = 40; // Lebih konservatif
-    const int maxLines = 7;
-    
-    return lines > maxLines || widget.text!.length > (avgCharPerLine * maxLines);
+    final textContent = widget.text ?? '';
+    return textContent.length > 200; // Batas karakter untuk tombol
   }
 
-  // Fungsi untuk memecah teks menjadi bagian normal dan bagian highlight.
   List<TextSpan> _generateSpans(String text, Iterable<RegExpMatch> matches) {
     List<TextSpan> spans = [];
     int lastMatchEnd = 0;
-
     for (final match in matches) {
-      // Tambahkan bagian teks normal (sebelum kata kunci).
       if (match.start > lastMatchEnd) {
         spans.add(TextSpan(text: text.substring(lastMatchEnd, match.start)));
       }
-      // Tambahkan bagian teks yang cocok (kata kunci) dengan gaya berbeda.
       spans.add(
         TextSpan(
           text: text.substring(match.start, match.end),
           style: TextStyle(
-            backgroundColor: Color(0xFF2738A5).withOpacity(0.7), // Warna highlight
-            color: ThemeColor.black, // Warna teks di dalam highlight
+            backgroundColor: const Color(0xFF2738A5).withOpacity(0.7),
+            color: ThemeColor.black,
           ),
         ),
       );
       lastMatchEnd = match.end;
     }
-    // Tambahkan sisa teks normal (setelah kata kunci terakhir).
     if (lastMatchEnd < text.length) {
       spans.add(TextSpan(text: text.substring(lastMatchEnd)));
     }
@@ -285,8 +203,6 @@ class _ChatBubbleState extends State<ChatBubble> {
 
   @override
   Widget build(BuildContext context) {
-    // Widget helper untuk membuat ekor gelembung (tidak berubah)
-    // 1. Helper untuk membuat ekor gelembung
     Widget buildTail() {
       return Positioned(
         bottom: 0,
@@ -300,13 +216,10 @@ class _ChatBubbleState extends State<ChatBubble> {
       );
     }
 
-    // 2. Helper untuk membuat baris ikon status (bintang/pin)
     Widget buildStatusRow() {
       if (!widget.isPinned && !widget.isStarred) return const SizedBox.shrink();
-
       IconData statusIcon = widget.isPinned ? Icons.push_pin : Icons.star;
       Color iconColor = widget.isSender ? Colors.white70 : Colors.black54;
-
       return Padding(
         padding: const EdgeInsets.only(right: 6, left: 3),
         child: Row(
@@ -316,12 +229,11 @@ class _ChatBubbleState extends State<ChatBubble> {
       );
     }
 
+    // [DIUBAH] Logika untuk menampilkan konten pesan
     Widget buildMessageContent() {
       if (widget.isDeleted) {
         return Row(
           mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Icon(Icons.block, color: Colors.grey.shade400, size: 16),
             const SizedBox(width: 8),
@@ -335,46 +247,50 @@ class _ChatBubbleState extends State<ChatBubble> {
           ],
         );
       }
+      
       if (widget.type == MessageType.document && widget.documentName != null) {
-        return Row(
-          mainAxisSize: MainAxisSize.min,
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (widget.isSender) buildStatusRow(),
-            Flexible(
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: ThemeColor.lightGrey1,
-                  borderRadius: BorderRadius.circular(12),
+          // Blok Dokumen
+          Container(
+            width: MediaQuery.of(context).size.width * 0.7,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: ThemeColor.lightGrey1,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.insert_drive_file_outlined,
+                  color: ThemeColor.primary,
+                  size: 36,
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.insert_drive_file_outlined,
-                      color: ThemeColor.primary,
-                      size: 36,
-                    ),
-                    const SizedBox(width: 12),
-                    Flexible(
-                      child: Text(
-                        widget.documentName!,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: ThemeColor.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
+                const SizedBox(width: 12),
+                Flexible(
+                  child: Text(
+                    widget.documentName!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                    color: ThemeColor.primary,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
-            ),
-            if (!widget.isSender) buildStatusRow(),
-          ],
-        );
-      }
+            ],
+          ),
+        ),
+        if (widget.text != null && widget.text!.isNotEmpty)
+        Padding(
+          padding: const EdgeInsets.only(top: 8.0, left: 4),
+          child: _buildHighlightedText(),
+        ),
+      ],
+    );
+  }
 
       if (widget.type == MessageType.image && widget.imagePath != null) {
         return Column(
@@ -393,96 +309,62 @@ class _ChatBubbleState extends State<ChatBubble> {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(10, 3, 10, 3),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  if (widget.isSender) buildStatusRow(),
-                  if (widget.text != null && widget.text!.isNotEmpty) Flexible(
-                    child: _buildHighlightedText(),
-                  ),
-                  if (!widget.isSender) buildStatusRow(),
-                ],
+            if (widget.text != null && widget.text!.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 8, 10, 3),
+                child: _buildHighlightedText(),
               ),
-            ),
           ],
         );
       }
 
       return Row(
         mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.end, 
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (widget.isSender) buildStatusRow(),
-          Flexible(
-            child: _buildHighlightedText(),
-          ),
+          Flexible(child: _buildHighlightedText()),
           if (!widget.isSender) buildStatusRow(),
         ],
       );
     }
+    // -- Akhir buildMessageContent --
 
     return GestureDetector(
       onTap: widget.onTap,
       onLongPress: widget.isDeleted ? null : widget.onLongPress,
       child: Container(
-        color:
-            widget.isSelected
-                ? ThemeColor.primary.withOpacity(0.3)
-                : Colors.transparent,
+        color: widget.isSelected ? ThemeColor.primary.withOpacity(0.3) : Colors.transparent,
         child: Column(
-          crossAxisAlignment:
-              widget.isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+          crossAxisAlignment: widget.isSender ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8.0,
-                vertical: 2.0,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 2.0),
               child: Align(
-                alignment:
-                    widget.isSystemMessage
-                        ? Alignment.center
-                        : (widget.isSender
-                            ? Alignment.centerRight
-                            : Alignment.centerLeft),
+                alignment: widget.isSystemMessage
+                    ? Alignment.center
+                    : (widget.isSender ? Alignment.centerRight : Alignment.centerLeft),
                 child: Stack(
                   clipBehavior: Clip.none,
                   children: [
                     Container(
-                      padding:
-                          widget.type == MessageType.image
-                              ? const EdgeInsets.all(6)
-                              : const EdgeInsets.all(10),
+                      padding: widget.type == MessageType.image
+                          ? const EdgeInsets.all(6)
+                          : const EdgeInsets.all(10),
                       constraints: BoxConstraints(
                         maxWidth: MediaQuery.of(context).size.width * 0.72,
                       ),
                       decoration: BoxDecoration(
-                        color:
-                            widget.isSystemMessage
-                                ? Colors.yellow.shade200
-                                : (widget.isSender
-                                    ? ThemeColor.primary
-                                    : ThemeColor.white),
+                        color: widget.isSender ? ThemeColor.primary : ThemeColor.white,
                         borderRadius: BorderRadius.only(
                           topLeft: const Radius.circular(16),
                           topRight: const Radius.circular(16),
-                          bottomLeft: Radius.circular(
-                            widget.showTail && !widget.isSender ? 0 : 16,
-                          ),
-                          bottomRight: Radius.circular(
-                            widget.showTail && widget.isSender ? 0 : 16,
-                          ),
+                          bottomLeft: Radius.circular(widget.showTail && !widget.isSender ? 0 : 16),
+                          bottomRight: Radius.circular(widget.showTail && widget.isSender ? 0 : 16),
                         ),
                       ),
                       child: Column(
-                        crossAxisAlignment:
-                            widget.isSender
-                                ? CrossAxisAlignment.start
-                                : CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           if (widget.senderName != null && !widget.isSender)
                             Padding(
@@ -498,13 +380,11 @@ class _ChatBubbleState extends State<ChatBubble> {
                             ),
                           if (widget.repliedMessage != null)
                             Padding(
-                              padding:
-                                  widget.type == MessageType.text
-                                      ? EdgeInsets.zero
-                                      : const EdgeInsets.fromLTRB(8, 0, 8, 8),
+                              padding: widget.type == MessageType.text
+                                  ? EdgeInsets.zero
+                                  : const EdgeInsets.fromLTRB(8, 0, 8, 8),
                               child: _buildReplyPreview(),
                             ),
-
                           buildMessageContent(),
                         ],
                       ),
@@ -514,13 +394,14 @@ class _ChatBubbleState extends State<ChatBubble> {
                 ),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(left: 20, right: 20, bottom: 8),
-              child: Text(
-                DateFormat('HH:mm').format(widget.timestamp),
-                style: const TextStyle(fontSize: 12, color: Colors.grey),
+            if (!widget.isDeleted)
+              Padding(
+                padding: const EdgeInsets.only(left: 20, right: 20, bottom: 8),
+                child: Text(
+                  DateFormat('HH.mm').format(widget.timestamp),
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
+                ),
               ),
-            ),
           ],
         ),
       ),
