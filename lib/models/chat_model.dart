@@ -15,7 +15,9 @@ class ChatModel {
   bool isArchived;
   bool isPinned;
   final List<MessageModel> messages;
-  final int? pinnedMessageId; // <-- TAMBAHKAN INI
+  final int? pinnedMessageId;
+  final bool isMember; 
+
 
   ChatModel({
     required this.roomId,
@@ -30,14 +32,16 @@ class ChatModel {
     this.isArchived = false,
     this.isPinned = false,
     this.messages = const [],
-    this.pinnedMessageId, // <-- TAMBAHKAN INI
+    this.pinnedMessageId,
+    this.isMember = true,
   });
 
   ChatModel copyWith({
     String? lastMessage,
     DateTime? lastTime,
     List<MessageModel>? messages,
-    int? pinnedMessageId, // <-- TAMBAHKAN INI
+    int? pinnedMessageId,
+    bool? isMember,
   }) {
     return ChatModel(
       roomId: this.roomId,
@@ -52,7 +56,8 @@ class ChatModel {
       isArchived: this.isArchived,
       isPinned: this.isPinned,
       messages: messages ?? this.messages,
-      pinnedMessageId: pinnedMessageId ?? this.pinnedMessageId, // <-- TAMBAHKAN INI
+      pinnedMessageId: pinnedMessageId ?? this.pinnedMessageId,
+      isMember: isMember ?? this.isMember,
     );
   }
   
@@ -71,7 +76,8 @@ class ChatModel {
       'is_archived': isArchived,
       'is_pinned': isPinned,
       'messages': messages.map((m) => m.toJson()).toList(),
-      'pinned_message_id': pinnedMessageId, // <-- TAMBAHKAN INI
+      'pinned_message_id': pinnedMessageId,
+      'is_member': isMember,
     };
   }
   
@@ -92,7 +98,8 @@ class ChatModel {
       messages: json['messages'] != null
           ? (json['messages'] as List).map((m) => MessageModel.fromJson(m)).toList()
           : [],
-      pinnedMessageId: json['pinned_message_id'], // <-- TAMBAHKAN INI
+      pinnedMessageId: json['pinned_message_id'],
+      isMember: json['is_member'] ?? true,
     );
   }
 }

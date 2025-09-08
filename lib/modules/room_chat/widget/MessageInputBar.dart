@@ -230,8 +230,8 @@ class MessageInputBar extends GetView<RoomChatController> {
                   return const Divider(
                     height: 1,
                     thickness: 1,
-                    indent: 16, // Jarak garis dari kiri
-                    endIndent: 16, // Jarak garis dari kanan
+                    indent: 16,
+                    endIndent: 16,
                   );
                 },
               ),

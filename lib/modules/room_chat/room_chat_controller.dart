@@ -15,6 +15,7 @@ import 'package:open_filex/open_filex.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:saver_gallery/saver_gallery.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:image_cropper/image_cropper.dart';
 
 class RoomChatController extends GetxController {
   late TextEditingController messageController;
@@ -35,23 +36,19 @@ class RoomChatController extends GetxController {
   var filteredQuickReplies = <QuickReply>[].obs;
   var replyMessage = Rxn<MessageModel>();
   var editingMessage = Rxn<MessageModel>();
+  var isCurrentUserMember = true.obs;
 
   List<MessageModel> get filteredMessages {
     if (searchQuery.isEmpty) return messages;
-    return messages
-        .where(
-          (msg) =>
-              msg.text?.toLowerCase().contains(
-                searchQuery.value.toLowerCase(),
-              ) ??
-              false,
-        )
-        .toList();
+    return messages.where(
+      (msg) => msg.text?.toLowerCase().contains(
+        searchQuery.value.toLowerCase(),
+      ) ?? false, 
+    ).toList();
   }
 
   final ItemScrollController itemScrollController = ItemScrollController();
-  final ItemPositionsListener itemPositionsListener =
-      ItemPositionsListener.create();
+  final ItemPositionsListener itemPositionsListener = ItemPositionsListener.create();
   int? messageIdToJump;
   var highlightedMessageId = Rxn<int>();
 
@@ -75,12 +72,16 @@ class RoomChatController extends GetxController {
       (c) => c.roomId == roomId,
       orElse: () => throw "Chat not found!",
     );
+    
+    isCurrentUserMember.value = chat.isMember;
+
     if (chat.pinnedMessageId != null) {
       try {
         pinnedMessage.value = messages.firstWhere(
           (m) => m.messageId == chat.pinnedMessageId,
         );
       } catch (e) {
+        isCurrentUserMember.value = false;
         pinnedMessage.value = null;
       }
     }
@@ -109,14 +110,11 @@ class RoomChatController extends GetxController {
       senderId: currentUserId,
       senderName: "Anda",
       text: text,
-      repliedMessage:
-          replyMessage.value != null
-              ? {
-                'name': replyMessage.value!.senderName,
-                'text': replyMessage.value!.text ?? 'File',
-                'messageId': replyMessage.value!.messageId.toString(),
-              }
-              : null,
+      repliedMessage: replyMessage.value != null ? {
+        'name': replyMessage.value!.senderName,
+        'text': replyMessage.value!.text ?? 'File',
+        'messageId': replyMessage.value!.messageId.toString(),
+      } : null,
       timestamp: DateTime.now(),
       isSender: true,
       type: MessageType.text,
@@ -129,240 +127,76 @@ class RoomChatController extends GetxController {
     cancelReply();
   }
 
-  void starSelectedMessages() {
-    for (var msg in selectedMessages) {
-      var index = messages.indexWhere((m) => m.messageId == msg.messageId);
-      if (index != -1) {
-        // Buat objek pesan baru dengan status bintang yang diperbarui
-        final updatedMessage = messages[index].copyWith(
-          isStarred: !messages[index].isStarred,
-        );
-        // Perbarui UI lokal
-        messages[index] = updatedMessage;
-        // Minta controller utama untuk menyimpan perubahan
-        _chatListController.updateMessageInChat(
-          chatRoomInfo['id'],
-          updatedMessage,
-        );
-      }
-    }
-    messages.refresh();
-
-    if (Get.isRegistered<StarredMessagesController>()) {
-      Get.find<StarredMessagesController>().loadStarredMessages();
-    }
-    clearMessageSelection();
-  }
-
-  void pinSelectedMessages() {
-    if (selectedMessages.isNotEmpty) {
-      final messageToPin = selectedMessages.first;
-      if (pinnedMessage.value == messageToPin) {
-        pinnedMessage.value = null;
-        _chatListController.setPinnedMessage(chatRoomInfo['id'], null);
-      } else {
-        pinnedMessage.value = messageToPin;
-        _chatListController.setPinnedMessage(
-          chatRoomInfo['id'],
-          messageToPin.messageId,
-        );
-      }
-    }
-    clearMessageSelection();
-  }
-
-  // --- FUNGSI YANG DIPERBAIKI ---
-  void deleteMessages({required bool deleteForAll}) {
-    List<MessageModel> messagesToDelete = List.from(selectedMessages);
-
-    if (!deleteForAll) {
-      messages.removeWhere((msg) => messagesToDelete.contains(msg));
-    } else {
-      for (var msg in messagesToDelete) {
-        var index = messages.indexWhere((m) => m.messageId == msg.messageId);
-        if (index != -1) {
-          final updatedMessage = messages[index].copyWith(isDeleted: true);
-          messages[index] = updatedMessage;
-          _chatListController.updateMessageInChat(
-            chatRoomInfo['id'],
-            updatedMessage,
-          );
-        }
-      }
-    }
-
-    // Jika 'Hapus untuk saya', kita perlu mengupdate seluruh list pesan di ChatModel
-    if (!deleteForAll) {
-      final chat = _chatListController.allChatsInternal.firstWhere(
-        (c) => c.roomId == chatRoomInfo['id'],
-      );
-      chat.messages.removeWhere((msg) => messagesToDelete.contains(msg));
-    }
-
-    _chatListController.saveChatsToStorage();
-    messages.refresh();
-    clearMessageSelection();
-  }
-
-  // --- FUNGSI YANG DIPERBAIKI ---
-  void updateMessage() {
-    final newText = messageController.text.trim();
-    if (editingMessage.value != null && newText.isNotEmpty) {
-      var index = messages.indexWhere(
-        (m) => m.messageId == editingMessage.value!.messageId,
-      );
-      if (index != -1) {
-        final updatedMessage = messages[index].copyWith(text: newText);
-        messages[index] = updatedMessage;
-        _chatListController.updateMessageInChat(
-          chatRoomInfo['id'],
-          updatedMessage,
-        );
-      }
-      messages.refresh();
-      cancelEdit();
-    }
-  }
-
-  // ... (Sisa kode di bawah ini sudah benar dan tidak perlu diubah) ...
-
-  void jumpToMessage() {
-    if (messageIdToJump != null && itemScrollController.isAttached) {
-      final index = messages.indexWhere((m) => m.messageId == messageIdToJump);
-      if (index != -1) {
-        itemScrollController.scrollTo(
-          index: index,
-          duration: const Duration(milliseconds: 700),
-          curve: Curves.easeInOutCubic,
-        );
-        highlightedMessageId.value = messageIdToJump;
-        Future.delayed(const Duration(seconds: 2), () {
-          if (highlightedMessageId.value == messageIdToJump) {
-            highlightedMessageId.value = null;
-          }
-        });
-      }
-      messageIdToJump = null;
-    }
-  }
-
-  Future<void> openDocument(String path) async {
-    try {
-      await OpenFilex.open(path);
-    } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Tidak dapat membuka file. Pastikan ada aplikasi yang mendukung.',
-      );
-    }
-  }
-
-  void showAttachmentOptions() {
-    Get.bottomSheet(
-      Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          ),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: SizedBox.shrink(),
-              trailing: Icon(Icons.close, color: Colors.black),
-              onTap: () => Get.back(),
-            ),
-            ListTile(
-              trailing: const Icon(
-                Icons.photo_library,
-                color: Colors.blueAccent,
-              ),
-              leading: const Text(
-                'Choose images',
-                style: TextStyle(fontSize: 17, color: Colors.black),
-              ),
-              onTap: () {
-                Get.back();
-                _sendImage(ImageSource.gallery);
-              },
-            ),
-            const Divider(height: 1, thickness: 1),
-            ListTile(
-              trailing: const Icon(Icons.insert_drive_file, color: Colors.red),
-              leading: const Text(
-                'Choose dokumen',
-                style: TextStyle(fontSize: 17, color: Colors.black),
-              ),
-              onTap: () {
-                Get.back();
-                _sendDocument();
-              },
-            ),
-            const Divider(height: 1, thickness: 1),
-            SizedBox(height: 35),
-          ],
-        ),
-      ),
-    );
-  }
-
   void takePicture() {
     _sendImage(ImageSource.camera);
   }
 
+  // --- PERUBAHAN DI SINI ---
   Future<void> _sendImage(ImageSource source) async {
     try {
       final XFile? pickedFile = await ImagePicker().pickImage(source: source);
       if (pickedFile != null) {
-        _showImagePreview(pickedFile);
+        final CroppedFile? croppedFile = await ImageCropper().cropImage(
+          sourcePath: pickedFile.path,
+          uiSettings: [
+            AndroidUiSettings(
+              toolbarTitle: 'Crop Image',
+              toolbarColor: ThemeColor.black,
+              toolbarWidgetColor: Colors.white,
+              initAspectRatio: CropAspectRatioPreset.original,
+              lockAspectRatio: false, // <-- KUNCI UTAMA, membolehkan ukuran bebas
+              // Menyediakan beberapa pilihan rasio untuk kemudahan pengguna
+              aspectRatioPresets: [
+                CropAspectRatioPreset.original,
+                CropAspectRatioPreset.square,
+                CropAspectRatioPreset.ratio3x2,
+                CropAspectRatioPreset.ratio4x3,
+                CropAspectRatioPreset.ratio16x9
+              ],
+            ),
+            IOSUiSettings(
+              title: 'Potong & Putar Gambar',
+              aspectRatioLockEnabled: false, // <-- KUNCI UTAMA, membolehkan ukuran bebas
+              // Menyediakan beberapa pilihan rasio untuk kemudahan pengguna
+              aspectRatioPresets: [
+                CropAspectRatioPreset.original,
+                CropAspectRatioPreset.square,
+                CropAspectRatioPreset.ratio3x2,
+                CropAspectRatioPreset.ratio4x3,
+                CropAspectRatioPreset.ratio16x9
+              ],
+            ),
+          ],
+        );
+        
+        if (croppedFile != null) {
+          _showImagePreview(XFile(croppedFile.path), messageController.text);
+        }
       }
     } catch (e) {
-      Get.snackbar('Error', 'Gagal mengambil gambar: $e');
+      Get.snackbar('Error', 'Gagal memproses gambar: $e');
     }
   }
+  // --- BATAS PERUBAHAN ---
 
   Future<void> _sendDocument() async {
     try {
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['pdf', 'doc', 'docx'],
+        allowedExtensions: ['pdf', 'doc', 'docx', 'jpeg', 'jpg', 'png'],
       );
       if (result != null) {
         final PlatformFile file = result.files.first;
-        final newMessage = MessageModel(
-          chatRoomId: chatRoomInfo['id'].toString(),
-          messageId: DateTime.now().millisecondsSinceEpoch,
-          senderId: currentUserId,
-          senderName: "Anda",
-          timestamp: DateTime.now(),
-          isSender: true,
-          type: MessageType.document,
-          documentPath: file.path,
-          documentName: file.name,
-          text: file.name,
-          repliedMessage:
-              replyMessage.value != null
-                  ? {
-                    'name': replyMessage.value!.senderName,
-                    'text': replyMessage.value!.text ?? 'File',
-                    'messageId': replyMessage.value!.messageId.toString(),
-                  }
-                  : null,
-        );
-        messages.insert(0, newMessage);
-        _chatListController.addMessageToChat(chatRoomInfo['id'], newMessage);
-        cancelReply();
+        _showDocumentPreview(file, messageController.text);
       }
     } catch (e) {
       Get.snackbar('Error', 'Gagal memilih dokumen: $e');
     }
   }
+  
+  Future<void> _showImagePreview(XFile pickedFile, String existingText) async {
+    final TextEditingController captionController = TextEditingController(text: existingText);
 
-  Future<void> _showImagePreview(XFile pickedFile) async {
-    final TextEditingController captionController = TextEditingController();
     Get.dialog(
       Scaffold(
         backgroundColor: Colors.transparent,
@@ -387,10 +221,7 @@ class RoomChatController extends GetxController {
               right: 0,
               child: Container(
                 margin: const EdgeInsets.all(16.0),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 8.0,
-                  vertical: 4.0,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(30),
@@ -424,10 +255,7 @@ class RoomChatController extends GetxController {
                       child: FloatingActionButton(
                         elevation: 0,
                         backgroundColor: Colors.white,
-                        child: const Icon(
-                          Icons.send,
-                          color: ThemeColor.primary,
-                        ),
+                        child: const Icon(Icons.send, color: ThemeColor.primary),
                         onPressed: () {
                           final newMessage = MessageModel(
                             chatRoomId: chatRoomInfo['id'].toString(),
@@ -439,25 +267,18 @@ class RoomChatController extends GetxController {
                             type: MessageType.image,
                             imagePath: pickedFile.path,
                             text: captionController.text.trim(),
-                            repliedMessage:
-                                replyMessage.value != null
-                                    ? {
-                                      'name': replyMessage.value!.senderName,
-                                      'text':
-                                          replyMessage.value!.text ?? 'File',
-                                      'messageId':
-                                          replyMessage.value!.messageId
-                                              .toString(),
-                                    }
-                                    : null,
+                            repliedMessage: replyMessage.value != null ? {
+                              'name': replyMessage.value!.senderName,
+                              'text': replyMessage.value!.text ?? 'File',
+                              'messageId': replyMessage.value!.messageId.toString(),
+                            } : null,
                           );
                           messages.insert(0, newMessage);
-                          _chatListController.addMessageToChat(
-                            chatRoomInfo['id'],
-                            newMessage,
-                          );
+                          _chatListController.addMessageToChat(chatRoomInfo['id'], newMessage);
                           Get.back();
                           cancelReply();
+
+                          messageController.clear();
                         },
                       ),
                     ),
@@ -472,6 +293,288 @@ class RoomChatController extends GetxController {
     );
   }
 
+  Future<void> _showDocumentPreview(PlatformFile file, String existingText) async {
+    final TextEditingController captionController = TextEditingController(text: existingText);
+    
+    Get.dialog(
+      Scaffold(
+        backgroundColor: Colors.black.withOpacity(0.8),
+        body: Stack(
+          children: [
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.insert_drive_file_rounded, color: Colors.white, size: 100),
+                  const SizedBox(height: 16),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: Text(
+                      file.name,
+                      style: const TextStyle(color: Colors.white, fontSize: 18),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Positioned(
+              top: 40,
+              left: 16,
+              child: CircleAvatar(
+                backgroundColor: Colors.black.withOpacity(0.5),
+                child: IconButton(
+                  onPressed: () => Get.back(),
+                  icon: const Icon(Icons.close, color: Colors.white),
+                ),
+              ),
+            ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                margin: const EdgeInsets.all(16.0),
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.15),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: captionController,
+                        style: const TextStyle(color: Colors.black),
+                        decoration: const InputDecoration(
+                          hintText: 'Tambahkan keterangan...',
+                          hintStyle: TextStyle(color: Colors.grey),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.symmetric(horizontal: 16),
+                        ),
+                        maxLines: 5,
+                        minLines: 1,
+                      ),
+                    ),
+                    FloatingActionButton(
+                      elevation: 0,
+                      backgroundColor: Colors.white,
+                      child: const Icon(Icons.send, color: ThemeColor.primary),
+                      onPressed: () {
+                        final newMessage = MessageModel(
+                          chatRoomId: chatRoomInfo['id'].toString(),
+                          messageId: DateTime.now().millisecondsSinceEpoch,
+                          senderId: currentUserId,
+                          senderName: "Anda",
+                          timestamp: DateTime.now(),
+                          isSender: true,
+                          type: MessageType.document,
+                          documentPath: file.path,
+                          documentName: file.name,
+                          text: captionController.text.trim(),
+                          repliedMessage: replyMessage.value != null ? {
+                            'name': replyMessage.value!.senderName,
+                            'text': replyMessage.value!.text ?? 'File',
+                            'messageId': replyMessage.value!.messageId.toString(),
+                          } : null,
+                        );
+                        messages.insert(0, newMessage);
+                        _chatListController.addMessageToChat(chatRoomInfo['id'], newMessage);
+                        Get.back();
+                        cancelReply();
+                        messageController.clear();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      barrierDismissible: false,
+    );
+  }
+  
+  void showAttachmentOptions() {
+    Get.bottomSheet(
+      Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const SizedBox.shrink(),
+              trailing: const Icon(Icons.close, color: Colors.black),
+              onTap: () => Get.back(),
+            ),
+            ListTile(
+              trailing: const Icon(
+                Icons.photo_library,
+                color: Colors.blueAccent,
+              ),
+              leading: const Text(
+                'Choose images',
+                style: TextStyle(fontSize: 17, color: Colors.black),
+              ),
+              onTap: () {
+                Get.back();
+                _sendImage(ImageSource.gallery);
+              },
+            ),
+            const Divider(height: 1, thickness: 1),
+            ListTile(
+              trailing: const Icon(Icons.insert_drive_file, color: Colors.red),
+              leading: const Text(
+                'Choose dokumen',
+                style: TextStyle(fontSize: 17, color: Colors.black),
+              ),
+              onTap: () {
+                Get.back();
+                _sendDocument();
+              },
+            ),
+            const Divider(height: 1, thickness: 1),
+            const SizedBox(height: 35),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  void starSelectedMessages() {
+    for (var msg in selectedMessages) {
+      var index = messages.indexWhere((m) => m.messageId == msg.messageId);
+      if (index != -1) { 
+        final updatedMessage = messages[index].copyWith(
+          isStarred: !messages[index].isStarred,
+        );
+        messages[index] = updatedMessage; 
+        _chatListController.updateMessageInChat(
+          chatRoomInfo['id'],
+          updatedMessage,
+        );
+      }
+    }
+    messages.refresh();
+
+    if (Get.isRegistered<StarredMessagesController>()) {
+      Get.find<StarredMessagesController>().loadStarredMessages();
+    }
+    clearMessageSelection();
+  }
+
+  void pinSelectedMessages() {
+    if (selectedMessages.isNotEmpty) {
+      final messageToPin = selectedMessages.first;
+      if (pinnedMessage.value == messageToPin) {
+        pinnedMessage.value = null;
+        _chatListController.setPinnedMessage(chatRoomInfo['id'], null);
+      } else {
+        pinnedMessage.value = messageToPin;
+        _chatListController.setPinnedMessage(
+          chatRoomInfo['id'],
+          messageToPin.messageId,
+        );
+      }
+    }
+    clearMessageSelection();
+  }
+
+  void deleteMessages({required bool deleteForAll}) { 
+    List<MessageModel> messagesToDelete = List.from(selectedMessages);
+
+    if (!deleteForAll) {
+      messages.removeWhere((msg) => messagesToDelete.contains(msg));
+    } else {
+      for (var msg in messagesToDelete) {
+        var index = messages.indexWhere((m) => m.messageId == msg.messageId);
+        if (index != -1) {
+          final updatedMessage = messages[index].copyWith(isDeleted: true);
+          messages[index] = updatedMessage;
+          _chatListController.updateMessageInChat(
+            chatRoomInfo['id'],
+            updatedMessage,
+          );
+        }
+      }
+    }
+    
+    if (!deleteForAll) {
+      final chat = _chatListController.allChatsInternal.firstWhere(
+        (c) => c.roomId == chatRoomInfo['id'],
+      );
+      chat.messages.removeWhere((msg) => messagesToDelete.contains(msg));
+    }
+
+    _chatListController.saveChatsToStorage();
+    messages.refresh();
+    clearMessageSelection();
+  }
+
+  void updateMessage() { 
+    final newText = messageController.text.trim();
+    if (editingMessage.value != null && newText.isNotEmpty) {
+      var index = messages.indexWhere(
+        (m) => m.messageId == editingMessage.value!.messageId,
+      );
+      if (index != -1) {
+        final updatedMessage = messages[index].copyWith(text: newText);
+        messages[index] = updatedMessage;
+        _chatListController.updateMessageInChat(
+          chatRoomInfo['id'],
+          updatedMessage,
+        );
+      }
+      messages.refresh();
+      cancelEdit();
+    }
+  }
+
+  void jumpToMessage() { 
+    if (messageIdToJump != null && itemScrollController.isAttached) {
+      final index = messages.indexWhere((m) => m.messageId == messageIdToJump);
+      if (index != -1) {
+        itemScrollController.scrollTo(
+          index: index,
+          duration: const Duration(milliseconds: 700),
+          curve: Curves.easeInOutCubic,
+        );
+        highlightedMessageId.value = messageIdToJump;
+        Future.delayed(const Duration(seconds: 2), () {
+          if (highlightedMessageId.value == messageIdToJump) {
+            highlightedMessageId.value = null;
+          }
+        });
+      }
+      messageIdToJump = null;
+    }
+  }
+
+  Future<void> openDocument(String path) async {
+    try {
+      await OpenFilex.open(path);
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'Tidak dapat membuka file. Pastikan ada aplikasi yang mendukung.',
+      );
+    }
+  }
+  
   void _onTextChanged() {
     final text = messageController.text;
     if (text.startsWith('/')) {
@@ -503,14 +606,11 @@ class RoomChatController extends GetxController {
         type: MessageType.image,
         imagePath: reply.imageFile!.path,
         text: reply.message.isNotEmpty ? reply.message : null,
-        repliedMessage:
-            replyMessage.value != null
-                ? {
-                  'name': replyMessage.value!.senderName,
-                  'text': replyMessage.value!.text ?? 'File',
-                  'messageId': replyMessage.value!.messageId.toString(),
-                }
-                : null,
+        repliedMessage: replyMessage.value != null ? {
+          'name': replyMessage.value!.senderName,
+          'text': replyMessage.value!.text ?? 'File',
+          'messageId': replyMessage.value!.messageId.toString(),
+        } : null,
       );
       messages.insert(0, newMessage);
       _chatListController.addMessageToChat(chatRoomInfo['id'], newMessage);
