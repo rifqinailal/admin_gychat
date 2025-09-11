@@ -27,21 +27,13 @@ class ChatHeader extends StatelessWidget {
           ),
         ),
         PopupMenuButton<MainMenuAction>(
-          // Mengatur warna latar belakang dari menu popup yang muncul.
-          color: Colors.white,
-
-          // Mengatur ikon yang menjadi tombolnya (ikon titik tiga).
-          icon: const Icon(Icons.more_vert, color: ThemeColor.primary),
-
-          // Mengatur bentuk dari menu popup agar memiliki sudut melengkung.
+          color: Colors.white, 
+          icon: const Icon(Icons.more_vert, color: ThemeColor.primary), 
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-          ),
-
-          // Fungsi yang dijalankan saat salah satu item menu dipilih.
+          ), 
           onSelected: (MainMenuAction action) {
-            final dashboardController = Get.find<DashboardController>();
-            // Menggunakan switch untuk menentukan aksi berdasarkan pilihan user.
+            final dashboardController = Get.find<DashboardController>(); 
             switch (action) {
               case MainMenuAction.groupBaru:
                 Get.toNamed(AppRoutes.GrupBaru);
@@ -96,10 +88,9 @@ class ChatHeader extends StatelessWidget {
     );
   }
 
-  // Method ini HANYA membuat baris aksi untuk mode seleksi.
-  Widget _buildSelectionBar(ChatListController controller) {
+  Widget _buildSelectionBar(ChatListController controller) { 
     return Row(
-      key: const ValueKey('selectionHeader'), // Key untuk animasi
+      key: const ValueKey('selectionHeader'),
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         IconButton(
@@ -160,20 +151,26 @@ class ChatHeader extends StatelessWidget {
               }),
             ),
 
-            IconButton(
-              onPressed: () {
-                Get.dialog(
-                  DeleteConfirmationDialog(
-                    chatCount: controller.selectedChats.length,
-                    onConfirm: () => controller.deleteSelectedChats(),
+            Obx(() {
+              if (controller.canDeleteSelectedChats) {
+                return IconButton(
+                  onPressed: () {
+                    Get.dialog(
+                      DeleteConfirmationDialog(
+                        chatCount: controller.selectedChats.length,
+                        onConfirm: () => controller.deleteSelectedChats(),
+                      ),
+                    );
+                  },
+                  icon: const Icon(
+                    FontAwesome5Regular.trash_alt,
+                    color: Color(0xFF353435),
                   ),
                 );
-              },
-              icon: const Icon(
-                FontAwesome5Regular.trash_alt,
-                color: Color(0xFF353435),
-              ),
-            ),
+              } else {
+                return const SizedBox.shrink();
+              }
+            }),
           ],
         ),
       ],
@@ -181,14 +178,10 @@ class ChatHeader extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    // Ambil instance controller yang sudah ada di memori.
+  Widget build(BuildContext context) { 
     final controller = Get.find<ChatListController>();
-
-    // Widget Column sekarang menjadi pembungkus UTAMA untuk SEMUA elemen header.
-    return Column(
-      children: [
-        // Bagian atas yang dinamis (bisa berubah)
+    return Column( 
+      children: [ 
         SizedBox(height: 2),
         Padding(
           padding: const EdgeInsets.only(top: 16, left: 24, right: 24),
@@ -215,51 +208,39 @@ class ChatHeader extends StatelessWidget {
               hintStyle: TextStyle(color: Color(0xFF9A9696)),
               // Buat ikon menjadi dinamis
               prefixIcon: Obx(
-                () =>
-                    controller
-                            .isSearching
-                            .value // TANYA: Apakah sedang mencari?
-                        // JIKA YA: Tampilkan IconButton untuk kembali/batal
-                        ? Padding(
-                          padding: const EdgeInsets.only(left: 25, right: 8),
-                          child: GestureDetector(
-                            onTap: () => controller.clearSearch(),
-                            child: const Icon(
-                              Icons.arrow_back_ios,
-                              size: 22,
-                              color: Color(0xFF9A9696),
-                            ),
-                          ),
-                        )
-                        // JIKA TIDAK: Tampilkan ikon search biasa
-                        : Padding(
-                          padding: const EdgeInsets.only(
-                            left: 25,
-                            right: 8,
-                          ), // Ubah sesuai kebutuhan
-                          child: Transform.rotate(
-                            angle: 1.5,
-                            child: const Icon(
-                              Ionicons.ios_search_outline,
-                              size: 22,
-                              color: Color(0xFF9A9696),
-                            ),
-                          ),
-                        ),
-              ),
-              // Tambahkan tombol clear di kanan saat mencari
-
-              // KEMBALIKAN fillColor
+                () => controller.isSearching.value ? Padding(
+                  padding: const EdgeInsets.only(left: 25, right: 8),
+                  child: GestureDetector(
+                    onTap: () => controller.clearSearch(),
+                    child: const Icon(
+                      Icons.arrow_back_ios,
+                      size: 22,
+                      color: Color(0xFF9A9696),
+                    ),
+                  ),
+                ) : Padding(
+                  padding: const EdgeInsets.only(
+                    left: 25,
+                    right: 8,
+                  ),
+                  child: Transform.rotate( 
+                    angle: 1.5,
+                    child: const Icon(
+                      Ionicons.ios_search_outline,
+                      size: 22,
+                      color: Color(0xFF9A9696),
+                    ),
+                  ),
+                ),
+              ), 
               filled: true,
               fillColor: const Color(0xFFF2F2F2),
-              contentPadding: const EdgeInsets.symmetric(vertical: 10),
-              // PASTIKAN borderSide ADALAH none
+              contentPadding: const EdgeInsets.symmetric(vertical: 10), 
               border: const OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(20)),
                 borderSide: BorderSide.none,
               ),
-              // Hilangkan fokus border juga agar sama
-              focusedBorder: const OutlineInputBorder(
+              focusedBorder: const OutlineInputBorder( 
                 borderRadius: BorderRadius.all(Radius.circular(20)),
                 borderSide: BorderSide.none,
               ),
@@ -274,13 +255,7 @@ class ChatHeader extends StatelessWidget {
 class SlashPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint =
-        Paint()
-          ..color = const Color(0xFF353435)
-          ..strokeWidth = 1.9
-          ..strokeCap = StrokeCap.round;
-
-    // Garis miring dari kiri atas ke kanan bawah
+    final paint = Paint() ..color = const Color(0xFF353435) ..strokeWidth = 1.9 ..strokeCap = StrokeCap.round;
     canvas.drawLine(Offset(0, 0), Offset(size.width, size.height), paint);
   }
 

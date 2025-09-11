@@ -1,6 +1,6 @@
 // lib/models/message_model.dart
 
-enum MessageType { text, image, document }
+enum MessageType { text, image, document, system }
 
 class MessageModel {
   final int messageId;
@@ -16,13 +16,14 @@ class MessageModel {
   final bool isSender;
   final String? documentPath;
   final String? documentName;
+  final int? documentSize; 
   final bool isDeleted;
-  final String chatRoomId; 
+  final String chatRoomId;
 
   MessageModel({
-    required this.chatRoomId, 
+    required this.chatRoomId,
     required this.messageId,
-    required this.senderId, 
+    required this.senderId,
     this.text,
     required this.timestamp,
     required this.isSender,
@@ -31,38 +32,46 @@ class MessageModel {
     this.imagePath,
     this.documentPath,
     this.documentName,
+    this.documentSize,
     required this.type,
     this.isStarred = false,
     this.isPinned = false,
     this.isDeleted = false,
   }) : assert(
-         (type == MessageType.text && text != null && text.isNotEmpty) ||
-             (type == MessageType.image && imagePath != null) ||
-             (type == MessageType.document &&
-                 documentPath != null &&
-                 documentName != null),
-         'Setiap tipe pesan harus memiliki data yang sesuai.',
-       );
+            (type == MessageType.text && text != null && text.isNotEmpty) ||
+                (type == MessageType.image && imagePath != null) ||
+                (type == MessageType.document &&
+                    documentPath != null &&
+                    documentName != null) ||
+                (type == MessageType.system && text != null),
+            'Setiap tipe pesan harus memiliki data yang sesuai.');
 
-  MessageModel copyWith({String? text,bool? isStarred, bool? isPinned,bool? isDeleted, }) {
+  MessageModel copyWith({
+    String? text,
+    bool? isStarred,
+    bool? isPinned,
+    bool? isDeleted,
+  }) {
     return MessageModel(
       chatRoomId: chatRoomId,
       messageId: messageId,
       senderId: senderId,
-      text: text ?? this.text, 
+      text: text ?? this.text,
       timestamp: timestamp,
       isSender: isSender,
       senderName: senderName,
       repliedMessage: repliedMessage,
       imagePath: imagePath,
       type: type,
-      documentPath: documentPath, 
-      documentName: documentName, 
+      documentPath: documentPath,
+      documentName: documentName,
+      documentSize: documentSize,
       isStarred: isStarred ?? this.isStarred,
       isPinned: isPinned ?? this.isPinned,
       isDeleted: isDeleted ?? this.isDeleted,
     );
   }
+
   Map<String, dynamic> toJson() {
     return {
       'chatRoomId': chatRoomId,
@@ -75,30 +84,34 @@ class MessageModel {
       'repliedMessage': repliedMessage,
       'isStarred': isStarred,
       'isPinned': isPinned,
-      'type': type.name, // Enum diubah jadi String
+      'type': type.name,
       'imagePath': imagePath,
       'documentPath': documentPath,
       'documentName': documentName,
+      'documentSize': documentSize,
       'isDeleted': isDeleted,
     };
   }
 
   factory MessageModel.fromJson(Map<String, dynamic> json) {
     return MessageModel(
-      chatRoomId: json['chatRoomId'] ?? 'unknown_room', 
-      messageId: json['messageId'], 
+      chatRoomId: json['chatRoomId'] ?? 'unknown_room',
+      messageId: json['messageId'],
       senderId: json['senderId'],
       text: json['text'],
       timestamp: DateTime.parse(json['timestamp']),
       isSender: json['isSender'],
       senderName: json['senderName'],
-      repliedMessage: json['repliedMessage'] != null ? Map<String, String>.from(json['repliedMessage']) : null,
+      repliedMessage: json['repliedMessage'] != null
+          ? Map<String, String>.from(json['repliedMessage'])
+          : null,
       isStarred: json['isStarred'] ?? false,
       isPinned: json['isPinned'] ?? false,
-      type: MessageType.values.firstWhere((e) => e.name == json['type']), // String diubah jadi enum
+      type: MessageType.values.firstWhere((e) => e.name == json['type']),
       imagePath: json['imagePath'],
       documentPath: json['documentPath'],
       documentName: json['documentName'],
+      documentSize: json['documentSize'],
       isDeleted: json['isDeleted'] ?? false,
     );
   }

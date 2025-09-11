@@ -48,8 +48,8 @@ class GrupInviteLinkScreen extends GetView<DetailGrupController> {
                   Obx(() => CircleAvatar(
                     radius: 32,
                     backgroundColor: ThemeColor.grey4,
-                    backgroundImage: controller.groupImage.value != null ? FileImage(controller.groupImage.value!) : null,
-                    child: controller.groupImage.value == null ? const Icon(Icons.group, size: 38, color: ThemeColor.grey5) : null,
+                    backgroundImage: controller.groupImage != null ? FileImage(controller.groupImage!) : null,
+                    child: controller.groupImage == null ? const Icon(Icons.group, size: 38, color: ThemeColor.grey5) : null,
                   )),
                   const SizedBox(width: 12),
                   Expanded(
@@ -57,7 +57,7 @@ class GrupInviteLinkScreen extends GetView<DetailGrupController> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Obx(() => Text(
-                          controller.groupName.value,
+                          controller.groupName,
                           style: const TextStyle(
                             color: ThemeColor.black,
                             fontFamily: 'Poppins',

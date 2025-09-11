@@ -1,31 +1,38 @@
 // lib/modules/grup/detail_grup/detail_grup_controller.dart
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:flutter/services.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:image_picker/image_picker.dart';
 import 'dart:io';
-import 'package:image_cropper/image_cropper.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'edit_detail_profile_grup_screen.dart';
-import 'edit_description_screen.dart';
-import 'grup_media_screen.dart';
-import 'grup_invite_link_screen.dart';
-import 'grup_qr_code_screen.dart';
+import 'package:admin_gychat/models/chat_model.dart';
+import 'package:admin_gychat/modules/chat_list/chat_list_controller.dart';
+import 'package:admin_gychat/routes/app_routes.dart';
 import 'package:admin_gychat/shared/theme/colors.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'edit_description_screen.dart';
+import 'edit_detail_profile_grup_screen.dart';
+import 'grup_invite_link_screen.dart';
+import 'grup_media_screen.dart';
+import 'grup_qr_code_screen.dart';
 
 class DetailGrupController extends GetxController {
   final ImagePicker _picker = ImagePicker();
+  final ChatListController _chatListController = Get.find<ChatListController>();
 
-  var groupName = 'Grup-9 Members'.obs; 
-  var groupDescription = 'Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content. This makes it easier to focus on the layout and design.'.obs;
-  var groupImage = Rx<File?>(null);
-  var members = List.generate(8, (index) => 'User ${index + 1}').obs;
+  // var groupName = 'Grup-9 Members'.obs; 
+  // var groupDescription = 'Lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document or a typeface without relying on meaningful content. This makes it easier to focus on the layout and design.'.obs;
+  // var groupImage = Rx<File?>(null);
+  //var members = List.generate(8, (index) => 'User ${index + 1}').obs;
+  var chat = Rxn<ChatModel>();
   var isExitingGroup = false.obs;
   var isDescriptionExpanded = false.obs;
+  var isCurrentUserMember = true.obs;
 
   late TextEditingController nameController; 
   late TextEditingController descriptionController;
+  late final int _roomId;
 
   var selectedMediaTabIndex = 0.obs; // 0: Media, 1: Links, 2: Docs
 
@@ -43,13 +50,50 @@ class DetailGrupController extends GetxController {
 
   // Variabel untuk link grup
   var groupInviteLink = 'https://chat.whatsapp.com/llitc1NxjwBGsXGDITXMT'.obs;
-  var isLoading = false.obs;
+
+  // Getter untuk kemudahan akses data
+  String get groupName => chat.value?.name ?? 'Loading...';
+  String get groupDescription => chat.value?.description ?? '';
+  File? get groupImage => chat.value?.urlPhoto != null ? File(chat.value!.urlPhoto!) : null;
+  List<String> get members => List.generate(8, (index) => 'User ${index + 1}');
+  int get memberCount => members.length;
 
   @override
   void onInit() {
     super.onInit();
-    nameController = TextEditingController(text: groupName.value);
-    descriptionController = TextEditingController(text: groupDescription.value);
+    nameController = TextEditingController();
+    descriptionController = TextEditingController();
+
+    if (Get.arguments != null && Get.arguments is Map<String, dynamic> && Get.arguments['id'] != null) {
+      _roomId = Get.arguments['id'];
+      _loadGroupData();
+      ever(_chatListController.allChatsInternal, (_) => _loadGroupData());
+    } else {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Get.snackbar(
+          'Error', 'Gagal membuka detail grup.',
+          snackPosition: SnackPosition.TOP,
+          backgroundColor: ThemeColor.Red1.withOpacity(0.8),
+          colorText: ThemeColor.white,
+        );
+        if (Get.routing.previous.isNotEmpty) {
+          Get.back();
+        }
+      });
+    }
+  }
+
+  void _loadGroupData() {
+    try {
+      final currentChat = _chatListController.allChatsInternal.firstWhere((c) => c.roomId == _roomId);
+      chat.value = currentChat;
+      isCurrentUserMember.value = currentChat.isMember;
+      nameController.text = currentChat.name;
+      descriptionController.text = currentChat.description ?? '';
+    } catch (e) {
+      print("Error finding group: $e");
+      Get.back(); // Kembali jika grup tidak ditemukan
+    }
   }
 
   // Memilih dan memotong gambar
@@ -59,12 +103,13 @@ class DetailGrupController extends GetxController {
       if (pickedFile != null) {
         final croppedFile = await _cropImage(File(pickedFile.path));
         if (croppedFile != null) {
-          groupImage.value = File(croppedFile.path);
+          // TODO: Panggil fungsi di ChatListController untuk update foto
+          // _chatListController.updateGroupPhoto(_roomId, croppedFile.path);
           Get.snackbar(
             'Success',
             'Group photo updated successfully.',
             snackPosition: SnackPosition.TOP,
-            backgroundColor: Colors.green.withOpacity(0.6),
+            backgroundColor: Colors.green.withOpacity(0.8),
             colorText: ThemeColor.white,
             margin: const EdgeInsets.all(18),
           );
@@ -75,9 +120,32 @@ class DetailGrupController extends GetxController {
         'Error',
         'Failed to pick image: $e',
         snackPosition: SnackPosition.TOP,
-        backgroundColor: ThemeColor.Red1.withOpacity(0.6),
+        backgroundColor: ThemeColor.Red1.withOpacity(0.8),
         colorText: ThemeColor.white,
         margin: const EdgeInsets.all(18),
+      );
+    }
+  }
+
+  void deletePhoto() {
+    if (groupImage != null) {
+      // TODO: Panggil fungsi di ChatListController untuk menghapus foto (mengirim path null)
+      // _chatListController.updateGroupPhoto(_roomId, null);
+      Get.snackbar(
+        'Success', 'Group photo has been deleted.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: Colors.green.withOpacity(0.8),
+        colorText: ThemeColor.white,
+        margin: const EdgeInsets.all(18)
+      );
+
+    } else {
+      Get.snackbar(
+        'Info', 'No group photo to delete.',
+        snackPosition: SnackPosition.TOP,
+        backgroundColor: ThemeColor.primary.withOpacity(0.8),
+        colorText: ThemeColor.white,
+        margin: const EdgeInsets.all(18)
       );
     }
   }
@@ -112,7 +180,7 @@ class DetailGrupController extends GetxController {
 
   // Melihat gambar grup
   Future<void> viewGroupImage() async {
-    if (groupImage.value != null) {
+    if (groupImage != null) {
       await Get.to(
         () => Scaffold(
           backgroundColor: ThemeColor.black,
@@ -125,7 +193,7 @@ class DetailGrupController extends GetxController {
                 minScale: 1.0,
                 maxScale: 4.0,
                 child: Image.file(
-                  groupImage.value!,
+                  groupImage!,
                   fit: BoxFit.contain,
                 ),
               ),
@@ -164,14 +232,10 @@ class DetailGrupController extends GetxController {
   }
 
   // Fungsi untuk navigasi ke halaman QR Code
-  void goToQrCodeScreen() {
-    Get.to(() => const GrupQrCodeScreen());
-  }
+  void goToQrCodeScreen() => Get.to(() => const GrupQrCodeScreen());
 
   // Navigasi ke halaman invite link
-  void goToInviteLinkScreen() {
-    Get.to(() => const GrupInviteLinkScreen());
-  }
+  void goToInviteLinkScreen() => Get.to(() => const GrupInviteLinkScreen());
 
   // Fungsi untuk menyalin link
   void copyInviteLink() {
@@ -180,23 +244,19 @@ class DetailGrupController extends GetxController {
       'Copied',
       'Group invite link copied to clipboard',
       snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.green.withOpacity(0.6),
+      backgroundColor: Colors.green.withOpacity(0.8),
       colorText: ThemeColor.white,
       margin: const EdgeInsets.all(16),
     );
   }
 
-  // Fungsi untuk membagikan link
   void forwardInviteLink() {
     final link = groupInviteLink.value;
-    final group = groupName.value;
+    final group = groupName;
     Share.share('Join the "$group" group on Gychat: $link');
   }
 
-  // --- Fungsi untuk halaman media ---
-  void changeMediaTab(int index) {
-    selectedMediaTabIndex.value = index;
-  }
+  void changeMediaTab(int index) => selectedMediaTabIndex.value = index;
 
   void goToMediaScreen() {
     selectedMediaTabIndex.value = 2; // Asumsi Docs adalah tab ke-2
@@ -204,38 +264,21 @@ class DetailGrupController extends GetxController {
   }
 
   // Fungsi untuk toggle deskripsi
-  void toggleDescription() {
-    isDescriptionExpanded.value = !isDescriptionExpanded.value;
-  }
+  void toggleDescription() => isDescriptionExpanded.value = !isDescriptionExpanded.value;
 
-  void goToEditInfoScreen() {
-    nameController.text = groupName.value;
-    Get.bottomSheet(
-      const EditDetailProfileGrupScreen(),
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-    );
-  }
+  void goToEditInfoScreen() => Get.bottomSheet(const EditDetailProfileGrupScreen(), isScrollControlled: true);
 
-  // Halaman edit deskripsi
-  void goToEditDescriptionScreen() { 
-    descriptionController.text = groupDescription.value;
-    Get.bottomSheet(
-      const EditDescriptionScreen(),
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-    );
-  }
+  void goToEditDescriptionScreen() => Get.bottomSheet(const EditDescriptionScreen(), isScrollControlled: true, backgroundColor: Colors.transparent);
 
   // Menyimpan deskripsi
   void saveGroupDescription() {
-    groupDescription.value = descriptionController.text;
+    // TODO: Tambahkan logic untuk update deskripsi di ChatListController
     Get.back();
     Get.snackbar(
       'Success',
       'Group description updated!',
       snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.green.withOpacity(0.6),
+      backgroundColor: Colors.green.withOpacity(0.8),
       colorText: ThemeColor.white,
       margin: const EdgeInsets.all(18),
     );
@@ -372,54 +415,187 @@ class DetailGrupController extends GetxController {
       backgroundColor: Colors.transparent,
     );
   }
-
-  Future<void> exitGroup() async {
-    isExitingGroup.value = true;
-    await Future.delayed(const Duration(seconds: 2));
-    isExitingGroup.value = false;
-    Get.back();
-    Get.snackbar(
-      'Success',
-      'You have left the group.',
-      snackPosition: SnackPosition.TOP,
-      backgroundColor: Colors.green.withOpacity(0.6),
-      colorText: ThemeColor.white,
-      margin: const EdgeInsets.all(18),
-    );
-  }
-
-  void deletePhoto() {
-    if (groupImage.value != null) {
-      groupImage.value = null;
-      Get.snackbar(
-        'Success',
-        'Group photo has been deleted.',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.green.withOpacity(0.6),
-        colorText: ThemeColor.white,
-        margin: const EdgeInsets.all(18),
+  
+  Future<void> exitOrDeleteGroup() async {
+    if (isCurrentUserMember.value) {
+      Get.dialog(
+        AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Center(
+            child: Text(
+              "Exit Group",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Poppins',
+                fontSize: 18,
+              ),
+            ),
+          ),
+          content: Text(
+            "Do you want to leave group \"$groupName\"?",
+            textAlign: TextAlign.center,
+            style: const TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 16,
+              color: ThemeColor.black,
+              fontWeight: FontWeight.normal,
+            ),
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actionsPadding: const EdgeInsets.only(bottom: 20.0, left: 20.0, right: 20.0),
+          actions: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Get.back(),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: ThemeColor.primary,
+                      side: const BorderSide(color: ThemeColor.primary),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text(
+                      "Cancel",
+                      style: TextStyle(fontFamily: 'Poppins', fontSize: 16),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      Get.back();
+                      isExitingGroup.value = true;
+                      await Future.delayed(const Duration(seconds: 1));
+                      _chatListController.exitFromGroup(_roomId);
+                      isExitingGroup.value = false;
+                      Get.snackbar(
+                        'Success',
+                        'You have successfully left the group.',
+                        snackPosition: SnackPosition.TOP,
+                        backgroundColor: Colors.green.withOpacity(0.8),
+                        colorText: ThemeColor.white,
+                        margin: const EdgeInsets.all(18),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ThemeColor.primary,
+                      foregroundColor: ThemeColor.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text(
+                      "Exit",
+                      style: TextStyle(fontFamily: 'Poppins', fontSize: 16),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       );
     } else {
-      Get.snackbar(
-        'Info',
-        'No group photo to delete.',
-        snackPosition: SnackPosition.TOP,
-        backgroundColor: ThemeColor.primary.withOpacity(0.6),
-        colorText: ThemeColor.white,
-        margin: const EdgeInsets.all(18),
+      Get.dialog(
+        AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Center(
+            child: Text(
+              "Delete Group",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontFamily: 'Poppins',
+                fontSize: 18,
+              ),
+            ),
+          ),
+          content: const Text(
+            "Group will be removed from your chat list.",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 16,
+            ),
+          ),
+          actionsAlignment: MainAxisAlignment.center,
+          actionsPadding: const EdgeInsets.only(bottom: 20.0, left: 20.0, right: 20.0),
+          actions: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () => Get.back(),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: ThemeColor.primary,
+                      side: const BorderSide(color: ThemeColor.primary),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text(
+                      "Cancel",
+                      style: TextStyle(fontFamily: 'Poppins', fontSize: 16),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _chatListController.deleteGroup(_roomId);
+                      Get.offNamedUntil(AppRoutes.Dashboard, (route) => route.isFirst);
+                      Get.snackbar(
+                        'Success',
+                        'Group successfully deleted.',
+                        snackPosition: SnackPosition.TOP,
+                        backgroundColor: Colors.green.withOpacity(0.8),
+                        colorText: ThemeColor.white,
+                        margin: const EdgeInsets.all(18),
+                      );
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ThemeColor.primary,
+                      foregroundColor: ThemeColor.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text(
+                      "Delete",
+                      style: TextStyle(fontFamily: 'Poppins', fontSize: 16),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       );
     }
   }
 
   void saveGroupInfo() {
     if (nameController.text.isNotEmpty) {
-      groupName.value = nameController.text;
+      // TODO: Tambahkan logic untuk update nama grup di ChatListController
       Get.back();
       Get.snackbar(
         'Success',
         'Group info updated!',
         snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.green.withOpacity(0.6),
+        backgroundColor: Colors.green.withOpacity(0.8),
         colorText: ThemeColor.white,
         margin: const EdgeInsets.all(18),
       );
@@ -428,7 +604,7 @@ class DetailGrupController extends GetxController {
         'Error',
         'Group name cannot be empty.',
         snackPosition: SnackPosition.TOP,
-        backgroundColor: ThemeColor.Red1.withOpacity(0.6),
+        backgroundColor: ThemeColor.Red1.withOpacity(0.8),
         colorText: ThemeColor.white,
         margin: const EdgeInsets.all(18),
       );

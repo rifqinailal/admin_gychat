@@ -33,7 +33,9 @@ class RoomChatAppBar extends GetView<RoomChatController>
         ),
       ),
       title: InkWell(
-        onTap: (controller.chatRoomInfo['isGroup'] == true) ? () => Get.toNamed(AppRoutes.DetailGrup) : null,
+        onTap: (controller.chatRoomInfo['isGroup'] == true) ? () => Get.toNamed(
+          AppRoutes.DetailGrup, arguments: {'id': controller.chatRoomInfo['id']},
+        ) : null,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,

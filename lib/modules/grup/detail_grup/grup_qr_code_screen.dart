@@ -69,12 +69,12 @@ class GrupQrCodeScreen extends GetView<DetailGrupController> {
                     Obx(() => CircleAvatar(
                       radius: 35,
                       backgroundColor: ThemeColor.lightGrey1,
-                      backgroundImage: controller.groupImage.value != null ? FileImage(controller.groupImage.value!) : null,
-                      child: controller.groupImage.value == null ? const Icon(Icons.group, size: 45, color: ThemeColor.grey5) : null,
+                      backgroundImage: controller.groupImage != null ? FileImage(controller.groupImage!) : null,
+                      child: controller.groupImage == null ? const Icon(Icons.group, size: 45, color: ThemeColor.grey5) : null,
                     )),
                     const SizedBox(height: 15),
                     Obx(() => Text(
-                      controller.groupName.value,
+                      controller.groupName,
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         fontFamily: 'Poppins',

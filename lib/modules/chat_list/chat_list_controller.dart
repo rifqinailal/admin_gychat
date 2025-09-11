@@ -15,16 +15,31 @@ class SearchResultMessage {
 class ChatListController extends GetxController {
   final _box = GetStorage();
   final _boxKey = 'all_chats';
-  var _allChats = <ChatModel>[].obs;
+  var allChatsInternal = <ChatModel>[].obs;
   var isSelectionMode = false.obs;
   var selectedChats = <ChatModel>{}.obs;
-  int get archivedChatsCount => _allChats.where((chat) => chat.isArchived).length;
+  int get archivedChatsCount => allChatsInternal.where((chat) => chat.isArchived).length;
   final int pinLimit = 2;
   late TextEditingController searchController;
   var searchQuery = ''.obs;
   var isSearching = false.obs;
   var searchResultChats = <ChatModel>[].obs;
   var searchResultMessages = <SearchResultMessage>[].obs;
+
+  bool get canDeleteSelectedChats {
+    if (selectedChats.isEmpty) {
+      return false;
+    }
+    return selectedChats.every((chat) {
+      if (chat.roomType == 'one_to_one') {
+        return true;
+      }
+      if (chat.roomType == 'group' && !chat.isMember) {
+        return true;
+      }
+      return false;
+    });
+  }
 
   @override
   void onInit() {
@@ -41,9 +56,9 @@ class ChatListController extends GetxController {
     super.onClose();
   }
 
-  List<ChatModel> get allChatsInternal => _allChats;
+  List<ChatModel> get allchats => allChatsInternal;
   List<ChatModel> get allChats {
-    final chats = _allChats.where((chat) => !chat.isArchived).toList();
+    final chats = allChatsInternal.where((chat) => !chat.isArchived).toList();
     chats.sort((a, b) {
       if (a.isPinned && !b.isPinned) return -1;
       if (!a.isPinned && b.isPinned) return 1;
@@ -57,7 +72,7 @@ class ChatListController extends GetxController {
 
   List<MessageModel> getMessagesForRoom(int roomId) {
     try {
-      final chat = _allChats.firstWhere((c) => c.roomId == roomId);
+      final chat = allChatsInternal.firstWhere((c) => c.roomId == roomId);
       return chat.messages;
     } catch (e) {
       print("Chat with ID $roomId not found. Returning empty list.");
@@ -66,57 +81,58 @@ class ChatListController extends GetxController {
   }
 
   void setPinnedMessage(int roomId, int? messageId) {
-    final index = _allChats.indexWhere((c) => c.roomId == roomId);
+    final index = allChatsInternal.indexWhere((c) => c.roomId == roomId);
     if (index != -1) {
-      // Dapatkan chat lama
-      final chat = _allChats[index];
-      // Buat chat baru dengan ID pin yang diperbarui
-      final updatedChat = chat.copyWith(pinnedMessageId: messageId);
-      // Ganti chat lama dengan yang baru
-      _allChats[index] = updatedChat;
-      // Simpan perubahan
+      final oldChat = allChatsInternal[index];
+      
+      ChatModel updatedChat;
+      if (messageId == null) {
+        updatedChat = oldChat.copyWith(
+          clearPinnedMessage: true, 
+          messages: oldChat.messages.map((m) => m.copyWith(isPinned: false)).toList(),
+        );
+      } else {
+        updatedChat = oldChat.copyWith(
+          pinnedMessageId: messageId,
+          messages: oldChat.messages.map((m) {
+            return m.copyWith(isPinned: m.messageId == messageId);
+          }).toList(),
+        );
+      }
+      
+      allChatsInternal[index] = updatedChat;
       saveChatsToStorage();
+      allChatsInternal.refresh();
     }
   }
 
-  // Fungsi untuk menambahkan pesan baru ke room dan menyimpan
-  void addMessageToChat(int roomId, MessageModel message) {
-    final index = _allChats.indexWhere((c) => c.roomId == roomId);
+  void addMessageToChat(int roomId, MessageModel message) { 
+    final index = allChatsInternal.indexWhere((c) => c.roomId == roomId);
     if (index != -1) {
-      final chat = _allChats[index];
-
-      // Tambahkan pesan baru ke list di dalam ChatModel
+      final chat = allChatsInternal[index];
       chat.messages.insert(0, message);
-
-      // Buat salinan chat yang sudah diperbarui dan pindahkan ke atas
-      final updatedChat = chat.copyWith(
-        lastMessage: message.text ?? (
-          message.type == MessageType.image ? 'Image' : 'Document'
-        ),
+      final updatedChat = chat.copyWith( 
+        lastMessage: message.text ??
+            (message.type == MessageType.image ? 'Image' : 'Document'),
         lastTime: message.timestamp,
       );
-
-      _allChats.removeAt(index);
-      _allChats.insert(0, updatedChat);
-
-      // Langsung simpan untuk memastikan persistensi
+      allChatsInternal.removeAt(index);
+      allChatsInternal.insert(0, updatedChat);
       saveChatsToStorage();
     }
   }
 
   void updateMessageInChat(int roomId, MessageModel updatedMessage) {
-    final chatIndex = _allChats.indexWhere((c) => c.roomId == roomId);
+    final chatIndex = allChatsInternal.indexWhere((c) => c.roomId == roomId);
     if (chatIndex != -1) {
-      final chat = _allChats[chatIndex];
+      final chat = allChatsInternal[chatIndex];
       final messageIndex = chat.messages.indexWhere(
         (m) => m.messageId == updatedMessage.messageId,
       );
 
-      if (messageIndex != -1) {
-        // Ganti pesan lama dengan versi yang sudah diperbarui
+      if (messageIndex != -1) { 
         chat.messages[messageIndex] = updatedMessage;
-        // Simpan seluruh state aplikasi
-        saveChatsToStorage();
+        saveChatsToStorage(); 
         print(
           "Message ${updatedMessage.messageId} in room $roomId updated and saved.",
         );
@@ -125,7 +141,7 @@ class ChatListController extends GetxController {
   } 
 
   void saveChatsToStorage() {
-    List<Map<String, dynamic>> chatsJson = _allChats.map((chat) => chat.toJson()).toList();
+    List<Map<String, dynamic>> chatsJson = allChatsInternal.map((chat) => chat.toJson()).toList();
     _box.write(_boxKey, chatsJson);
     print("Daftar chat berhasil disimpan ke local storage!");
   }
@@ -133,7 +149,7 @@ class ChatListController extends GetxController {
   void loadChatsFromStorage() {
     var chatsJson = _box.read<List>(_boxKey);
     if (chatsJson != null && chatsJson.isNotEmpty) {
-      _allChats.value = chatsJson.map(
+      allChatsInternal.value = chatsJson.map(
         (json) => ChatModel.fromJson(Map<String, dynamic>.from(json))
       ).toList();
       print("Daftar chat berhasil dimuat dari local storage!");
@@ -142,51 +158,29 @@ class ChatListController extends GetxController {
     }
   }
 
-  void updateChatMetadata(int roomId, String? lastMessage, DateTime? lastTime) { 
-    int index = _allChats.indexWhere((chat) => chat.roomId == roomId);
-    if (index != -1) {
-      final chat = _allChats[index];
-      // Pindahkan chat ke paling atas
-      _allChats.removeAt(index);
-      _allChats.insert(
-        0,
-        chat.copyWith(lastMessage: lastMessage, lastTime: lastTime),
-      );
-
-      // Langsung simpan perubahan
-      saveChatsToStorage();
-    }
-  }
-
-  void _onSearchChanged() {
+  void _onSearchChanged() { 
     debounce(
       searchQuery,
       (_) => _performSearch(),
-      time: const Duration(milliseconds: 500),
+      time: const Duration(milliseconds: 300),
     );
     searchQuery.value = searchController.text;
   }
-
-  // Pencarian / Search
+  
   void _performSearch() {
     final query = searchQuery.value.toLowerCase();
-
-    if (query.isEmpty) {
+    if (query.isEmpty) { 
       isSearching.value = false;
       searchResultChats.clear();
       searchResultMessages.clear();
       return;
-    }
-
-    isSearching.value = true;
-
-    // Cari di nama chat
+    } 
+    isSearching.value = true; 
     searchResultChats.assignAll(
-      _allChats.where((chat) => chat.name.toLowerCase().contains(query)),
+      allChatsInternal.where((chat) => chat.name.toLowerCase().contains(query)),
     );
-    // Cari di dalam pesan
-    List<SearchResultMessage> messageResults = [];
-    for (var chat in _allChats) {
+    List<SearchResultMessage> messageResults = []; 
+    for (var chat in allChatsInternal) {
       for (var message in chat.messages) {
         if (message.text != null && message.text!.toLowerCase().contains(query)) {
           messageResults.add(SearchResultMessage(chat: chat, message: message));
@@ -196,14 +190,26 @@ class ChatListController extends GetxController {
     searchResultMessages.assignAll(messageResults);
   }
 
-  // Membersihkan hasil pencarian
-  void clearSearch() {
+  void clearSearch() { 
     searchController.clear();
+  }
+
+  void updateChatMetadata(int roomId, String? lastMessage, DateTime? lastTime) {
+    int index = allChatsInternal.indexWhere((chat) => chat.roomId == roomId);
+    if (index != -1) {
+      final chat = allChatsInternal[index];
+      allChatsInternal.removeAt(index);
+      allChatsInternal.insert(
+        0,
+        chat.copyWith(lastMessage: lastMessage, lastTime: lastTime),
+      );
+      saveChatsToStorage();
+    }
   }
 
   // Pin dan Unpin
   void pinSelectedChats() {
-    int currentPinnedCount = _allChats.where((c) => c.isPinned).length;
+    int currentPinnedCount = allChatsInternal.where((c) => c.isPinned).length;
     int newPinsCount = selectedChats.where((c) => !c.isPinned).length;
     if (currentPinnedCount + newPinsCount > pinLimit) {
       Get.dialog(PinConfirmationDialog(chatCount: pinLimit));
@@ -212,8 +218,9 @@ class ChatListController extends GetxController {
     for (var chat in selectedChats) {
       chat.isPinned = !chat.isPinned;
     }
-    _allChats.refresh();
+    allChatsInternal.refresh();
     clearSelection();
+    saveChatsToStorage();
   }
 
   // Archive dan Unarchive
@@ -221,21 +228,24 @@ class ChatListController extends GetxController {
     for (var chat in selectedChats) {
       chat.isArchived = true;
     }
-    _allChats.refresh();
+    allChatsInternal.refresh();
     clearSelection();
+    saveChatsToStorage();
   }
 
   // Delete
   void deleteSelectedChats() {
-    _allChats.removeWhere((chat) => selectedChats.contains(chat));
+    allChatsInternal.removeWhere((chat) => selectedChats.contains(chat));
     Get.back();
     clearSelection();
+    saveChatsToStorage();
   }
 
   // Selection
   void startSelection(ChatModel chat) {
     isSelectionMode.value = true;
     selectedChats.add(chat);
+    saveChatsToStorage();
   }
 
   void toggleSelection(ChatModel chat) {
@@ -255,14 +265,57 @@ class ChatListController extends GetxController {
   }
 
   void refreshChatList() {
-    _allChats.refresh();
+    allChatsInternal.refresh();
+    saveChatsToStorage();
   }
 
   void addNewChat(ChatModel newChat) {
     // Menambahkan chat baru di posisi paling atas
-    _allChats.insert(0, newChat);
+    allChatsInternal.insert(0, newChat);
     print("Grup baru '${newChat.name}' ditambahkan ke list.");
     saveChatsToStorage();
+  }
+
+  void exitFromGroup(int roomId) {
+  final index = allChatsInternal.indexWhere((chat) => chat.roomId == roomId && chat.roomType == 'group');
+  if (index != -1) {
+    final systemMessage = MessageModel(
+      chatRoomId: roomId.toString(),
+      messageId: DateTime.now().millisecondsSinceEpoch,
+      senderId: 'system',
+      senderName: 'System',
+      text: 'Anda leave the grup',
+      timestamp: DateTime.now(),
+      isSender: false,
+      type: MessageType.system,
+    );
+
+    final oldChat = allChatsInternal[index];
+    
+    final newMessages = List<MessageModel>.from(oldChat.messages);
+    newMessages.insert(0, systemMessage);
+
+    final updatedChat = oldChat.copyWith(
+      isMember: false,
+      messages: newMessages,
+      lastMessage: systemMessage.text,
+      lastTime: systemMessage.timestamp,
+    );
+
+    allChatsInternal[index] = updatedChat;
+    
+    saveChatsToStorage();
+
+    allChatsInternal.refresh(); 
+    
+    print("User has exited from group ID: $roomId and a system message was added.");
+  }
+}
+
+  void deleteGroup(int roomId) {
+    allChatsInternal.removeWhere((chat) => chat.roomId == roomId);
+    saveChatsToStorage();
+    print("Group with ID: $roomId has been deleted.");
   }
 
   // Dummy data untuk testing
@@ -296,6 +349,6 @@ class ChatListController extends GetxController {
         isArchived: true,
       ),
     ];
-    _allChats.assignAll(dummyData);
+    allChatsInternal.assignAll(dummyData);
   }
 }

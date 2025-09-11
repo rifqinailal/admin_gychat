@@ -75,7 +75,7 @@ class EditDetailProfileGrupScreen extends StatelessWidget {
                       children: [
                         GestureDetector(
                           onTap: () {
-                            if (controller.groupImage.value != null) {
+                            if (controller.groupImage != null) {
                               controller.viewGroupImage();
                             } else {
                               _showPhotoOptions(controller);
@@ -84,8 +84,8 @@ class EditDetailProfileGrupScreen extends StatelessWidget {
                           child: Obx(() => CircleAvatar(
                             radius: 50,
                             backgroundColor: ThemeColor.grey4,
-                            backgroundImage: controller.groupImage.value != null ? FileImage(controller.groupImage.value!) : null,
-                            child: controller.groupImage.value == null ? Icon(Icons.group, size: 60, color: ThemeColor.grey5) : null,
+                            backgroundImage: controller.groupImage != null ? FileImage(controller.groupImage!) : null,
+                            child: controller.groupImage == null ? Icon(Icons.group, size: 60, color: ThemeColor.grey5) : null,
                           )),
                         ),
                         const SizedBox(height: 1),
@@ -202,7 +202,7 @@ class EditDetailProfileGrupScreen extends StatelessWidget {
                         controller.pickImage(ImageSource.gallery);
                       },
                     ),
-                    if (controller.groupImage.value != null) ...[
+                    if (controller.groupImage != null) ...[
                       const Divider(height: 0.5, indent: 18, endIndent: 18),
                       _buildBottomSheetOption(
                         text: 'Delete Photo',

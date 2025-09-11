@@ -67,6 +67,22 @@ class RoomChatScreen extends GetView<RoomChatController> {
                     itemCount: controller.filteredMessages.length,
                     itemBuilder: (context, index) {
                       final message = controller.filteredMessages[index];
+                      if (message.type == MessageType.system) {
+                        return ChatBubble(
+                          type: MessageType.system,
+                          text: message.text,
+                          timestamp: message.timestamp,
+                          showTail: false,
+                          isSelected: false,
+                          onTap: () {},
+                          onLongPress: () {},
+                          isStarred: false,
+                          isPinned: false,
+                          isDeleted: false,
+                          messageId: message.messageId,
+                        );
+                      }
+
                       final bool isGroupChat =
                           controller.chatRoomInfo['isGroup'] ?? false;
 
@@ -95,32 +111,28 @@ class RoomChatScreen extends GetView<RoomChatController> {
                         message: message,
                         controller: controller,
                         child: Obx(() {
-                          final isSelected = controller.selectedMessages
-                              .contains(message);
-                          final isHighlighted =
-                              controller.highlightedMessageId.value ==
-                              message.messageId;
-                          return Container(
-                            color:
-                                isHighlighted
-                                    ? ThemeColor.primary.withOpacity(0.2)
-                                    : Colors.transparent,
+                          final isSelected = controller.selectedMessages.contains(message);
+                          final isHighlighted = controller.highlightedMessageId.value == message.messageId;
+                          return Container( 
+                            color: isHighlighted ? ThemeColor.primary.withOpacity(0.2) : Colors.transparent,
                             child: Column(
                               children: [
                                 if (showDateSeparator)
                                   DateSeparator(
-                                    text: formatDateSeparator(
-                                      message.timestamp,
-                                    ),
+                                    text: formatDateSeparator(message.timestamp),
                                   ),
                                 ChatBubble(
+                                  maxWidth: MediaQuery.of(context).size.width * 0.75,
+                                  minWidth: 70.0,
+
+                                  // Properti lainnya...
                                   text: message.text,
                                   isSender: message.isSender,
+                                  isSystemMessage: message.type == MessageType.system,
                                   timestamp: message.timestamp,
                                   showTail: showTail,
                                   highlightText: controller.searchQuery.value,
-                                  senderName:
-                                      isGroupChat ? message.senderName : null,
+                                  senderName: isGroupChat ? message.senderName : null,
                                   repliedMessage: message.repliedMessage,
                                   isStarred: message.isStarred,
                                   isPinned: message.isPinned,
@@ -129,19 +141,12 @@ class RoomChatScreen extends GetView<RoomChatController> {
                                   imagePath: message.imagePath,
                                   documentName: message.documentName,
                                   isDeleted: message.isDeleted,
+                                  messageId: message.messageId,
                                   onTap: () {
-                                    if (controller
-                                        .isMessageSelectionMode
-                                        .value) {
-                                      controller.toggleMessageSelection(
-                                        message,
-                                      );
-                                    } else if (message.type ==
-                                            MessageType.document &&
-                                        message.documentPath != null) {
-                                      controller.openDocument(
-                                        message.documentPath!,
-                                      );
+                                    if (controller.isMessageSelectionMode.value) {
+                                      controller.toggleMessageSelection(message);
+                                    } else if (message.type == MessageType.document && message.documentPath != null) {
+                                      controller.openDocument(message.documentPath!);
                                     }
                                   },
                                   onLongPress: () {
@@ -157,10 +162,30 @@ class RoomChatScreen extends GetView<RoomChatController> {
                   ),
                 ),
               ),
-              // Wrap MessageInputBar dengan Container dan padding untuk spacing tambahan
-              MessageInputBar(),
+              Obx(() {
+                if (controller.isCurrentUserMember.value) {
+                  return const MessageInputBar();
+                } else {
+                  return _buildExitedGroupFooter();
+                }
+              }),
             ],
           ),
+        ),
+      ),
+    );
+  }
+  Widget _buildExitedGroupFooter() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+      width: double.infinity,
+      color: ThemeColor.primary,
+      child: const Text(
+        'You cannot send messages to this group because you are no longer a member of the group.',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: ThemeColor.white,
+          fontSize: 14,
         ),
       ),
     );

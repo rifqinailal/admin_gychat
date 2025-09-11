@@ -42,6 +42,8 @@ class ChatModel {
     List<MessageModel>? messages,
     int? pinnedMessageId,
     bool? isMember,
+    //bool unpin = false,
+    bool clearPinnedMessage = false,
   }) {
     return ChatModel(
       roomId: this.roomId,
@@ -56,7 +58,9 @@ class ChatModel {
       isArchived: this.isArchived,
       isPinned: this.isPinned,
       messages: messages ?? this.messages,
-      pinnedMessageId: pinnedMessageId ?? this.pinnedMessageId,
+      //pinnedMessageId: pinnedMessageId ?? this.pinnedMessageId,
+      //pinnedMessageId: unpin ? null : (pinnedMessageId ?? this.pinnedMessageId),
+      pinnedMessageId: clearPinnedMessage ? null : (pinnedMessageId ?? this.pinnedMessageId),
       isMember: isMember ?? this.isMember,
     );
   }

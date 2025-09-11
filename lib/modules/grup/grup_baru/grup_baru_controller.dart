@@ -192,10 +192,10 @@ class GrupBaruController extends GetxController {
       
       if (isDuplicate) {
         Get.snackbar(
-          "Error",
+          "Info",
           "Group by name $newGroupName already available.",
           snackPosition: SnackPosition.TOP,
-          backgroundColor: ThemeColor.Red1.withOpacity(0.6),
+          backgroundColor: ThemeColor.primary.withOpacity(0.8),
           colorText: ThemeColor.white,
           margin: const EdgeInsets.all(12),
           borderRadius: 10,
@@ -231,7 +231,7 @@ class GrupBaruController extends GetxController {
         "Success",
         "Group ${groupNameController.text} successfully created.",
         snackPosition: SnackPosition.TOP,
-        backgroundColor: Colors.green.withOpacity(0.6),
+        backgroundColor: Colors.green.withOpacity(0.8),
         colorText: ThemeColor.white,
         margin: const EdgeInsets.all(12),
         borderRadius: 10,
